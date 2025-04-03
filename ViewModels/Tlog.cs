@@ -44,5 +44,11 @@ namespace AlexSupport.ViewModels
         public AppUser? AppUser { get; set; }
         public Ticket? Ticket { get; set; }
 
+        [Column(TypeName = "VARBINARY(MAX)")]
+        public byte[]? ImageData { get; set; }
+
+        [Column(TypeName = "NVARCHAR(100)")]
+        public string? ImageContentType { get; set; } // e.g. "image/jpeg", "image/png"
+
     }
 }

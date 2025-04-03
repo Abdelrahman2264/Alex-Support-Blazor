@@ -1,0 +1,46 @@
+﻿<div class="modal fade" id="bsConfirmationModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">@Title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-4">@ChildContent</p>
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                    <button type="button" class="btn  btn-secondary flex-grow-1 flex-sm-grow-0"
+                            data-bs-dismiss="modal" @onclick="()=>ConfirmationClicked(false)"
+                            style="min-width: 120px; max-width: 200px;">
+                        Close
+                    </button>
+                    <button type="button" class="btn  @ButtonBootstrapStyle flex-grow-1 flex-sm-grow-0 "
+                            @onclick="()=>ConfirmationClicked(true)"
+                            style="min-width: 120px; max-width: 200px;">
+                        @ButtonText
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<bool> OnModalConfirmation { get; set; }
+    [Parameter]
+    public string Title { get; set; } = "Please Confirm";
+    [Parameter]
+    public string ButtonBootstrapStyle { get; set; } = "btn-primary";
+    [Parameter]
+    public string ButtonText { get; set; } = "Confirm";
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private async Task ConfirmationClicked(bool value)
+    {
+        if (value)
+        {
+            await OnModalConfirmation.InvokeAsync(true);
+        }
+    }
+}

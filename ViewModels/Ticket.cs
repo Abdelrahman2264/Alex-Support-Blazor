@@ -25,16 +25,20 @@ namespace AlexSupport.ViewModels
         [Column(TypeName = "NVARCHAR(50)")]
         [Required(ErrorMessage = "Enter Subject")]
         [Display(Name = "Subject")]
-        public required string Subject { get; set; }
+        public  string Subject { get; set; } 
+        [Column(TypeName = "NVARCHAR(50)")]
+        [Required(ErrorMessage = "Choose Priority")]
+        [Display(Name = "Priority")]
+        public  string Priority { get; set; }
 
         [Column(TypeName = "NVARCHAR(850)")]
         [Required(ErrorMessage = "Enter Your Issue")]
         [Display(Name = "Issue")]
-        public required string Issue { get; set; }
+        public  string Issue { get; set; }
 
         [Column(TypeName = "NVARCHAR(50)")]
         [Display(Name = "Status")]
-        public required string Status { get; set; } //Open/Closed
+        public  string Status { get; set; } //Open/Closed
 
         [Column(TypeName = "NVARCHAR(50)")]
         [Display(Name = "Result")]
@@ -45,9 +49,7 @@ namespace AlexSupport.ViewModels
         [Display(Name = "Open Date")]
         public DateTime OpenDate { get; set; }
 
-        [Column(TypeName = "NVARCHAR(50)")]
-        [Display(Name = "Location")]
-        public Location Location { get; set; }
+       
 
         [Column(TypeName = "INT")]
         [Display(Name = "Due Time")]
@@ -71,7 +73,7 @@ namespace AlexSupport.ViewModels
         [ForeignKey(nameof(Location))]
         [Column(TypeName = "INT")]
         [Display(Name = "Location")]
-        public required int LID { get; set; }
+        public  int LID { get; set; }
         public Location? location { get; set; }
 
         public int? UserRate { get; set; }
@@ -105,5 +107,10 @@ namespace AlexSupport.ViewModels
         [Column(TypeName = "NVARCHAR(50)")]
         [Display(Name = "User Approve")]
         public string? UserApprove { get; set; }
+        [Column(TypeName = "VARBINARY(MAX)")]
+        public byte[]? ImageData { get; set; }
+
+        [Column(TypeName = "NVARCHAR(100)")]
+        public string? ImageContentType { get; set; } // e.g. "image/jpeg", "image/png"
     }
 }

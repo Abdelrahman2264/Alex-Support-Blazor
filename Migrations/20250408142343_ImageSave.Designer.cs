@@ -4,6 +4,7 @@ using AlexSupport.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AlexSupport.Migrations
 {
     [DbContext(typeof(AlexSupportDB))]
-    partial class AlexSupportDBModelSnapshot : ModelSnapshot
+    [Migration("20250408142343_ImageSave")]
+    partial class ImageSave
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -257,10 +260,6 @@ namespace AlexSupport.Migrations
                     b.Property<DateTime>("OpenDate")
                         .HasColumnType("datetime2(0)")
                         .HasColumnName("OpenDate");
-
-                    b.Property<string>("Priority")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR(50)");
 
                     b.Property<string>("Result")
                         .HasMaxLength(50)

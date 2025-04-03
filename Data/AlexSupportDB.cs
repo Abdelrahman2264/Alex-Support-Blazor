@@ -115,7 +115,7 @@ namespace AlexSupport.Data
                 entity.Property(e => e.OpenDate)
                     .HasColumnType("datetime2(0)")
                     .HasColumnName("OpenDate");
-                entity.HasOne(e => e.Location)
+                entity.HasOne(e => e.location)
                     .WithMany(d => d.Ticket)
                     .HasForeignKey(e => e.LID)
                     .OnDelete(DeleteBehavior.ClientSetNull)

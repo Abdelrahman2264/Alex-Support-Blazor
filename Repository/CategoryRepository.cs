@@ -127,5 +127,35 @@ namespace AlexSupport.Repository
                 return category;
             }
         }
+        public async Task<bool> CheckIfCategoryExist(string name, int id = 0)
+        {
+            try
+            {
+
+                if (id != 0)
+                {
+                    var type = await alexSupportDB.Category.FirstOrDefaultAsync(u => u.CategoryName.ToLower() == name.ToLower() && u.isActive == true && u.CID != id);
+                    if (type != null)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                else
+                {
+                    var type = await alexSupportDB.Category.FirstOrDefaultAsync(u => u.CategoryName.ToLower() == name.ToLower() && u.isActive == true);
+                    if (type != null)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error in Check If Type Exist method: {ex.Message}", ex);
+                return false;
+            }
+        }
     }
 }

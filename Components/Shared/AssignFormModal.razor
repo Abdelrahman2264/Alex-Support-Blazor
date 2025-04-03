@@ -1,0 +1,213 @@
+﻿<div class="modal fade align-content-center" id="AssignTicket" tabindex="-1" aria-labelledby="assignTicketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down modal-lg w-100 ">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <EditForm Model="ticket" OnSubmit="ConfirmationClicked">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger" />
+
+                    <!-- Expected Time Field -->
+                    <div class="mb-4">
+                        <label class="form-label">Expected Resolution Time (minutes)*</label>
+                        <InputNumber @bind-Value="ticket.Due_Minutes"
+                                     class="form-control"
+                                     min="15"
+                                     max="1440"
+                                     required />
+                        <ValidationMessage For="@(() => ticket.Due_Minutes)" class="text-danger" />
+                        <div class="form-text">Enter time between 15-1440 minutes (24 hours)</div>
+                    </div>
+
+                    <!-- Agent Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Select Agent*</label>
+                        <div class="agent-selection">
+                            @foreach (var agent in Agents)
+                            {
+                                <div class="agent-option @(ticket.AgentID.ToString() == agent.UID.ToString() ? "selected" : "")">
+                                    <input type="radio"
+                                           id="agent_@agent.UID"
+                                           name="agentSelection"
+                                           value="@agent.UID"
+                                           @onchange="() => ticket.AgentID = agent.UID"
+                                           checked="@(ticket.AgentID.ToString() == agent.UID.ToString())" />
+                                    <label for="agent_@agent.UID" class="agent-card">
+                                        <div class="agent-avatar">
+                                            @agent.Fname[0]@agent.Lname[0]
+                                        </div>
+                                        <div class="agent-details">
+                                            <div class="agent-name">@agent.Fname @agent.Lname</div>
+                                            <div class="agent-email text-muted small">@agent.Email</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        <ValidationMessage For="@(() => ticket.AgentID)" class="text-danger" />
+                    </div>
+
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            Assign Ticket
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 0.5rem;
+    }
+
+    /* Agent Selection Styling */
+    .agent-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .agent-option {
+        position: relative;
+    }
+
+        .agent-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+    .agent-card {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .agent-option:hover .agent-card {
+        border-color: #86b7fe;
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    .agent-option.selected .agent-card {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    .agent-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-weight: bold;
+        color: #495057;
+    }
+
+    .agent-name {
+        font-weight: 500;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .agent-selection
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-dialog {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .agent-card {
+        flex-direction: row;
+        padding: 0.75rem;
+    }
+
+    .agent-avatar {
+        margin-right: 0.75rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .modal-body
+
+    {
+        padding: 1.5rem 1rem;
+    }
+
+    .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+    }
+
+    .modal-content {
+        border-radius: 0;
+    }
+
+    .agent-card {
+        flex-direction: row;
+    }
+
+    .agent-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+
+    .agent-details {
+        font-size: 0.9rem;
+    }
+
+    }
+</style>
+
+@code {
+    private bool isSubmitting = false;
+
+    [Parameter]
+    public string Title { get; set; } = "Assign Ticket";
+
+    [Parameter]
+    public Ticket ticket { get; set; } = new Ticket();
+
+    [Parameter]
+    public IEnumerable<AppUser> Agents { get; set; } = new List<AppUser>();
+
+    [Parameter]
+    public EventCallback<Ticket> OnModalConfirmation { get; set; }
+
+    private async Task ConfirmationClicked()
+    {
+        isSubmitting = true;
+        try
+        {
+            await OnModalConfirmation.InvokeAsync(ticket);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}
