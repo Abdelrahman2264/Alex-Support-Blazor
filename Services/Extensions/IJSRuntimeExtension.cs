@@ -1,5 +1,5 @@
 ﻿using Microsoft.JSInterop;
-namespace InventorySystem.Services.Extensions
+namespace AlexSupport.Services.Extensions
 {
     public static class IJSRuntimeExtensions
     {

@@ -127,5 +127,37 @@ namespace AlexSupport.Repository
                 return Department;
             }
         }
+        public async Task<bool> CheckIfDepartmentExist(string name, int id = 0)
+        {
+            try
+            {
+                if (id != 0)
+                {
+                    var department = await alexSupportDB.Department.FirstOrDefaultAsync(u => u.DepartmentName.ToLower() == name.ToLower() && u.IsActive == true && u.DID != id);
+                    if (department != null)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                else
+                {
+                    var department = await alexSupportDB.Department.FirstOrDefaultAsync(u => u.DepartmentName.ToLower() == name.ToLower() && u.IsActive == true);
+                    if (department != null)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error In Check If Department Exist: {ex.Message}", ex);
+                return false;
+            }
+        }
+
     }
 }

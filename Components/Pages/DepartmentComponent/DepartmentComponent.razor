@@ -1,0 +1,118 @@
+﻿@page "/Departments"
+@inject IDepartmentRepository _IDepartment
+@inject IJSRuntime JS
+
+
+@using AlexSupport.ViewModels
+@rendermode InteractiveServer
+
+<PageTitle>Departments</PageTitle>
+
+<BsModal OnModalConfirmation="ConfirmDelete_Click"
+         ButtonBootstrapStyle="btn-danger"
+         ButtonText="Delete"
+         Title="Are you sure you want to delete this Department From The Company ?">
+</BsModal>
+@if (isProcessing)
+{
+    <div class="position-absolute w-75 h-75 d-flex flex-column align-items-center bg-white justify-content-center">
+        <img src="/images/loading.gif" alt="Loading" />
+    </div>
+}
+else
+{
+    <div class="card shadow mt-4 ">
+        <div class="card-header bg-dark bg-gradient ml-0 py-3 ">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">Company Departments</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+
+            <div class="row pb-3">
+
+                <div class="col-12 text-end">
+                    <a href="Departments/Create" class="btn btn-lg btn-success"><i class="bi bi-plus-square"></i> Add New Department</a>
+
+                </div>
+            </div>
+
+        </div>
+        @if (Departments.Any())
+        {
+            <div class="d-flex flex-wrap gap-3 justify-content-center mb-5">
+                @foreach (var obj in Departments)
+                {
+                    <div class="card  CardDesign shadow-sm p-3" style="width: 300px;">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">@obj.DepartmentName</h5>
+                            <div class="d-flex flex-column align-items-center gap-2 mt-3">
+
+                                <div class="d-flex gap-2">
+                                    <a href="@($"Departments/update/{obj.DID}")" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-sm" @onclick="() => HandleDelete(obj.DID)">
+                                        <i class="bi bi-trash3"></i> Delete
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+                <p>No data available.</p>
+            </div>
+        }
+
+    </div>
+
+}
+@code {
+    private bool isProcessing { get; set; } = false;
+    private IEnumerable<Department> Departments { get; set; } = new List<Department>();
+    private int DeletedId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isProcessing = true;
+        await LoadTypes();
+        isProcessing = false;
+    }
+
+    private async Task LoadTypes()
+    {
+        Departments = await _IDepartment.AllDepartmentsAsync();
+    }
+    private async Task HandleDelete(int id)
+    {
+        DeletedId = id;
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
+    }
+
+    private async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        isProcessing = true;
+        await JS.InvokeVoidAsync("HideConfirmationModal");
+        if (isConfirmed && DeletedId != 0)
+        {
+            var result = await _IDepartment.DeleteDepartmentAsync(DeletedId);
+            if (result)
+                JS?.ToastrSuccess("Department a Delete Successfully");
+            else
+                JS?.ToastrError("Error Encountered while deleting");
+
+            await LoadTypes();
+        }
+
+        DeletedId = 0;
+        isProcessing = false;
+    }
+}

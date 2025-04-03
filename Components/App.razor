@@ -32,6 +32,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 
+    <script src="js/common.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
@@ -45,8 +46,68 @@
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="js/notification.js"></script>
+    <script>
+        const toggleButton = document.getElementById('toggle-btn')
+                const sidebar = document.getElementById('sidebar')
 
+        function toggleSidebar() {
+            sidebar.classList.toggle('close')
+            toggleButton.classList.toggle('rotate')
 
+            closeAllSubMenus()
+        }
+
+        function toggleSubMenu(button) {
+
+            if (!button.nextElementSibling.classList.contains('show')) {
+                closeAllSubMenus()
+            }
+
+            button.nextElementSibling.classList.toggle('show')
+            button.classList.toggle('rotate')
+
+            if (sidebar.classList.contains('close')) {
+                sidebar.classList.toggle('close')
+                toggleButton.classList.toggle('rotate')
+            }
+        }
+
+        function closeAllSubMenus() {
+            Array.from(sidebar.getElementsByClassName('show')).forEach(ul => {
+                ul.classList.remove('show')
+                ul.previousElementSibling.classList.remove('rotate')
+            })
+        }
+    </script>
+    <script>
+        function toggleActive(button) {
+            const isActive = button.classList.contains("btn-action-active");
+
+            if (isActive) {
+                button.classList.remove("btn-action-active");
+                button.classList.add("btn-action-inactive");
+                button.textContent = "Activate";
+            } else {
+                button.classList.remove("btn-action-inactive");
+                button.classList.add("btn-action-active");
+                button.textContent = "Deactivate";
+            }
+        }
+
+        function toggleCollapse(button) {
+            const card = button.closest('.ticket-card');
+            const body = card.querySelector('.collapse-body');
+            const isVisible = body.style.display !== 'none';
+
+            if (isVisible) {
+                body.style.display = 'none';
+                button.textContent = "▼ Details";
+            } else {
+                body.style.display = 'block';
+                button.textContent = "▲ Hide";
+            }
+        }
+    </script>
 </body>
 
 </html>

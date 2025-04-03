@@ -127,5 +127,37 @@ namespace AlexSupport.Repository
                 return Location;
             }
         }
+        public async Task<bool> CheckIfSiteNameExist(string name, int id = 0)
+        {
+            try
+            {
+
+
+                if (id != 0)
+                {
+                    var site = await alexSupportDB.Locations.FirstOrDefaultAsync(u =>  u.isActive == true && u.LID != id && u.LocationName.ToLower() == name.ToLower());
+                    if (site != null)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                else
+                {
+                    var site = await alexSupportDB.Locations.FirstOrDefaultAsync(u => u.LocationName.ToLower() == name.ToLower() && u.isActive == true);
+                    if (site != null)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error in Check If Site Code Exist: {ex.Message}", ex);
+
+                return false;
+            }
+        }
     }
 }

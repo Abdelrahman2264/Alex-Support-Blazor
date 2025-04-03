@@ -1,0 +1,120 @@
+﻿@page "/Categories/Create"
+@page "/Categories/Update/{id:int}"
+@inject ICategoryRepository _ICategory
+@inject NavigationManager _navigationManager
+@inject IJSRuntime JS
+@using AlexSupport.ViewModels;
+@rendermode InteractiveServer
+<PageTitle>Category Types</PageTitle>
+
+@if (isProcessing)
+{
+    <div class=" position-absolute w-75 h-75 d-flex flex-column align-items-center bg-white justify-content-center ">
+        <img src="/images/Loading.gif" alt="Loading..." />
+    </div>
+}
+else
+{
+    <div class="card shadow  m-4 ">
+        <div class="card-header bg-dark bg-gradient ml-1 pt-3 ">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">@(Types.CID == 0 ? "Create Type" : "Update Type")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+
+            <EditForm Model="Types" FormName="TypeUpsertForm" OnValidSubmit="UpsertType">
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+                @if (isTypeExist)
+                {
+
+                    <ul>
+                        <li class="text-danger">@TypeExistErrorMessage</li>
+                    </ul>
+                }
+
+                <div class="form-floating py-3 col-12 ">
+                    <InputText @bind-Value="Types.CategoryName" class="form-control border-2" id="Name" />
+                    <label for="Name">Name</label>
+                    <ValidationMessage For="@(()=>Types.CategoryName)" />
+                </div>
+                <div class="row mt-3 d-flex justify-content-end">
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-success" disabled="@isProcessing">
+                            @(Types.CID == 0 ? "Create" : "Update")
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <a href="Types" class="btn btn-dark">Back To List</a>
+                    </div>
+                </div>
+
+
+            </EditForm>
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    [SupplyParameterFromForm]
+    private Category Types { get; set; } = new Category();
+    private bool isProcessing { get; set; } = false;
+
+
+    private string TypeExistErrorMessage { get; set; } = string.Empty;
+    private bool isTypeExist { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadType();
+        isProcessing = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadType()
+    {
+        if (Id > 0)
+        {
+            Types = await _ICategory.GetCategoryAsync(Id);
+
+        }
+    }
+
+    private async Task UpsertType()
+    {
+        TypeExistErrorMessage = string.Empty;
+        isTypeExist = false;
+        bool flag = false;
+        isTypeExist = await _ICategory.CheckIfCategoryExist(Types.CategoryName, Types.CID);
+        if (isTypeExist)
+        {
+            TypeExistErrorMessage = "Category Type Is Exist !";
+            isProcessing = false;
+            return;
+        }
+        isProcessing = true;
+        if (Types.CID == 0)
+        {
+            await _ICategory.CreateCategoryAsync(Types);
+            JS?.ToastrSuccess("Category Type Created Successfully");
+            flag = true;
+        }
+        else
+        {
+            await _ICategory.UpdateCategoryAsync(Types);
+            JS?.ToastrSuccess("Category Type Updated Created Successfully");
+            flag = true;
+        }
+        isProcessing = false;
+        _navigationManager.NavigateTo("Types");
+        if (!flag)
+        {
+            JS?.ToastrError("Something Get Wrong Please Try Again !!");
+        }
+    }
+}
+
+

@@ -1,0 +1,125 @@
+﻿@page "/Departments/Create"
+@page "/Departments/Update/{id:int}"
+@inject IDepartmentRepository _IDepartment
+@inject NavigationManager _navigationManager
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+@using AlexSupport.ViewModels
+<PageTitle>Departments</PageTitle>
+
+@if (isProcessing)
+{
+    <div class=" position-absolute w-75 h-75 d-flex flex-column align-items-center bg-white justify-content-center ">
+        <img src="/images/Loading.gif" alt="Loading..." />
+    </div>
+}
+else
+{
+    <div class="card shadow  m-4 ">
+        <div class="card-header bg-dark bg-gradient ml-1 pt-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">@(Departments.DID == 0 ? "Create Department " : "Update Department ")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+
+            <EditForm Model="Departments" FormName="DepartmentUpsertForm" OnValidSubmit="UpsertDepartment">
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+                @if (isDepartmentExist)
+                {
+                    <ul>
+                        <li class="text-danger">@DepartmentExistErrorMessage</li>
+                    </ul>
+                }
+                <div class="form-floating py-3 col-12">
+                    <InputText @bind-Value="Departments.DepartmentName" class="form-control border-2" id="Name" />
+                    <label for="Name">Name</label>
+                    <ValidationMessage For="@(()=>Departments.DepartmentName)" />
+                </div>
+                <div class="row mt-3 d-flex justify-content-end">
+                    <div class="col-auto">
+                        <button type="submit" class="btn  btn-success form-control" disabled="@isProcessing">@(Departments.DID == 0 ? "Create" : "Update")</button>
+
+                    </div>
+                    <div class="col-auto">
+                        <a href="Departments" class="btn btn-secondary   form-control">Back To List</a>
+                    </div>
+
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    [SupplyParameterFromForm]
+    private Department Departments { get; set; } = new Department();
+    private bool isProcessing { get; set; } = false;
+    private Department Temp { get; set; } = new Department();
+    private string DepartmentExistErrorMessage { get; set; } = string.Empty;
+    private bool isDepartmentExist { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isProcessing = true;
+        await LoadType();
+        isProcessing = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadType()
+    {
+        if (Id > 0)
+        {
+            Departments = await _IDepartment.GetDepartmentAsync(Id);
+            Temp = Departments;
+
+        }
+    }
+
+    private async void UpsertDepartment()
+    {
+        DepartmentExistErrorMessage = string.Empty;
+        isDepartmentExist = false;
+
+        isDepartmentExist = await _IDepartment.CheckIfDepartmentExist(Departments.DepartmentName, Departments.DID);
+        if (isDepartmentExist)
+        {
+            DepartmentExistErrorMessage = "This Department IS Already Exist";
+            isProcessing = false;
+            return;
+
+        }
+        isProcessing = true;
+
+        bool flag = false;
+        if (Departments.DID == 0)
+        {
+            await _IDepartment.CreateDepartmentAsync(Departments);
+            JS?.ToastrSuccess("Department  Created Successfully");
+            flag = true;
+
+        }
+        else
+        {
+            await _IDepartment.UpdateDepartmentAsync(Departments);
+            JS?.ToastrSuccess("Department  Updated Created Successfully");
+            flag = true;
+        }
+        isProcessing = false;
+        _navigationManager.NavigateTo("Departments");
+        if (!flag)
+        {
+
+            JS?.ToastrError("Something Get Wrong Please Try Again !!");
+        }
+    }
+
+
+}
+
+
