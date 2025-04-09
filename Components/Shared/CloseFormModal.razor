@@ -1,0 +1,283 @@
+﻿<div class="modal fade align-content-center" id="CloseTicket" tabindex="-1" aria-labelledby="assignTicketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 p-sm-4">
+                <EditForm Model="ticket" OnSubmit="ConfirmationClicked">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger mb-3" />
+
+                    <!-- Comment Field -->
+                    <div class="mb-3 mb-sm-4">
+                        <label class="form-label">Comment</label>
+                        <InputText @bind-Value="ticket.Comments"
+                                   class="form-control"
+                                   required />
+                        <ValidationMessage For="@(() => ticket.Comments)" class="text-danger" />
+                        <div class="form-text small">Enter note or reason for closing the ticket</div>
+                    </div>
+
+                    <!-- Status Selection -->
+                    <div class="mb-3 mb-sm-4">
+                        <label class="form-label">Ticket Status*</label>
+                        <div class="status-selection">
+                            <div class="status-option @(ticket.IsSolved == true ? "selected" : "")"
+                                 data-status="solved"
+                                 @onclick="() => { ticket.IsSolved = true; StateHasChanged(); }">
+                                <input type="radio"
+                                       id="status_solved"
+                                       name="statusSelection"
+                                       value="true"
+                                       checked="@ticket.IsSolved" />
+                                <label for="status_solved" class="status-card">
+                                    <div class="status-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="status-details">
+                                        <div class="status-name">Solved</div>
+                                        <div class="status-description text-muted small">Issue resolved</div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="status-option @(!ticket.IsSolved == true ? "selected" : "")"
+                                 data-status="unsolved"
+                                 @onclick="() => { ticket.IsSolved = false; StateHasChanged(); }">
+                                <input type="radio"
+                                       id="status_unsolved"
+                                       name="statusSelection"
+                                       value="false"
+                                       checked="@(!ticket.IsSolved)" />
+                                <label for="status_unsolved" class="status-card">
+                                    <div class="status-icon">
+                                        <i class="fas fa-times-circle"></i>
+                                    </div>
+                                    <div class="status-details">
+                                        <div class="status-name">Unsolved</div>
+                                        <div class="status-description text-muted small">Needs attention</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <ValidationMessage For="@(() => ticket.IsSolved)" class="text-danger small" />
+                    </div>
+
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            Close Ticket
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Base Styling */
+    .modal-content {
+        border-radius: 0.5rem;
+    }
+
+    /* Status Selection - Mobile First Approach */
+    .status-selection {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .status-option {
+        position: relative;
+    }
+
+        .status-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+    .status-card {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border: 2px solid transparent;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: #f8f9fa;
+    }
+
+    .status-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+    }
+
+    .status-name {
+        font-weight: 600;
+        margin-bottom: 0.1rem;
+        font-size: 0.95rem;
+    }
+
+    .status-description {
+        font-size: 0.75rem;
+    }
+
+    /* Hover States */
+    .status-option[data-status="solved"]:hover .status-card {
+        border-color: rgba(25, 135, 84, 0.5);
+        background-color: rgba(25, 135, 84, 0.05);
+    }
+
+    .status-option[data-status="unsolved"]:hover .status-card {
+        border-color: rgba(220, 53, 69, 0.5);
+        background-color: rgba(220, 53, 69, 0.05);
+    }
+
+    /* Selected States */
+    .status-option[data-status="solved"].selected .status-card {
+        border-color: #198754;
+        background-color: rgba(25, 135, 84, 0.1);
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.1);
+    }
+
+    .status-option[data-status="unsolved"].selected .status-card {
+        border-color: #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.1);
+    }
+
+    .status-option[data-status="solved"] .status-icon {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+
+    .status-option[data-status="unsolved"] .status-icon {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    /* Tablet and Larger Screens */
+    @@media (min-width: 576px) {
+        .status-selection {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-card {
+            padding: 1rem;
+        }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+            margin-right: 1rem;
+        }
+
+        .status-name {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-description {
+            font-size: 0.8rem;
+        }
+
+        .modal-footer button {
+            font-size: 1rem;
+            padding: 0.375rem 0.75rem;
+        }
+    }
+
+    /* Small Phones (under 400px) */
+    @@media (max-width: 400px) {
+        .modal-body {
+            padding: 1rem 0.75rem;
+        }
+
+        .status-card {
+            padding: 0.6rem;
+        }
+
+        .status-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .status-name {
+            font-size: 0.9rem;
+        }
+
+        .status-description {
+            font-size: 0.7rem;
+        }
+
+        .modal-footer {
+            padding: 0.75rem;
+        }
+
+            .modal-footer button {
+                font-size: 0.875rem;
+                padding: 0.25rem 0.5rem;
+            }
+    }
+
+    /* Very Small Phones (under 350px) */
+    @@media (max-width: 350px) {
+        .status-icon {
+            width: 28px;
+            height: 28px;
+            font-size: 0.9rem;
+        }
+
+        .status-name {
+            font-size: 0.85rem;
+        }
+
+        .form-text, .status-description, .text-danger {
+            font-size: 0.65rem;
+        }
+    }
+</style>
+
+@code {
+    private bool isSubmitting = false;
+
+    [Parameter]
+    public string Title { get; set; } = "Close Ticket";
+
+    [Parameter]
+    public Ticket ticket { get; set; } = new Ticket();
+
+    [Parameter]
+    public EventCallback<Ticket> OnModalConfirmation { get; set; }
+
+    private async Task ConfirmationClicked()
+    {
+        isSubmitting = true;
+        try
+        {
+            await OnModalConfirmation.InvokeAsync(ticket);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

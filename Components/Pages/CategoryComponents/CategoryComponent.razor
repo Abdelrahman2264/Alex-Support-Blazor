@@ -83,7 +83,7 @@ else
 @code {
     private bool isProcessing { get; set; } = false;
     private IEnumerable<Category> Types { get; set; } = new List<Category>();
-    private int DeletedId { get; set; }
+    private int AssignId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,7 +98,7 @@ else
     }
     private async Task HandleDelete(int id)
     {
-        DeletedId = id;
+        AssignId = id;
         await JS.InvokeVoidAsync("ShowConfirmationModal");
     }
 
@@ -106,9 +106,9 @@ else
     {
         isProcessing = true;
         await JS.InvokeVoidAsync("HideConfirmationModal");
-        if (isConfirmed && DeletedId != 0)
+        if (isConfirmed && AssignId != 0)
         {
-            var result = await _ICategory.DeleteCategoryAsync(DeletedId);
+            var result = await _ICategory.DeleteCategoryAsync(AssignId);
             if (result)
                 JS?.ToastrSuccess("Category Type Delete Successfully");
             else
@@ -117,7 +117,7 @@ else
             await LoadTypes();
         }
 
-        DeletedId = 0;
+        AssignId = 0;
         isProcessing = false;
     }
 }

@@ -21,3 +21,16 @@ function ShowAssignTicketFormModal() {
 function HideAssignTicketFormModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('AssignTicket')).hide();
 }
+function ShowCloseTicketFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('CloseTicket')).show();
+}
+
+function HideCloseTicketFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('CloseTicket')).hide();
+}function ShowAddSolutionFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('AddSolution')).show();
+}
+
+function HideAddSolutionFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('AddSolution')).hide();
+}

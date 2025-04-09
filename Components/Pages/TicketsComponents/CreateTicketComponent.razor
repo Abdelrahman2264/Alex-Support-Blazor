@@ -8,12 +8,12 @@
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
+
 <h3 class="page-title">Create New Ticket</h3>
 <div class="ticket-form-container">
     <EditForm Model="@ticket" OnValidSubmit="HandleSubmit" FormName="CreateTicket">
         <DataAnnotationsValidator />
         <ValidationSummary class="validation-summary" />
-
         <div class="form-grid">
             <!-- First Row -->
             <div class="form-group">
@@ -21,54 +21,57 @@
                 <InputText @bind-Value="ticket.Subject" class="form-control" id="subject" />
                 <ValidationMessage For="@(() => ticket.Subject)" class="validation-message" />
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="category" class="form-label">Category*</label>
-                <InputSelect @bind-Value="ticket.CategoryID" class="form-control" id="category">
-                    <option value="">Select Category</option>
-                    @foreach (var category in Categories)
-                    {
-                        <option value="@category.CID">@category.CategoryName</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => ticket.CategoryID)" class="validation-message" />
-            </div>
+        <div class="form-group">
+            <label for="category" class="form-label">Category*</label>
+            <InputSelect @bind-Value="ticket.CategoryID" class="form-control" id="category">
+                <option value="">Select Category</option>
+                @foreach (var category in Categories)
+                {
+                    <option value="@category.CID">@category.CategoryName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => ticket.CategoryID)" class="validation-message" />
+        </div>
 
-            <!-- Second Row -->
-            <div class="form-group">
-                <label for="location" class="form-label">Location*</label>
-                <InputSelect @bind-Value="ticket.LID" class="form-control" id="location">
-                    <option value="">Select Location</option>
-                    @foreach (var location in Locations)
-                    {
-                        <option value="@location.LID">@location.LocationName</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => ticket.LID)" class="validation-message" />
-            </div>
 
-            <div class="form-group">
-                <label for="priority" class="form-label">Priority*</label>
-                <InputSelect @bind-Value="ticket.Priority" class="form-control" id="priority">
-                    <option value="0">Select Priority</option>
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Urgent">Urgent</option>
-                </InputSelect>
-                <ValidationMessage For="@(() => ticket.Priority)" class="validation-message" />
-            </div>
+        <!-- Second Row -->
+        <div class="form-group">
+            <label for="location" class="form-label">Location*</label>
+            <InputSelect @bind-Value="ticket.LID" class="form-control" id="location">
+                <option value="">Select Location</option>
+                @foreach (var location in Locations)
+                {
+                    <option value="@location.LID">@location.LocationName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => ticket.LID)" class="validation-message" />
+        </div>
 
-            <!-- Description -->
-            <div class="form-group full-width">
-                <label for="description" class="form-label">Issue Description*</label>
-                <InputTextArea @bind-Value="ticket.Issue" class="form-control" id="description" rows="5" />
-                <ValidationMessage For="@(() => ticket.Issue)" class="validation-message" />
-            </div>
+        <div class="form-group">
+            <label for="priority" class="form-label">Priority*</label>
+            <InputSelect @bind-Value="ticket.Priority" class="form-control" id="priority">
+                <option value="0">Select Priority</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => ticket.Priority)" class="validation-message" />
+        </div>
 
-            <!-- Image Upload -->
-            <div class="form-group full-width">
-                @if (string.IsNullOrEmpty(imagePreviewUrl)){
+        <!-- Description -->
+        <div class="form-group full-width">
+            <label for="description" class="form-label">Issue Description*</label>
+            <InputTextArea @bind-Value="ticket.Issue" class="form-control" id="description" rows="5" />
+            <ValidationMessage For="@(() => ticket.Issue)" class="validation-message" />
+        </div>
+
+        <!-- Image Upload -->
+        <div class="form-group full-width">
+            @if (string.IsNullOrEmpty(imagePreviewUrl))
+            {
                 <label class="form-label">Attach Image (Optional)</label>
                 <div class="file-upload-container">
                     <InputFile class="file-upload-input" OnChange="HandleImageUpload" accept=".png,.jpg,.jpeg,.gif" />
@@ -85,38 +88,37 @@
                         </div>
                     }
                 </div>
-                }
-                @if (!string.IsNullOrEmpty(imagePreviewUrl))
-                {
-                    <div class="image-preview">
-                        <div class="preview-container">
-                            <img src="@imagePreviewUrl" alt="Preview" />
-                            <button type="button" class="btn-remove-image" @onclick="RemoveImage">
-                                <i class="bi bi-x-circle"></i>
-                            </button>
-                        </div>
+            }
+            @if (!string.IsNullOrEmpty(imagePreviewUrl))
+            {
+                <div class="image-preview">
+                    <div class="preview-container">
+                        <img src="@imagePreviewUrl" alt="Preview" />
+                        <button type="button" class="btn-remove-image" @onclick="RemoveImage">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
                     </div>
-                }
-            </div>
+                </div>
+            }
+        </div>
 
-            <!-- Form Actions -->
-            <div class="form-actions full-width">
-                <button type="button" class="btn btn-cancel" @onclick="Cancel">
-                    <i class="bi bi-x-lg"></i> Cancel
-                </button>
-                <button type="submit" class="btn btn-submit" disabled="@isSubmitting">
-                    @if (isSubmitting)
-                    {
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                        <span>Processing...</span>
-                    }
-                    else
-                    {
-                        <i class="bi bi-check-lg"></i>
-                        <span>Submit Ticket</span>
-                    }
-                </button>
-            </div>
+        <!-- Form Actions -->
+        <div class="form-actions full-width">
+            <button type="button" class="btn btn-cancel" @onclick="Cancel">
+                <i class="bi bi-x-lg"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-submit" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    <span>Processing...</span>
+                }
+                else
+                {
+                    <i class="bi bi-check-lg"></i>
+                    <span>Submit Ticket</span>
+                }
+            </button>
         </div>
     </EditForm>
 </div>
@@ -156,9 +158,11 @@
             background-color: #adb5bd;
             cursor: not-allowed;
         }
+
 </style>
 
 @code {
+    private List<IBrowserFile> Attachments = new();
     private IEnumerable<Category> Categories = new List<Category>();
     private IEnumerable<Location> Locations = new List<Location>();
     [SupplyParameterFromForm]
@@ -266,7 +270,6 @@
             StateHasChanged();
         }
     }
-
     private void Cancel()
     {
         Navigation.NavigateTo("/tickets");

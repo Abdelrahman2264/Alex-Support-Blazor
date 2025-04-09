@@ -73,7 +73,7 @@ else
 @code {
     private bool isProcessing { get; set; } = false;
     private IEnumerable<Location> Sites { get; set; } = new List<Location>();
-    private int DeletedId { get; set; }
+    private int AssignId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,7 +88,7 @@ else
     }
     private async Task HandleDelete(int id)
     {
-        DeletedId = id;
+        AssignId = id;
         await JS.InvokeVoidAsync("ShowConfirmationModal");
     }
 
@@ -96,9 +96,9 @@ else
     {
         isProcessing = true;
         await JS.InvokeVoidAsync("HideConfirmationModal");
-        if (isConfirmed && DeletedId != 0)
+        if (isConfirmed && AssignId != 0)
         {
-            var result = await _ISite.DeleteLocationAsync(DeletedId);
+            var result = await _ISite.DeleteLocationAsync(AssignId);
             if (result)
                 JS?.ToastrSuccess("Location Site Delete Successfully");
             else
@@ -107,7 +107,7 @@ else
             await LoadTypes();
         }
 
-        DeletedId = 0;
+        AssignId = 0;
         isProcessing = false;
     }
 }

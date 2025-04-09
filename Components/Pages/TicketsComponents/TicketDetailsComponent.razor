@@ -1,0 +1,383 @@
+﻿@page "/tickets/ticketdetails/{TicketId:int}"
+@inject ITicketRepository _ITicket
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject IAppUserRepoistory _IAppUser
+<BsModal Title="Are You Sure You Want Escalte This Ticket To The Leader ?" ButtonText="Confirm" ButtonBootstrapStyle="btn-warning"
+         OnModalConfirmation="ConfirmEscalate_Click" />
+<AssignFormModal Title="Assign Ticket"
+                 OnModalConfirmation="ConfirmAssign_Click"
+                 Agents="agents" />
+<CloseFormModal Title="Close Ticket"
+                OnModalConfirmation="ConfirmClose_Click" />
+<AddSolutionComponent Title="Add solution to this ticket"
+                      OnModalConfirmation="ConfirmSolution_Click" />
+
+@if (ticket == null)
+{
+    <div class="loading">Loading ticket details...</div>
+}
+else
+{
+    <div class="ticket-container">
+        <div class="ticket-header">
+            <h3>Ticket Details</h3>
+            <a class="btn btn-back" href="tickets">
+                &larr; Back to Tickets
+            </a>
+        </div>
+
+        <div class="ticket-grid">
+            <!-- User Information Section -->
+            <div class="user-info-section">
+                <h4>User Information</h4>
+                <div class="info-card">
+                    <div class="info-row">
+                        <span class="info-label">Full Name:</span>
+                        <span class="info-value">@(ticket.User?.Fname ?? "N/A") @(ticket.User?.Lname ?? "")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Job Title:</span>
+                        <span class="info-value">@(ticket.User?.JobTitle ?? "N/A")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Department:</span>
+                        <span class="info-value">@(ticket.User?.Department?.DepartmentName ?? "N/A")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">@(ticket.User?.Email ?? "N/A")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone:</span>
+                        <span class="info-value">@(ticket.User?.Phone ?? "N/A")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Fingerprint:</span>
+                        <span class="info-value">@(ticket.User?.Fingerprint ?? 0)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Information Section -->
+            <div class="ticket-info-section">
+                <div class="ticket-id-status">
+                    <span class="ticket-id">Ticket @ticket.TID</span>
+                    <span class="badge status-@(ticket.Status?.ToLower())">@ticket.Status</span>
+                    <span class="badge priority-@(ticket.Priority?.ToLower() ?? "medium")">@ticket.Priority Priority</span>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-row">
+                        <span class="info-label">Subject:</span>
+                        <span class="info-value">@ticket.Subject</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Category:</span>
+                        <span class="info-value">@(ticket.category?.CategoryName ?? "N/A")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Location:</span>
+                        <span class="info-value">@(ticket.location?.LocationName ?? "N/A")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Opened Date:</span>
+                        <span class="info-value">@(ticket.OpenDate.ToString("MMM dd, yyyy hh:mm tt"))</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Issue:</span>
+                        <span class="info-value">@ticket.Issue</span>
+                    </div>
+
+
+                </div>
+            </div>
+            <!-- Add this inside your ticket-grid div, perhaps after the ticket-info-section -->
+            <!-- Assignment Information Section -->
+            @if (ticket.Status == "Assigned" || ticket.Status == "Escalated" || ticket.Status == "Closed")
+            {
+                <div class="action-section assignment-info-section">
+                    <h4>Assignment Details</h4>
+                    <div class="info-card">
+                        <div class="info-row">
+                            <span class="info-label">Assigned Date:</span>
+                            <span class="info-value">@(ticket.Assign_Date?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Assigned Agent:</span>
+                            <span class="info-value">@(ticket.Agent?.Fname ?? "N/A") @(ticket.Agent?.Lname ?? "")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Agent Email:</span>
+                            <span class="info-value">@(ticket.Agent?.Email ?? "N/A")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Agent Phone:</span>
+                            <span class="info-value">@(ticket.Agent?.MobilePhone ?? "N/A")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Expected Completion:</span>
+                            @{
+                                var CompleteDate = AddMinutesToDate(ticket.Assign_Date ?? DateTime.Now, ticket.Due_Minutes ?? 0);
+                                <span class="info-value">@CompleteDate</span>
+                            }
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Time Spent:</span>
+                            <span class="info-value">@(CalculateTimeSpent(ticket))</span>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Closing Information Section -->
+            @if (ticket.Status == "Closed")
+            {
+                <div class="action-section closing-info-section">
+                    <h4>Closing Details</h4>
+                    <div class="info-card">
+                        <div class="info-row">
+                            <span class="info-label">Closed Date:</span>
+                            <span class="info-value">@ticket.CloseDate?.ToString("MMM dd, yyyy hh:mm tt")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">
+                                <span class="badge @(ticket.IsSolved == true ? "status-solved" : "status-unsolved")">
+                                    @(ticket.IsSolved == true ? "Solved" : "Unsolved")
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">User Rating:</span>
+                            <span class="info-value">
+                                @if (ticket.UserRate.HasValue)
+                                {
+                                    <div class="rating-display">
+                                        <div class="stars-display">
+                                            @for (int i = 1; i <= ticket.UserRate; i++)
+                                            {
+                                                <i class="bi bi-star-fill"></i>
+                                            }
+                                            <span class="rating-text">(@ticket.UserRate/5)</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="no-rating">Not rated</span>
+                                }
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Speed Rating:</span>
+                            <span class="info-value">
+                                @if (ticket.TicketRate.HasValue)
+                                {
+                                    var percentage = ticket.TicketRate;
+                                    <div class="animated-progress-container">
+                                        <div class="animated-progress-bar"
+                                             style="width:@percentage%; background-color:@GetProgressColor(percentage);">
+                                            <span class="progress-text ">@percentage%</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="no-rating">Not rated</span>
+                                }
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Solution:</span>
+                            <span class="info-value">@ticket.Solution</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Comments:</span>
+                            <span class="info-value">@ticket.Comments</span>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="image-section">
+                <h4>Ticket Image</h4>
+                <div class="info-card">
+                    @if (ticket?.ImageData != null)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(ticket.ImageData)"
+                             class="ticket-image"
+                             
+                             alt="Ticket image" />
+                    }
+                    else
+                    {
+                        <div class="no-image">No image available</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Ticket Actions -->
+        <div class="ticket-actions">
+            @if (ticket.Status != "Closed")
+            {
+                <button class="btn btn-primary" @onclick="HandleAssign">@(ticket.Status == "Assigned" ? "Re-Assign" : "Assign")</button>
+                @if (ticket.Status == "Assigned")
+                {
+                    <button class="btn btn-warning" @onclick="HandleEscalate">Escalate</button>
+                }
+                <button class="btn btn-secondary" @onclick="HandleClose">Close Ticket</button>
+            }
+            @if (ticket.Status == "Closed" && ticket.IsSolved == true)
+            {
+                <button class="btn btn-info" @onclick="HandleAddSolution">Add Solution</button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int TicketId { get; set; }
+
+    private Ticket? ticket { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            ticket = await _ITicket.GetTicketByIdAsync(TicketId);
+            agents = await _IAppUser.GetAllAgentsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading ticket: {ex.Message}");
+        }
+    }
+    private IEnumerable<AppUser>? agents = new List<AppUser>();
+
+    private async Task HandleAssign()
+    {
+        await JS.InvokeVoidAsync("ShowAssignTicketFormModal");
+    }
+
+    private async Task ConfirmAssign_Click(Ticket ticket)
+    {
+        await JS.InvokeVoidAsync("HideAssignTicketFormModal");
+        if (TicketId != 0)
+        {
+            var temp = await _ITicket.GetTicketByIdAsync(TicketId);
+            var result = await _ITicket.AssignTicketAsync(ticket, TicketId);
+            if (result)
+            {
+                JS?.ToastrSuccess("Ticket Assigned Successfully");
+                NavigationManager.NavigateTo("/tickets");
+            }
+            else
+                JS?.ToastrError("Error Encountered while Assigning");
+        }
+    }
+
+    private async Task HandleClose()
+    {
+        await JS.InvokeVoidAsync("ShowCloseTicketFormModal");
+    }
+
+    private async Task ConfirmClose_Click(Ticket ticket)
+    {
+        await JS.InvokeVoidAsync("HideCloseTicketFormModal");
+        if (TicketId != 0)
+        {
+            var temp = await _ITicket.GetTicketByIdAsync(TicketId);
+            var result = await _ITicket.CloseTicketAsync(ticket, TicketId);
+            if (result)
+            {
+                JS?.ToastrSuccess("Ticket Closed Successfully");
+                NavigationManager.NavigateTo("/tickets");
+            }
+            else
+                JS?.ToastrError("Error Encountered while Assigning");
+        }
+    }
+
+    private async Task HandleEscalate()
+    {
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
+    }
+
+    private async Task ConfirmEscalate_Click(bool isConfirmed)
+    {
+        await JS.InvokeVoidAsync("HideConfirmationModal");
+        if (isConfirmed && TicketId != 0)
+        {
+            var result = await _ITicket.EsclateTicketAsync(ticket, TicketId);
+            if (result)
+            {
+                JS?.ToastrSuccess("Ticket Escalted Successfully");
+            }
+            else
+                JS?.ToastrError("Error Encountered while deleting");
+        }
+    }
+
+    private async Task HandleAddSolution()
+    {
+        await JS.InvokeVoidAsync("ShowAddSolutionFormModal");
+    }
+
+    private async Task ConfirmSolution_Click(Ticket ticket)
+    {
+        await JS.InvokeVoidAsync("HideAddSolutionFormModal");
+        if (TicketId != 0)
+        {
+            var temp = await _ITicket.GetTicketByIdAsync(TicketId);
+            var result = await _ITicket.AddSolutionToTicketAsync(ticket, TicketId);
+            if (result)
+            {
+                JS?.ToastrSuccess("Solution Added Successfully");
+                NavigationManager.NavigateTo("/tickets");
+            }
+            else
+                JS?.ToastrError("Error Encountered while Assigning");
+        }
+    }
+
+    public DateTime AddMinutesToDate(DateTime originalDate, int minutesToAdd)
+    {
+        return originalDate.AddMinutes(minutesToAdd);
+    }
+
+    private string CalculateTimeSpent(Ticket ticket)
+    {
+        if (ticket.Assign_Date == null) return "N/A";
+
+        var endDate = ticket.Status == "Closed" ? ticket.CloseDate : DateTime.Now;
+        var timeSpent = endDate - ticket.Assign_Date.Value;
+
+        if (timeSpent?.TotalDays >= 1)
+            return $"{(int)timeSpent?.TotalDays} days, {timeSpent?.Hours} hours";
+        if (timeSpent?.TotalHours >= 1)
+            return $"{(int)timeSpent?.TotalHours} hours, {timeSpent?.Minutes} minutes";
+
+        return $"{timeSpent?.Minutes} minutes";
+    }
+
+
+    public string GetProgressColor(decimal? percentage)
+    {
+        if (percentage >= 70)
+            return "#28a745"; // Green
+        if (percentage >= 50)
+            return "#ffc107"; // Yellow
+        return "#dc3545"; // Red
+    }
+
+}
+

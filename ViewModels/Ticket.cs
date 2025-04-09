@@ -40,9 +40,9 @@ namespace AlexSupport.ViewModels
         [Display(Name = "Status")]
         public  string Status { get; set; } //Open/Closed
 
-        [Column(TypeName = "NVARCHAR(50)")]
-        [Display(Name = "Result")]
-        public string? Result { get; set; }
+       
+        [Display(Name = "IsSolved")]
+        public bool? IsSolved { get; set; }
 
         [Column(TypeName = "datetime2(0)")]
         [Required(ErrorMessage = "Date not defined")]

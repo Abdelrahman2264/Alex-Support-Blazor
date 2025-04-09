@@ -108,10 +108,7 @@ namespace AlexSupport.Data
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .HasColumnName("Status");
-                entity.Property(e => e.Result)
-                    .HasMaxLength(50)
-                    .IsUnicode(false)
-                    .HasColumnName("Result");
+     
                 entity.Property(e => e.OpenDate)
                     .HasColumnType("datetime2(0)")
                     .HasColumnName("OpenDate");

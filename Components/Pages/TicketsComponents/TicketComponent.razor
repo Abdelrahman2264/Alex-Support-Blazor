@@ -1,4 +1,5 @@
 ﻿@page "/Tickets"
+@page "/tickets/{TicketStatus}"
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject ITicketRepository _ITicket
@@ -6,10 +7,9 @@
 @rendermode InteractiveServer
 @inject IJSRuntime JS
 
-<AssignFormModal Title="Assign Ticket"
-        
+<AssignFormModal Title="@(!string.IsNullOrWhiteSpace(TicketStatus) ? "Re-Assign Ticket" : "Assign Ticket")"
                  OnModalConfirmation="ConfirmAssign_Click"
-                 Agents="agents"/>
+                 Agents="agents" />
 <div class="tickets-container">
     @if (tickets == null)
     {
@@ -66,7 +66,13 @@
                                 }
 
                             </div>
-
+                            @if (ticket.Status == "Assigned")
+                            {
+                                <div class="mb-2">
+                                    <span class="text-muted">Assign Date:</span>
+                                    <span>@ticket.Assign_Date.ToString()</span>
+                                </div>
+                            }
                         </div>
                         <div class="col-md-6">
                             <div class="mb-2">
@@ -77,6 +83,14 @@
                                 <span class="text-muted">Subject:</span>
                                 <span>@ticket.Subject</span>
                             </div>
+                            @if (ticket.Status == "Assigned")
+                            {
+                                <div class="mb-2">
+                                    <span class="text-muted">Expected Time:</span>
+                                    <span>@ticket.Due_Minutes Minutes</span>
+                                </div>
+                            }
+
 
                         </div>
                     </div>
@@ -87,8 +101,20 @@
                     </div>
 
                     <div class="card-footer p-3 d-flex justify-content-end gap-2">
-                        <button class="btn btn-sm btn-outline-primary">Details</button>
-                        <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">Assign</button>
+                        <a href="tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">Details</a>
+                        <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">
+                            @if (ticket.Status == "Assigned")
+                            {
+                                <span>Re-Assign</span>
+                            }
+                            else
+                            {
+                                <span>Assign</span>
+                            }
+
+
+
+                        </button>
                     </div>
                 </div>
             </div>
@@ -157,9 +183,13 @@
     }
 </style>
 
+
+
 @code {
     private IEnumerable<Ticket>? tickets = new List<Ticket>();
     private IEnumerable<AppUser>? agents = new List<AppUser>();
+    [Parameter]
+    public string TicketStatus { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -167,7 +197,21 @@
     }
     private async Task LoadTickets()
     {
-        tickets = await _ITicket.GetAllOpendTicketsAsync();
+        if (TicketStatus == "Assigned")
+        {
+            tickets = await _ITicket.GetAllOpendTicketsAsync();
+            tickets = tickets.Where(u => u.Status == "Assigned");
+        }
+        else if (TicketStatus == "Closed")
+        {
+            tickets = await _ITicket.GetAllClosedTicketsAsync();
+
+        }
+        else
+        {
+            tickets = await _ITicket.GetAllOpendTicketsAsync();
+
+        }
         agents = await _IAppUser.GetAllAgentsAsync();
     }
     private string GetStatusClass(string status) => status switch
@@ -185,10 +229,10 @@
         "Medium" => "badge-priority-low",
         _ => "bg-secondary"
     };
-    private int DeletedId { get; set; }
+    private int AssignId { get; set; }
     private async Task HandleAssign(int id)
     {
-        DeletedId = id;
+        AssignId = id;
         await JS.InvokeVoidAsync("ShowAssignTicketFormModal"); // Show modal
     }
 
@@ -196,10 +240,10 @@
     {
         await JS.InvokeVoidAsync("HideAssignTicketFormModal"); // Hide modal
 
-        if (DeletedId != 0)
+        if (AssignId != 0)
         {
-            var temp = await _ITicket.GetTicketByIdAsync(DeletedId);
-            var result = await _ITicket.AssignTicketAsync(ticket, DeletedId);
+            var temp = await _ITicket.GetTicketByIdAsync(AssignId);
+            var result = await _ITicket.AssignTicketAsync(ticket, AssignId);
             if (result)
             {
                 JS?.ToastrSuccess("Ticket Assigned Successfully");
@@ -210,6 +254,6 @@
 
             await LoadTickets();
         }
-        DeletedId = 0;
+        AssignId = 0;
     }
 }
