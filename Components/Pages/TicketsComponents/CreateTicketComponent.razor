@@ -20,32 +20,34 @@
                 <label for="subject" class="form-label">Subject*</label>
                 <InputText @bind-Value="ticket.Subject" class="form-control" id="subject" />
                 <ValidationMessage For="@(() => ticket.Subject)" class="validation-message" />
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="category" class="form-label">Category*</label>
                 <InputSelect @bind-Value="ticket.CategoryID" class="form-control" id="category">
-                    <option value="">Select Category</option>
-                    @foreach (var category in Categories)
-                    {
-                        <option value="@category.CID">@category.CategoryName</option>
-                    }
-                </InputSelect>
+                        <option value="">Select Category</option>
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category.CID">@category.CategoryName</option>
+                        }
+                    </InputSelect>
                 <ValidationMessage For="@(() => ticket.CategoryID)" class="validation-message" />
+                </div>
             </div>
 
             <!-- Second Row -->
             <div class="form-group">
                 <label for="location" class="form-label">Location*</label>
                 <InputSelect @bind-Value="ticket.LID" class="form-control" id="location">
-                    <option value="">Select Location</option>
-                    @foreach (var location in Locations)
-                    {
-                        <option value="@location.LID">@location.LocationName</option>
-                    }
-                </InputSelect>
+                        <option value="">Select Location</option>
+                        @foreach (var location in Locations)
+                        {
+                            <option value="@location.LID">@location.LocationName</option>
+                        }
+                    </InputSelect>
                 <ValidationMessage For="@(() => ticket.LID)" class="validation-message" />
-            </div>
+                </div>
 
             <div class="form-group">
                 <label for="priority" class="form-label">Priority*</label>
@@ -76,13 +78,13 @@
                         <i class="bi bi-cloud-arrow-up"></i>
                         <span>Click to browse or drag files here</span>
                         <small class="file-size-info">Max file size: 5MB</small>
-                    </div>
+                </div>
                     @if (isUploading)
                     {
                         <div class="upload-progress">
                             <div class="progress-bar" role="progressbar"></div>
                             <span>Uploading...</span>
-                        </div>
+            </div>
                     }
                 </div>
                 }
@@ -150,15 +152,16 @@
 
         .btn-submit:hover {
             background-color: var(--secondary-color);
-        }
+    }
 
         .btn-submit:disabled {
             background-color: #adb5bd;
             cursor: not-allowed;
-        }
+    }
 </style>
 
 @code {
+    private List<IBrowserFile> Attachments = new();
     private IEnumerable<Category> Categories = new List<Category>();
     private IEnumerable<Location> Locations = new List<Location>();
     [SupplyParameterFromForm]
@@ -180,9 +183,9 @@
     {
         try
         {
-            Categories = await _ICategory.AllCategoriesAsync();
-            Locations = await _ILocation.AllLocationsAsync();
-        }
+        Categories = await _ICategory.AllCategoriesAsync();
+        Locations = await _ILocation.AllLocationsAsync();
+    }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error loading data: {ex.Message}");
@@ -201,16 +204,16 @@
 
             // Validate file
             if (file.Size > maxFileSize)
-            {
+    {
                 await JS.ToastrError("File size exceeds 5MB limit");
                 return;
-            }
+    }
 
             if (!allowedContentTypes.Contains(file.ContentType))
-            {
+    {
                 await JS.ToastrError("Only JPG, PNG, or GIF images are allowed");
                 return;
-            }
+    }
 
             // Process image
             var resizedImage = await file.RequestImageFileAsync(file.ContentType, 800, 800);
@@ -236,7 +239,7 @@
             StateHasChanged();
         }
     }
-
+  
     private void RemoveImage()
     {
         imagePreviewUrl = null;

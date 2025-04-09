@@ -29,33 +29,33 @@
     {
         @foreach (var ticket in tickets)
         {
-            <div class="ticket-card card mb-3 w-100">
-                <div class="card-header d-flex justify-content-between align-items-center p-3">
-                    <div class="d-flex align-items-center gap-3">
+<div class="ticket-card card mb-3 w-100">
+    <div class="card-header d-flex justify-content-between align-items-center p-3">
+        <div class="d-flex align-items-center gap-3">
                         <span class="badge @GetStatusClass(ticket.Status)">@ticket.Status</span>
-                        <div>
+            <div>
                             <h6 class="mb-0">Ticket #@ticket.TID</h6>
                             <small class="text-muted">@ticket?.category?.CategoryName • @ticket.OpenDate.ToString("MMM dd, yyyy")</small>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
+            </div>
+        </div>
+        <div class="d-flex gap-2">
 
-                        <button class="btn btn-sm btn-outline-secondary"
-                                onclick="toggleCollapse(this)">
-                            ▼ Details
-                        </button>
-                    </div>
-                </div>
+            <button class="btn btn-sm btn-outline-secondary"
+                    onclick="toggleCollapse(this)">
+                ▼ Details
+            </button>
+        </div>
+    </div>
 
-                <div class="card-body p-3 collapse-body" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-2">
-                                <span class="text-muted">Priority:</span>
+    <div class="card-body p-3 collapse-body" style="display: none;">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <span class="text-muted">Priority:</span>
                                 <span class="badge @GetPriorityClass(ticket.Priority) ms-2">@ticket.Priority</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="text-muted">Assigned To:</span>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted">Assigned To:</span>
                                 @if (ticket.Agent != null)
                                 {
                                     <span class="badge btn-action-active ms-2">@ticket.Agent.Fname @ticket.Agent.Lname</span>
@@ -65,33 +65,33 @@
                                     <span class="badge btn-action-inactive ms-2">Not Assigned Yet !</span>
                                 }
 
-                            </div>
+                </div>
 
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-2">
-                                <span class="text-muted">Created By:</span>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-2">
+                    <span class="text-muted">Created By:</span>
                                 <span>@ticket.User.Fname @ticket.User.Lname</span>
-                            </div>
-                            <div class="mb-2">
+                </div>
+                <div class="mb-2">
                                 <span class="text-muted">Subject:</span>
                                 <span>@ticket.Subject</span>
-                            </div>
+                </div>
 
-                        </div>
-                    </div>
+            </div>
+        </div>
 
-                    <div class="mt-3 p-2 bg-light rounded">
+        <div class="mt-3 p-2 bg-light rounded">
                         <h6 class="text-muted">Issue Description:</h6>
                         <p class="mb-0">@ticket.Issue</p>
-                    </div>
+        </div>
 
-                    <div class="card-footer p-3 d-flex justify-content-end gap-2">
+        <div class="card-footer p-3 d-flex justify-content-end gap-2">
                         <button class="btn btn-sm btn-outline-primary">Details</button>
                         <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">Assign</button>
-                    </div>
-                </div>
-            </div>
+        </div>
+    </div>
+</div>
         }
     }
 </div>
@@ -157,6 +157,8 @@
     }
 </style>
 
+
+
 @code {
     private IEnumerable<Ticket>? tickets = new List<Ticket>();
     private IEnumerable<AppUser>? agents = new List<AppUser>();
@@ -201,7 +203,7 @@
             var temp = await _ITicket.GetTicketByIdAsync(DeletedId);
             var result = await _ITicket.AssignTicketAsync(ticket, DeletedId);
             if (result)
-            {
+    {
                 JS?.ToastrSuccess("Ticket Assigned Successfully");
 
             }
