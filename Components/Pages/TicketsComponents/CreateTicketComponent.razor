@@ -79,13 +79,13 @@
                         <i class="bi bi-cloud-arrow-up"></i>
                         <span>Click to browse or drag files here</span>
                         <small class="file-size-info">Max file size: 5MB</small>
-                    </div>
+                </div>
                     @if (isUploading)
                     {
                         <div class="upload-progress">
                             <div class="progress-bar" role="progressbar"></div>
                             <span>Uploading...</span>
-                        </div>
+            </div>
                     }
                 </div>
             }
@@ -152,7 +152,7 @@
 
         .btn-submit:hover {
             background-color: var(--secondary-color);
-        }
+    }
 
         .btn-submit:disabled {
             background-color: #adb5bd;
@@ -184,9 +184,9 @@
     {
         try
         {
-            Categories = await _ICategory.AllCategoriesAsync();
-            Locations = await _ILocation.AllLocationsAsync();
-        }
+        Categories = await _ICategory.AllCategoriesAsync();
+        Locations = await _ILocation.AllLocationsAsync();
+    }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error loading data: {ex.Message}");
@@ -205,16 +205,16 @@
 
             // Validate file
             if (file.Size > maxFileSize)
-            {
+    {
                 await JS.ToastrError("File size exceeds 5MB limit");
                 return;
-            }
+    }
 
             if (!allowedContentTypes.Contains(file.ContentType))
-            {
+    {
                 await JS.ToastrError("Only JPG, PNG, or GIF images are allowed");
                 return;
-            }
+    }
 
             // Process image
             var resizedImage = await file.RequestImageFileAsync(file.ContentType, 800, 800);
@@ -240,7 +240,7 @@
             StateHasChanged();
         }
     }
-
+  
     private void RemoveImage()
     {
         imagePreviewUrl = null;
