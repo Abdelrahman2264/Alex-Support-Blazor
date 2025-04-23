@@ -19,6 +19,7 @@ namespace AlexSupport.Data
         public virtual DbSet<Category> Category { get; set; } = null!;
         public virtual DbSet<Tlog> Tlogs { get; set; } = default!;
         public virtual DbSet<Location> Locations { get; set; } = default!;
+        public virtual DbSet<DailyTasks> DailyTasks { get; set; } = default!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -190,6 +191,25 @@ namespace AlexSupport.Data
                     .HasForeignKey(e => e.UID)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Tlog_AppUserId");
+            });
+
+            modelBuilder.Entity<DailyTasks>(entity =>
+            {
+                entity.HasKey(e => e.DTID).HasName("DAILYTASKID_PK");
+                entity.Property(e => e.Subject)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("Subject");
+                entity.Property(e => e.Issue)
+                    .HasMaxLength(850)
+                    .IsUnicode(false)
+                    .HasColumnName("Issue");              
+                entity.HasOne(e => e.category)
+                    .WithMany(d => d.DailyTask)
+                    .HasForeignKey(e => e.CategoryID)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_DailyTask_Category");
+               
             });
         }
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

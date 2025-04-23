@@ -1,5 +1,4 @@
 ﻿@page "/tickets/createticket"
-@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @inject ITicketRepository _ITicket
 @inject ILocationRepository _ILocation
@@ -79,13 +78,13 @@
                         <i class="bi bi-cloud-arrow-up"></i>
                         <span>Click to browse or drag files here</span>
                         <small class="file-size-info">Max file size: 5MB</small>
-                    </div>
+                </div>
                     @if (isUploading)
                     {
                         <div class="upload-progress">
                             <div class="progress-bar" role="progressbar"></div>
                             <span>Uploading...</span>
-                        </div>
+            </div>
                     }
                 </div>
             }
@@ -123,44 +122,6 @@
     </EditForm>
 </div>
 
-<style>
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: var(--border-radius);
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: var(--transition);
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-cancel {
-        background-color: #6c757d;
-        color: white;
-    }
-
-        .btn-cancel:hover {
-            background-color: #5a6268;
-        }
-
-    .btn-submit {
-        background-color: var(--primary-color);
-        color: white;
-    }
-
-        .btn-submit:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .btn-submit:disabled {
-            background-color: #adb5bd;
-            cursor: not-allowed;
-        }
-
-</style>
-
 @code {
     private List<IBrowserFile> Attachments = new();
     private IEnumerable<Category> Categories = new List<Category>();
@@ -184,9 +145,9 @@
     {
         try
         {
-            Categories = await _ICategory.AllCategoriesAsync();
-            Locations = await _ILocation.AllLocationsAsync();
-        }
+        Categories = await _ICategory.AllCategoriesAsync();
+        Locations = await _ILocation.AllLocationsAsync();
+    }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error loading data: {ex.Message}");
@@ -205,16 +166,16 @@
 
             // Validate file
             if (file.Size > maxFileSize)
-            {
+    {
                 await JS.ToastrError("File size exceeds 5MB limit");
                 return;
-            }
+    }
 
             if (!allowedContentTypes.Contains(file.ContentType))
-            {
+    {
                 await JS.ToastrError("Only JPG, PNG, or GIF images are allowed");
                 return;
-            }
+    }
 
             // Process image
             var resizedImage = await file.RequestImageFileAsync(file.ContentType, 800, 800);
@@ -240,7 +201,7 @@
             StateHasChanged();
         }
     }
-
+  
     private void RemoveImage()
     {
         imagePreviewUrl = null;

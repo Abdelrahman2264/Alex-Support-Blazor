@@ -1,0 +1,236 @@
+﻿@page "/DailyTasks"
+@using System.ComponentModel.DataAnnotations
+@inject IDailyTaskRepository _ITask
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+
+<h3 class="page-title">Daily Tasks</h3>
+
+<div class="tickets-container">
+    <!-- Filter and Search Bar -->
+    <div class="tickets-controls">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search tickets..." @bind="searchQuery" @bind:event="oninput" />
+        </div>
+
+        <div class="filter-controls">
+            <select class="form-select" @bind="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+
+            <select class="form-select" @bind="priorityFilter">
+                <option value="">All Priorities</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
+            </select>
+
+            <button class="btn btn-primary" @onclick="AddNewTicket">
+                <i class="bi bi-plus-lg"></i> New Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Tickets Grid/List -->
+    <div class="tickets-grid">
+        @if (tasks.Any())
+        {
+            @foreach (var task in tasks)
+            {
+                <div class="ticket-card @task.Priority.ToLower()" @onclick="() => ViewTicketDetails(task.DTID)">
+                    <div class="ticket-header">
+                        <span class="ticket-id">#@task.DTID</span>
+                        <span class="ticket-status @task.Priority.ToLower()">@task.Priority.ToLower()</span>
+                    </div>
+                    <h4 class="ticket-title">@task.Subject</h4>
+                    <p class="ticket-description">@task.Issue</p>
+                    <div class="ticket-footer">
+                        <span class="ticket-date">
+                            <i class="bi bi-calendar"></i> @task.Due_Minutes
+                        </span>
+                        <span class="ticket-assignee">
+                            <i class="bi bi-person"></i> @task.category?.CategoryName
+                        </span>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-tickets">
+                <i class="bi bi-inbox"></i>
+                <p>No tickets found matching your criteria</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Ticket Details Modal -->
+@if (selectedTicket != null)
+{
+    <div class="modal-overlay @(showModal ? "show" : "")">
+        <div class="ticket-modal">
+            <div class="modal-header">
+                <h4>Ticket Details</h4>
+                <button class="btn-close" @onclick="CloseModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="ticket-detail">
+                    <label>Title:</label>
+                    <p>@selectedTicket.Title</p>
+                </div>
+                <div class="ticket-detail">
+                    <label>Description:</label>
+                    <p>@selectedTicket.Description</p>
+                </div>
+                <div class="ticket-details-grid">
+                    <div class="ticket-detail">
+                        <label>Status:</label>
+                        <select class="form-select" @bind="selectedTicket.Status">
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="ticket-detail">
+                        <label>Priority:</label>
+                        <select class="form-select" @bind="selectedTicket.Priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="ticket-detail">
+                        <label>Due Date:</label>
+                        <input type="date" class="form-control" @bind="selectedTicket.DueDate" />
+                    </div>
+                    <div class="ticket-detail">
+                        <label>Assignee:</label>
+                        <input type="text" class="form-control" @bind="selectedTicket.Assignee" />
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(selectedTicket.ImageUrl))
+                {
+                    <div class="ticket-image">
+                        <img src="@selectedTicket.ImageUrl" alt="Ticket image" />
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                <button class="btn btn-primary" @onclick="SaveTicket">Save Changes</button>
+                <button class="btn btn-danger" @onclick="DeleteTicket">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+
+</style>
+
+@code {
+    private List<Ticket> tickets = new();
+    private Ticket? selectedTicket;
+    private bool showModal = false;
+    private string searchQuery = "";
+    private string statusFilter = "";
+    private string priorityFilter = "";
+
+    private DailyTasks newtask { get; set; } = new DailyTasks();
+
+    private IEnumerable<Ticket> filteredTickets => tickets
+        .Where(t => string.IsNullOrEmpty(searchQuery) ||
+                    t.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+        .Where(t => string.IsNullOrEmpty(statusFilter) || t.Status == statusFilter)
+        .Where(t => string.IsNullOrEmpty(priorityFilter) || t.Priority == priorityFilter)
+        .OrderByDescending(t => t.DueDate)
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+     
+    }
+
+    private void ViewTicketDetails(int ticketId)
+    {
+        selectedTicket = tickets.FirstOrDefault(t => t.Id == ticketId);
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    private void SaveTicket()
+    {
+        if (selectedTicket != null)
+        {
+            var index = tickets.FindIndex(t => t.Id == selectedTicket.Id);
+            if (index >= 0)
+            {
+                tickets[index] = selectedTicket;
+            }
+            showModal = false;
+        }
+    }
+
+    private void DeleteTicket()
+    {
+        if (selectedTicket != null)
+        {
+            tickets.RemoveAll(t => t.Id == selectedTicket.Id);
+            showModal = false;
+        }
+    }
+
+    private void AddNewTicket()
+    {
+        selectedTicket = new Ticket
+            {
+                Id = tickets.Max(t => t.Id) + 1,
+                Title = "New Task",
+                Description = "",
+                Status = "Open",
+                Priority = "Medium",
+                DueDate = DateTime.Today.AddDays(7),
+                Assignee = ""
+            };
+        showModal = true;
+    }
+
+    public class Ticket
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Status { get; set; } = "Open";
+        public string Priority { get; set; } = "Medium";
+        public DateTime DueDate { get; set; } = DateTime.Today;
+        public string Assignee { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
+    }
+}
+
+
+
+@code{
+    private IEnumerable<DailyTasks> tasks = new List<DailyTasks>();
+    private async Task LoadData()
+    {
+        tasks = await _ITask.GetAllDailyTasksAsync();
+    }
+  
+}

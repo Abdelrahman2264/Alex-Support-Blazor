@@ -20,5 +20,6 @@ namespace AlexSupport.ViewModels
         public  bool isActive = true;
         public DateTime CreatedDate { get; set; }
         public ICollection<Ticket>? Ticket { get; set; }
+        public ICollection<DailyTasks>? DailyTask { get; set; }
     }
 }

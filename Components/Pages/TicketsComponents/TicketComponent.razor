@@ -8,8 +8,8 @@
 @inject IJSRuntime JS
 
 <AssignFormModal Title="@(!string.IsNullOrWhiteSpace(TicketStatus) ? "Re-Assign Ticket" : "Assign Ticket")"
-                 OnModalConfirmation="ConfirmAssign_Click"
-                 Agents="agents" />
+OnModalConfirmation="ConfirmAssign_Click"
+Agents="agents" />
 <div class="tickets-container">
     @if (tickets == null)
     {
@@ -41,7 +41,7 @@
                     <div class="d-flex gap-2">
 
                         <button class="btn btn-sm btn-outline-secondary"
-                                onclick="toggleCollapse(this)">
+                        onclick="toggleCollapse(this)">
                             ▼ Details
                         </button>
                     </div>
@@ -99,6 +99,25 @@
                         <h6 class="text-muted">Issue Description:</h6>
                         <p class="mb-0">@ticket.Issue</p>
                     </div>
+                    @if (TicketStatus == "Closed")
+                    {
+                        @if (ticket.IsSolved == true)
+                        {
+                            <div class="mt-3 p-2 bg-light rounded">
+                                <h6 class="text-muted">Issue Solution:</h6>
+                                <p class="mb-0">@ticket.Solution</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-3 p-2 bg-light rounded">
+                                <h6 class="text-muted">Issue Solution:</h6>
+                                <p class="mb-0">ticked was unsolved by our team 💤💤</p>
+                            </div>
+                        }
+
+                    }
+
 
                     <div class="card-footer p-3 d-flex justify-content-end gap-2">
                         <a href="tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">Details</a>
@@ -121,69 +140,6 @@
         }
     }
 </div>
-
-<style>
-    .tickets-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    .ticket-card {
-        border-left: 4px solid;
-        border-left-color: var(--status-border-color);
-        transition: all 0.3s ease;
-    }
-
-        .ticket-card:hover {
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            transform: translateY(-2px);
-        }
-
-    .badge-status-open {
-        background-color: #0d6efd;
-        --status-border-color: #0d6efd;
-    }
-
-    .badge-status-Assigned {
-        background-color: green;
-        --status-border-color: green;
-    }
-
-    .badge-status-Esclated {
-        background-color: #a98004;
-        --status-border-color: #a98004;
-    }
-
-    .badge-priority-high {
-        background-color: #dc3545;
-    }
-
-    .badge-priority-medium {
-        background-color: #ffc107;
-        color: #000;
-    }
-
-    .badge-priority-low {
-        background-color: #198754;
-    }
-
-    .btn-action-active {
-        background-color: #198754;
-        color: white;
-    }
-
-    .btn-action-inactive {
-        background-color: #6c757d;
-        color: white;
-    }
-
-    .collapse-body {
-        transition: all 0.3s ease;
-    }
-</style>
-
-
 
 @code {
     private IEnumerable<Ticket>? tickets = new List<Ticket>();
