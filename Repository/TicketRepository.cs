@@ -60,7 +60,7 @@ namespace AlexSupport.Repository
                 logger.LogError("Error in getting all open tickets: " + ex.Message, ex);
                 return Enumerable.Empty<Ticket>();
             }
-        }  
+        }
         public async Task<IEnumerable<Ticket>> GetAllClosedTicketsAsync()
         {
 
@@ -203,7 +203,7 @@ namespace AlexSupport.Repository
                         existingTicket.Comments = ticket.Comments;
                         existingTicket.Solution = ticket.Solution;
                         existingTicket.CloseDate = DateTime.Now;
-                        var rate =  CalculateRate(ticket.OpenDate, existingTicket.CloseDate ?? DateTime.Now, ticket.Due_Minutes ?? 0);
+                        var rate = CalculateRate(ticket.OpenDate, existingTicket.CloseDate ?? DateTime.Now, ticket.Due_Minutes ?? 0);
                         existingTicket.TicketRate = rate;
                         alexSupportDB.Update(existingTicket);
                         await alexSupportDB.SaveChangesAsync();
@@ -257,13 +257,13 @@ namespace AlexSupport.Repository
                 return false;
             }
         }
-        private  decimal CalculateRate(DateTime openDate, DateTime closeDate, int dueMinutes)
+        private decimal CalculateRate(DateTime openDate, DateTime closeDate, int dueMinutes)
         {
             double actualMinutes = (closeDate - openDate).TotalMinutes;
 
             if (actualMinutes <= 0)
             {
-                return 0 ;
+                return 0;
             }
 
             decimal rate = (decimal)(dueMinutes / actualMinutes) * 100;

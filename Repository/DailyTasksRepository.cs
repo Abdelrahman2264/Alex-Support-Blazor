@@ -22,6 +22,8 @@ namespace AlexSupport.Repository
             {
                 if (dailytask != null)
                 {
+
+                    dailytask.IsActive = true;
                     await alexsupportdb.DailyTasks.AddAsync(dailytask);
                     await alexsupportdb.SaveChangesAsync();
                     return dailytask;

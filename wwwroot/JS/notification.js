@@ -33,4 +33,10 @@ function HideCloseTicketFormModal() {
 
 function HideAddSolutionFormModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('AddSolution')).hide();
+}function ShowAddTaskFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('AddTask')).show();
+}
+
+function HideAddTaskFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('AddTask')).hide();
 }

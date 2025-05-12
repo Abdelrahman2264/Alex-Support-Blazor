@@ -3,7 +3,27 @@
 @inject IDailyTaskRepository _ITask
 @inject IJSRuntime JS
 @rendermode InteractiveServer
+@inject ICategoryRepository _ICategory
+@inject ILocationRepository _ILocation
+@inject IAppUserRepoistory _IAppUser
+@inject ITicketRepository _ITicket
 
+<CreateNewdailyTaskComponent Title="Create New Daily Task"
+                             ticket="newtask"
+                             Category="categories"
+                             OnModalConfirmation="ConfirmCreateTask_Click" />
+
+<BsModal Title="Are you sure tou want to inactive this daily task ?"
+         ButtonBootstrapStyle="btn btn-primary"
+         ButtonText="Confirm delete"
+         OnModalConfirmation="DeleteTicket" />
+
+<AssignFormModal Title="Assign Daily Task"
+                 ticket="ticket"
+                 Locations="locations"
+                 Agents="agents"
+                 type="DailyTask"
+                 OnModalConfirmation="ConfirmAssign_Click" />
 
 <h3 class="page-title">Daily Tasks</h3>
 
@@ -14,22 +34,16 @@
             <i class="bi bi-search"></i>
             <input type="text" placeholder="Search tickets..." @bind="searchQuery" @bind:event="oninput" />
         </div>
-
+        <select class="form-select" @bind="priorityFilter">
+            <option value="">All Priorities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+        </select>
         <div class="filter-controls">
-            <select class="form-select" @bind="statusFilter">
-                <option value="">All Statuses</option>
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-            </select>
 
-            <select class="form-select" @bind="priorityFilter">
-                <option value="">All Priorities</option>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Urgent">Urgent</option>
-            </select>
+
 
             <button class="btn btn-primary" @onclick="AddNewTicket">
                 <i class="bi bi-plus-lg"></i> New Task
@@ -41,12 +55,28 @@
     <div class="tickets-grid">
         @if (tasks.Any())
         {
-            @foreach (var task in tasks)
+            @foreach (var task in filteredtasks)
             {
-                <div class="ticket-card @task.Priority.ToLower()" @onclick="() => ViewTicketDetails(task.DTID)">
+                <div class="ticket-card @task.Priority.ToLower()">
                     <div class="ticket-header">
-                        <span class="ticket-id">#@task.DTID</span>
-                        <span class="ticket-status @task.Priority.ToLower()">@task.Priority.ToLower()</span>
+                        <div class="header-left">
+                            <span class="ticket-id">#@task.DTID</span>
+                            <span class="ticket-status @task.Priority.ToLower()">@task.Priority.ToLower()</span>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn-action" @onclick="() => EditTicket(task.DTID)" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                                <span class="action-text">Edit</span>
+                            </button>
+                            <button class="btn-action" @onclick="() => AssignTicket(task.DTID)" title="Assign">
+                                <i class="bi bi-person-plus"></i>
+                                <span class="action-text">Assign</span>
+                            </button>
+                            <button class="btn-action" @onclick="() => RemoveTicket(task.DTID)" title="Delete">
+                                <i class="bi bi-trash"></i>
+                                <span class="action-text">Delete</span>
+                            </button>
+                        </div>
                     </div>
                     <h4 class="ticket-title">@task.Subject</h4>
                     <p class="ticket-description">@task.Issue</p>
@@ -69,168 +99,173 @@
             </div>
         }
     </div>
+
+
 </div>
 
-<!-- Ticket Details Modal -->
-@if (selectedTicket != null)
-{
-    <div class="modal-overlay @(showModal ? "show" : "")">
-        <div class="ticket-modal">
-            <div class="modal-header">
-                <h4>Ticket Details</h4>
-                <button class="btn-close" @onclick="CloseModal">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="ticket-detail">
-                    <label>Title:</label>
-                    <p>@selectedTicket.Title</p>
-                </div>
-                <div class="ticket-detail">
-                    <label>Description:</label>
-                    <p>@selectedTicket.Description</p>
-                </div>
-                <div class="ticket-details-grid">
-                    <div class="ticket-detail">
-                        <label>Status:</label>
-                        <select class="form-select" @bind="selectedTicket.Status">
-                            <option value="Open">Open</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </div>
-                    <div class="ticket-detail">
-                        <label>Priority:</label>
-                        <select class="form-select" @bind="selectedTicket.Priority">
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                            <option value="Urgent">Urgent</option>
-                        </select>
-                    </div>
-                    <div class="ticket-detail">
-                        <label>Due Date:</label>
-                        <input type="date" class="form-control" @bind="selectedTicket.DueDate" />
-                    </div>
-                    <div class="ticket-detail">
-                        <label>Assignee:</label>
-                        <input type="text" class="form-control" @bind="selectedTicket.Assignee" />
-                    </div>
-                </div>
-                @if (!string.IsNullOrEmpty(selectedTicket.ImageUrl))
-                {
-                    <div class="ticket-image">
-                        <img src="@selectedTicket.ImageUrl" alt="Ticket image" />
-                    </div>
-                }
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
-                <button class="btn btn-primary" @onclick="SaveTicket">Save Changes</button>
-                <button class="btn btn-danger" @onclick="DeleteTicket">Delete</button>
-            </div>
-        </div>
-    </div>
-}
+
 
 <style>
-
+   
 </style>
 
 @code {
     private List<Ticket> tickets = new();
     private Ticket? selectedTicket;
+    private Ticket? ticket = new Ticket();
+    private IEnumerable<Location>? locations = new List<Location>();
+    private int updatedid { get; set; } = 0;
+
     private bool showModal = false;
     private string searchQuery = "";
     private string statusFilter = "";
     private string priorityFilter = "";
+    private IEnumerable<DailyTasks> tasks = new List<DailyTasks>();
+    private int AssignId { get; set; } = 0;
+    private int deletedid { get; set; } = 0;
 
     private DailyTasks newtask { get; set; } = new DailyTasks();
+    private IEnumerable<Category>? categories = new List<Category>();
+    private IEnumerable<AppUser>? agents = new List<AppUser>();
 
-    private IEnumerable<Ticket> filteredTickets => tickets
-        .Where(t => string.IsNullOrEmpty(searchQuery) ||
-                    t.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    t.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-        .Where(t => string.IsNullOrEmpty(statusFilter) || t.Status == statusFilter)
-        .Where(t => string.IsNullOrEmpty(priorityFilter) || t.Priority == priorityFilter)
-        .OrderByDescending(t => t.DueDate)
-        .ToList();
+    private IEnumerable<DailyTasks> filteredtasks => tasks
+    .Where(t => string.IsNullOrEmpty(searchQuery) ||
+                t.Subject.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                t.Issue.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                t.category.CategoryName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                t.Priority.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+    )
+
+    .Where(t => string.IsNullOrEmpty(priorityFilter) || t.Priority == priorityFilter)
+    .OrderByDescending(t => t.DTID)
+    .ToList();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
-     
+
     }
 
-    private void ViewTicketDetails(int ticketId)
+    private async Task EditTicket(int dtid)
     {
-        selectedTicket = tickets.FirstOrDefault(t => t.Id == ticketId);
-        showModal = true;
+        newtask = await _ITask.GetDailyTaskAsync(dtid);
+
+        await JS.InvokeVoidAsync("ShowAddTaskFormModal");
+        deletedid = dtid;
     }
 
-    private void CloseModal()
+    private async Task AssignTicket(int dtid)
     {
-        showModal = false;
-    }
-
-    private void SaveTicket()
-    {
-        if (selectedTicket != null)
+        var temp = await _ITask.GetDailyTaskAsync(dtid);
+        if (temp != null)
         {
-            var index = tickets.FindIndex(t => t.Id == selectedTicket.Id);
-            if (index >= 0)
+            ticket.Subject = temp.Subject;
+            ticket.Issue = temp.Issue;
+            ticket.Due_Minutes = temp.Due_Minutes;
+            ticket.CategoryID = temp.CategoryID;
+            ticket.Priority = temp.Priority;
+            ticket.UID = 11;
+            AssignId = dtid;
+            await JS.InvokeVoidAsync("ShowAssignTicketFormModal");
+        }
+
+    }
+    private async Task RemoveTicket(int dtid)
+    {
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
+        deletedid = dtid;
+
+    }
+
+
+
+    private async Task DeleteTicket()
+    {
+        await JS.InvokeVoidAsync("HideConfirmationModal");
+
+        if (deletedid != 0)
+        {
+            bool flag = await _ITask.InActiveDailyTaskAsync(deletedid);
+            if (flag)
+                await JS.ToastrSuccess("Task Inactivated Successfully");
+            else
+                await JS.ToastrError($"Failed to Inactive Task Please try again !");
+
+            await LoadData();
+        }
+    }
+
+    private async Task AddNewTicket()
+    {
+        newtask = new DailyTasks();
+
+        await JS.InvokeVoidAsync("ShowAddTaskFormModal");
+    }
+
+    private async Task ConfirmCreateTask_Click(DailyTasks ticket)
+    {
+        await JS.InvokeVoidAsync("HideAddTaskFormModal"); // Hide modal
+
+        if (updatedid != 0)
+        {
+            var temp = await _ITask.CreateDailyTaskAsync(ticket);
+            if (temp.IsActive == true)
             {
-                tickets[index] = selectedTicket;
+                ticket = new DailyTasks();
+                JS?.ToastrSuccess("Task Create Successfully");
             }
-            showModal = false;
-        }
-    }
-
-    private void DeleteTicket()
-    {
-        if (selectedTicket != null)
-        {
-            tickets.RemoveAll(t => t.Id == selectedTicket.Id);
-            showModal = false;
-        }
-    }
-
-    private void AddNewTicket()
-    {
-        selectedTicket = new Ticket
+            else
             {
-                Id = tickets.Max(t => t.Id) + 1,
-                Title = "New Task",
-                Description = "",
-                Status = "Open",
-                Priority = "Medium",
-                DueDate = DateTime.Today.AddDays(7),
-                Assignee = ""
-            };
-        showModal = true;
-    }
+                JS?.ToastrError("Error Encountered while Assigning");
 
-    public class Ticket
+            }
+        }
+        else
+        {
+            var temp = await _ITask.UpdateDailyTaskAsync(ticket);
+            if (temp)
+            {
+                ticket = new DailyTasks();
+                JS?.ToastrSuccess("Task Updated Successfully");
+            }
+            else
+            {
+                JS?.ToastrError("Error Encountered while Assigning");
+
+            }
+
+        }
+        await LoadData();
+
+    }
+    private async Task ConfirmAssign_Click(Ticket ticket)
     {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Status { get; set; } = "Open";
-        public string Priority { get; set; } = "Medium";
-        public DateTime DueDate { get; set; } = DateTime.Today;
-        public string Assignee { get; set; } = string.Empty;
-        public string? ImageUrl { get; set; }
+
+        await JS.InvokeVoidAsync("HideAssignTicketFormModal"); // Hide modal
+
+        if (AssignId != 0)
+        {
+            var tempticket = await _ITicket.CreateTicketAsync(ticket);
+            var temp = await _ITicket.GetTicketByIdAsync(tempticket.TID);
+            var result = await _ITicket.AssignTicketAsync(tempticket, temp.TID);
+            if (result)
+            {
+                JS?.ToastrSuccess("Ticket Assigned Successfully");
+
+            }
+            else
+                JS?.ToastrError("Error Encountered while Assigning");
+
+            await LoadData();
+        }
+        AssignId = 0;
     }
-}
-
-
-
-@code{
-    private IEnumerable<DailyTasks> tasks = new List<DailyTasks>();
     private async Task LoadData()
     {
         tasks = await _ITask.GetAllDailyTasksAsync();
+        categories = await _ICategory.AllCategoriesAsync();
+        locations = await _ILocation.AllLocationsAsync();
+        agents = await _IAppUser.GetAllAgentsAsync();
+
     }
-  
 }
