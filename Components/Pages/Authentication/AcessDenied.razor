@@ -1,0 +1,226 @@
+﻿@page "/AccessDenied"
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager;
+
+<div class="access-denied-container">
+    <div class="denied-content">
+        <div class="lock-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12,17A2,2 0 0,0 14,15A2,2 0 0,0 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" />
+            </svg>
+        </div>
+        <h1>Access Denied</h1>
+        <p>You don't have permission to access this page.</p>
+        <div class="buttons">
+            <button @onclick="NavigateToHome" class="home-button">
+                Go to Homepage
+            </button>
+            <button @onclick="ContactSupport" class="contact-button">
+                Contact Support
+            </button>
+        </div>
+    </div>
+    <div class="denied-footer">
+        <p>If you believe this is an error, please contact your system administrator.</p>
+    </div>
+</div>
+
+@code {
+
+    private void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void ContactSupport()
+    {
+
+
+        NavigationManager.NavigateTo($"ContactUs");
+    }
+}
+<style>
+    .access-denied-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 2rem;
+        text-align: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .denied-content {
+        background: white;
+        padding: 3rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        width: 100%;
+        animation: fadeIn 0.6s ease-in-out, slideUp 0.6s ease-in-out;
+    }
+
+    .lock-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        color: #ff4757;
+        animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+
+        .lock-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+    h1 {
+        color: #ff4757;
+        margin-bottom: 1rem;
+        font-size: 2.5rem;
+    }
+
+    p {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    button {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 180px;
+    }
+
+    .home-button {
+        background-color: #576574;
+        color: white;
+    }
+
+        .home-button:hover {
+            background-color: #3d4d5e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+    .contact-button {
+        background-color: #ff4757;
+        color: white;
+    }
+
+        .contact-button:hover {
+            background-color: #e8413d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+    .denied-footer {
+        margin-top: 2rem;
+        color: #666;
+        font-size: 0.9rem;
+        max-width: 600px;
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    /* Animations */
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+    }
+
+    @@keyframes slideUp {
+        from
+
+    {
+        transform: translateY(20px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes shake {
+        10%, 90%
+
+    {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%, 80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%, 50%, 70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%, 60% {
+        transform: translate3d(4px, 0, 0);
+    }
+
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .denied-content
+
+    {
+        padding: 2rem 1.5rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    p {
+        font-size: 1rem;
+    }
+
+    button {
+        padding: 0.7rem 1.2rem;
+        min-width: 160px;
+    }
+
+    }
+
+    @@media (max-width: 480px) {
+        .buttons
+
+    {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    }
+</style>

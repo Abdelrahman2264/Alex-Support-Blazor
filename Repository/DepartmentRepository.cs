@@ -1,5 +1,6 @@
 ﻿using AlexSupport.Data;
 using AlexSupport.Repository.IRepository;
+using AlexSupport.Services.Extensions;
 using AlexSupport.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,12 @@ namespace AlexSupport.Repository
     {
         private readonly AlexSupportDB alexSupportDB;
         private readonly ILogger<DepartmentRepository> logger;
-        public DepartmentRepository(AlexSupportDB alexSupportDB, ILogger<DepartmentRepository> logger)
+        private readonly ILogService logService;
+        public DepartmentRepository(AlexSupportDB alexSupportDB, ILogger<DepartmentRepository> logger, ILogService logService)
         {
             this.alexSupportDB = alexSupportDB;
             this.logger = logger;
+            this.logService = logService;
         }
 
         public async Task<Department> CreateDepartmentAsync(Department Department)
@@ -25,6 +28,7 @@ namespace AlexSupport.Repository
                     Department.CreateDate = DateTime.Now;
                     await alexSupportDB.Department.AddAsync(Department);
                     await alexSupportDB.SaveChangesAsync();
+                    await logService.CreateSystemLogAsync($"Create A New Department With Id {Department.DID} In The System", "DEPARTMENT");
                     return Department;
                 }
                 else
@@ -49,6 +53,8 @@ namespace AlexSupport.Repository
                 {
                     Department.IsActive = false;
                     await alexSupportDB.SaveChangesAsync();
+                    await logService.CreateSystemLogAsync($"In Active A Department With Id {Department.DID} In The System", "DEPARTMENT");
+
                     return true;
                 }
                 logger.LogError("Department Not Found");
@@ -66,7 +72,7 @@ namespace AlexSupport.Repository
         {
             try
             {
-                return await alexSupportDB.Department.OrderBy(c => c.DepartmentName).ToListAsync();
+                return await alexSupportDB.Department.OrderBy(c => c.DepartmentName).Where(u => u.IsActive).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -111,6 +117,8 @@ namespace AlexSupport.Repository
                     UpdatedDepartment.IsActive = true;
                     alexSupportDB.Department.Update(UpdatedDepartment);
                     await alexSupportDB.SaveChangesAsync();
+                    await logService.CreateSystemLogAsync($"Update A Department With Id {UpdatedDepartment.DID} In The System", "DEPARTMENT");
+
                     return UpdatedDepartment;
                 }
                 else

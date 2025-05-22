@@ -5,54 +5,103 @@
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 @using AlexSupport.ViewModels
-<PageTitle>Departments</PageTitle>
+@attribute [Authorize(Roles = "Admin")]
+<PageTitle>@(Departments.DID == 0 ? "Create Department" : "Update Department")</PageTitle>
 
 @if (isProcessing)
 {
-    <div class=" position-absolute w-75 h-75 d-flex flex-column align-items-center bg-white justify-content-center ">
-        <img src="/images/Loading.gif" alt="Loading..." />
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white bg-opacity-75 z-index-1050">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Processing...</p>
     </div>
 }
 else
 {
-    <div class="card shadow  m-4 ">
-        <div class="card-header bg-dark bg-gradient ml-1 pt-3">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <h2 class="text-white py-2">@(Departments.DID == 0 ? "Create Department " : "Update Department ")</h2>
+    <div class="container-fluid px-4 py-3">
+        <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+            <div class="card-header bg-primary-gradient py-4">
+                <div class="row align-items-center">
+                    <div class="col-12 text-center">
+                        <h2 class="text-white mb-0">
+                            <i class="bi bi-building me-2"></i>@(Departments.DID == 0 ? "Create Department" : "Update Department")
+                        </h2>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="card-body p-4">
 
-            <EditForm Model="Departments" FormName="DepartmentUpsertForm" OnValidSubmit="UpsertDepartment">
-                <DataAnnotationsValidator></DataAnnotationsValidator>
-                @if (isDepartmentExist)
-                {
-                    <ul>
-                        <li class="text-danger">@DepartmentExistErrorMessage</li>
-                    </ul>
-                }
-                <div class="form-floating py-3 col-12">
-                    <InputText @bind-Value="Departments.DepartmentName" class="form-control border-2" id="Name" />
-                    <label for="Name">Name</label>
-                    <ValidationMessage For="@(()=>Departments.DepartmentName)" />
-                </div>
-                <div class="row mt-3 d-flex justify-content-end">
-                    <div class="col-auto">
-                        <button type="submit" class="btn  btn-success form-control" disabled="@isProcessing">@(Departments.DID == 0 ? "Create" : "Update")</button>
+            <div class="card-body p-4">
+                <EditForm Model="Departments" FormName="DepartmentUpsertForm" OnValidSubmit="UpsertDepartment">
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
 
-                    </div>
-                    <div class="col-auto">
-                        <a href="Departments" class="btn btn-secondary   form-control">Back To List</a>
+                    @if (isDepartmentExist)
+                    {
+                        <div class="alert alert-danger mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>@DepartmentExistErrorMessage
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <div class="form-floating">
+                            <InputText @bind-Value="Departments.DepartmentName" class="form-control border-2 shadow-sm" id="Name" />
+                            <label for="Name">Department Name</label>
+                            <ValidationMessage For="@(()=>Departments.DepartmentName)" class="text-danger small mt-1" />
+                        </div>
                     </div>
 
-                </div>
-
-            </EditForm>
+                    <div class="d-flex justify-content-end gap-3 pt-3">
+                        <a href="/Departments" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="bi bi-arrow-left me-2"></i>Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            }
+                            else
+                            {
+                                <i class="bi @(Departments.DID == 0 ? "bi-plus-circle" : "bi-save") me-2"></i>
+                            }
+                            @(Departments.DID == 0 ? "Create" : "Update")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
         </div>
     </div>
 }
+
+<style>
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    }
+
+    .z-index-1050 {
+        z-index: 1050;
+    }
+
+    .rounded-3 {
+        border-radius: 0.75rem !important;
+    }
+
+    .rounded-pill {
+        border-radius: 50rem !important;
+    }
+
+    .form-control {
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+        .form-control:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+    .alert {
+        border-radius: 0.5rem;
+    }
+</style>
 @code {
     [Parameter]
     public int Id { get; set; }

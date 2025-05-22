@@ -1,0 +1,580 @@
+﻿@layout AuthLayout
+@page "/About"
+@rendermode InteractiveServer
+<main class="about-page">
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <div class="hero-content">
+            <h1 class="hero-title" data-aos="fade-down">About Alex Support</h1>
+            <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
+                IT ticketing services tailored for Alex Apparels’ 15+ factories in Egypt Free Zone
+            </p>
+        </div>
+        <div class="hero-waves">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,0V46.29c..." opacity=".25"></path>
+                <path d="M0,0V15.81C..." opacity=".5"></path>
+                <path d="M0,0V5.63C..."></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="about-features">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Why Choose Alex Support?</h2>
+                <p>Empowering enterprise-scale IT support across Alex Apparels factories</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card" data-aos="flip-left" data-aos-delay="100">
+                    <div class="feature-icon pulse-animation">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3>Fast Response</h3>
+                    <p>Average response time under 15 minutes across our internal IT service network.</p>
+                    <div class="feature-wave"></div>
+                </div>
+
+                <div class="feature-card" data-aos="flip-left" data-aos-delay="200">
+                    <div class="feature-icon pulse-animation">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Enterprise-Grade Security</h3>
+                    <p>Secure and compliant infrastructure ensuring reliable support operations.</p>
+                    <div class="feature-wave"></div>
+                </div>
+
+                <div class="feature-card" data-aos="flip-left" data-aos-delay="300">
+                    <div class="feature-icon pulse-animation">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Real-Time Monitoring</h3>
+                    <p>Live issue tracking and resolution without relying on AI or automation shortcuts.</p>
+                    <div class="feature-wave"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="about-story">
+        <div class="container">
+            <div class="story-content">
+                <div class="story-text" data-aos="fade-right">
+                    <h2>Our Journey</h2>
+                    <p>Alex Support was established to streamline IT issue management across Alex Apparels' operations in the Free Zone of Alexandria, Egypt. Starting with a custom solution built specifically for internal use, the system now supports over 15 factories.</p>
+                    <p>Our strength lies in our simplicity and direct control. Built with Blazor and .NET 9, integrated with SQL Server and Azure, we deliver a fast, robust, and scalable platform—no artificial intelligence, just solid engineering.</p>
+                    <div class="story-stats">
+                        <div class="stat-item">
+                            <div class="stat-number counter" data-count="10000">10000</div>
+                            <div class="stat-label">Tickets Resolved</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number counter" data-count="97.6">97.6</div>
+                            <div class="stat-label">% Satisfaction</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="story-image" data-aos="fade-left">
+                    <div class="image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1579389083078-4e7018379f7e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Alex Support Team" class="zoom-animation">
+                        <div class="image-highlight"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section class="about-tech">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Our Technology Stack</h2>
+                <p>Built with proven Microsoft technologies and modern web standards</p>
+            </div>
+
+            <div class="tech-grid">
+                <div class="tech-item" data-aos="zoom-in" data-aos-delay="100">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#">
+                    <span>C#</span>
+                </div>
+                <div class="tech-item" data-aos="zoom-in" data-aos-delay="150">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dot-net/dot-net-original.svg" alt=".NET 9">
+                    <span>.NET 9</span>
+                </div>
+                <div class="tech-item" data-aos="zoom-in" data-aos-delay="200">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 48 48">
+                        <path fill="#cfd8dc" d="M23.084,11.277c-1.633-2.449-1.986-5.722-2.063-7.067c-4.148,0.897-8.269,2.506-8.031,3.691 c0.03,0.149,0.218,0.328,0.53,0.502l-0.488,0.873c-0.596-0.334-0.931-0.719-1.022-1.179c-0.269-1.341,1.25-2.554,4.642-3.709 c2.316-0.789,4.652-1.26,4.751-1.279l0.597-0.12L22,3.6c0,0.042,0.026,4.288,1.916,7.123L23.084,11.277z"></path>
+                        <path fill="#cfd8dc" d="M24.751,43H24.5c-8.192,0-17.309-2.573-18.386-6.879c-0.657-2.63,1.492-5.536,6.214-8.401 l0.52,0.854c-4.249,2.579-6.296,5.172-5.763,7.305c0.935,3.738,9.575,6.068,17.153,6.12c0.901-1.347,5.742-9.26,2.979-19.873 l0.967-0.252c3.149,12.092-3.218,20.837-3.282,20.924L24.751,43z"></path>
+                        <path fill="#cfd8dc" d="M9.931,39.306c-0.539,0-0.806-0.059-0.85-0.07c-0.176-0.043-0.314-0.178-0.362-0.352 c-0.049-0.174,0.001-0.361,0.129-0.488c0.072-0.072,7.197-7.208,8.159-12.978l0.986,0.164c-0.827,4.964-5.715,10.623-7.656,12.707 c1.939-0.111,6.835-1.019,16.234-6.28c-7.335-0.804-8.495-6.676-8.507-6.739l0.983-0.181c0.047,0.246,1.226,6.011,9.244,6.011 c0.003,0,0.005,0,0.008,0l0,0c0.227,0,0.424,0.152,0.482,0.37c0.06,0.218-0.036,0.449-0.231,0.563 C17.315,38.542,11.867,39.305,9.931,39.306z"></path>
+                        <path fill="#cfd8dc" d="M14.524,41.7c-0.207,0-0.395-0.128-0.468-0.325c-0.079-0.211-0.007-0.45,0.177-0.582 c0.034-0.025,1.813-1.338,3.706-4.228c-0.728-0.322-1.465-0.698-2.196-1.137c-0.888-0.533-1.559-1.105-2.06-1.691 c-2.57,0.678-4.942,0.946-7.025,0.769l0.084-0.996c1.876,0.159,4.009-0.063,6.321-0.64c-1.573-2.688-0.129-5.356-0.109-5.392 l0.874,0.487c-0.067,0.122-1.265,2.37,0.249,4.633c2.201-0.632,4.549-1.567,6.979-2.782c0.559-1.835,0.996-3.922,1.225-6.276 c0.016-0.161,0.108-0.304,0.248-0.385s0.311-0.088,0.458-0.021c0.032,0.015,3.264,1.491,5.604,2.454 c0.17,0.07,0.288,0.228,0.307,0.411c0.02,0.183-0.063,0.361-0.216,0.465c-2.289,1.56-4.563,2.913-6.778,4.042 c-0.702,2.225-1.571,4.077-2.459,5.591c3.702,1.383,6.915,1.404,6.956,1.404c0.228,0,0.427,0.154,0.484,0.375 c0.057,0.221-0.042,0.452-0.241,0.563c-4.54,2.522-11.767,3.232-12.072,3.261C14.556,41.699,14.54,41.7,14.524,41.7z M18.909,36.967c-1.04,1.614-2.062,2.773-2.826,3.53c1.998-0.294,5.501-0.938,8.408-2.139 C23.099,38.187,21.084,37.807,18.909,36.967z M14.767,33.431c0.393,0.392,0.883,0.775,1.49,1.14 c0.736,0.442,1.483,0.817,2.22,1.135c0.754-1.264,1.501-2.781,2.142-4.568C18.598,32.1,16.636,32.868,14.767,33.431z M23.202,24.329c-0.205,1.768-0.521,3.381-0.913,4.85c1.66-0.885,3.354-1.896,5.062-3.026 C25.802,25.497,24.099,24.734,23.202,24.329z"></path>
+                        <path fill="#cfd8dc" d="M17.924,10.6c-0.117,0-0.233-0.042-0.325-0.12c-1.61-1.378-3.505-4.182-3.585-4.301 c-0.129-0.191-0.109-0.446,0.046-0.616c0.154-0.171,0.408-0.211,0.608-0.102c0.011,0.003,0.938,0.385,7.217,1.431 c0.181,0.03,0.33,0.156,0.39,0.328c0.061,0.172,0.022,0.364-0.1,0.5c-1.758,1.953-3.979,2.813-4.073,2.848 C18.044,10.589,17.983,10.6,17.924,10.6z M15.647,6.746c0.631,0.849,1.54,1.996,2.372,2.769c0.511-0.233,1.657-0.818,2.744-1.798 C18.18,7.276,16.604,6.962,15.647,6.746z"></path>
+                        <path fill="#b71c1c" d="M21.843,24.4c-0.068,0-0.137-0.014-0.201-0.042c-0.199-0.088-0.319-0.294-0.296-0.51 c0.292-2.749-3.926-3.852-3.969-3.862c-0.174-0.044-0.312-0.179-0.359-0.352s0.002-0.359,0.129-0.486 c0.207-0.207,5.139-5.098,11.327-7.784c0.173-0.075,0.369-0.047,0.515,0.07c0.145,0.118,0.212,0.307,0.174,0.489 c-1.186,5.744-6.71,12.044-6.944,12.309C22.12,24.341,21.982,24.4,21.843,24.4z M18.455,19.285 c1.184,0.445,3.258,1.475,3.783,3.356c1.449-1.808,4.542-5.973,5.697-9.934C23.548,14.817,19.854,17.999,18.455,19.285z"></path>
+                        <path fill="#b71c1c" d="M13.079,28.36l-0.475-0.88c1.883-1.015,4.04-2.883,5.807-5.054c-1.504,1.03-2.365,1.735-2.392,1.758 l-0.639-0.77c0.039-0.032,1.764-1.447,4.631-3.22c0.787-1.266,1.392-2.568,1.703-3.816c0.053-0.212,0.099-0.417,0.136-0.615 c-1.925-0.687-3.701-1.094-4.921-1.269c-0.185-0.026-0.339-0.153-0.401-0.328c-0.062-0.175-0.021-0.371,0.104-0.507 c0.085-0.092,2.116-2.268,4.654-3.463c0.197-0.093,0.433-0.047,0.581,0.114c0.067,0.073,1.44,1.615,1.091,4.805 c1.155,0.45,2.345,0.997,3.491,1.648c2.759-1.24,5.892-2.356,9.229-3.03c0.172-0.034,0.363,0.028,0.481,0.168 c0.117,0.14,0.149,0.333,0.083,0.503c-1.3,3.332-4.786,6.891-4.934,7.041c-0.101,0.102-0.239,0.153-0.383,0.148 c-0.143-0.008-0.275-0.076-0.365-0.188c-1.12-1.408-2.584-2.574-4.163-3.523c-2.175,1.004-4.101,2.078-5.684,3.049 C18.693,24.084,15.644,26.979,13.079,28.36z M27.492,17.396c1.29,0.832,2.491,1.81,3.484,2.948 c0.828-0.898,2.815-3.168,3.942-5.422C32.268,15.532,29.76,16.415,27.492,17.396z M22.799,16.122 c-0.033,0.163-0.071,0.33-0.113,0.5c-0.21,0.839-0.544,1.701-0.972,2.561c1.096-0.626,2.309-1.272,3.618-1.898 C24.494,16.841,23.639,16.455,22.799,16.122z M18.048,13.672c1.111,0.218,2.48,0.574,3.941,1.086 c0.152-1.843-0.346-2.972-0.647-3.472C19.966,12.004,18.761,13.014,18.048,13.672z"></path>
+                        <path fill="#b71c1c" d="M18.05,18.5c0,4.38-3.65,7.86-6.28,10.4c-0.44,0.43-1.93,0.5-1.93,0.5 c0.37-0.38,0.79-0.78,1.24-1.21c2.5-2.42,5.97-5.73,5.97-9.69c0-4.69-1.89-6.54-3.38-8.02c-0.66-0.67-1.22-1.31-1.56-2.09 l0.31-0.13c0.34,0.15,0.73,0.32,1.03,0.45c0.24,0.35,0.56,0.69,0.93,1.06C15.91,11.3,18.05,13.4,18.05,18.5z"></path>
+                        <path fill="#b71c1c" d="M42.935,19.794c0,0-0.605,0.086-0.775,0.106c-8.76,0.97-17.8,3.49-22.97,5.56 c-1.87,0.75-3.81,1.66-5.58,2.68c-0.01,0.01-0.02,0.01-0.04,0.02C12.53,28.76,10,30,7.95,31.09c3-3.19,8.62-5.65,10.86-6.55 c5.07-2.03,13.78-4.48,22.35-5.53c-1.01-1.18-3.48-3.68-8.34-5.54c-2.84-1.1-7.16-1.72-10.97-2.27c-6.06-0.87-9.51-1.45-9.84-3.1 c-0.07-0.33-0.02-0.66,0.13-0.98c0.33,0.54,0.8,0.92,1.11,1.14c0.15,0.1,0.26,0.16,0.3,0.18l0.01,0.01 c1.42,0.75,5.25,1.3,8.44,1.76c3.86,0.56,8.23,1.19,11.18,2.32c6.87,2.65,9.24,6.44,9.34,6.6 C42.61,19.28,42.935,19.794,42.935,19.794z"></path>
+                    </svg>                    <span>SQL Server</span>
+                </div>
+                <div class="tech-item" data-aos="zoom-in" data-aos-delay="250">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" alt="Azure">
+                    <span>Azure</span>
+                </div>
+                <div class="tech-item" data-aos="zoom-in" data-aos-delay="300">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blazor/blazor-original.svg" alt="Blazor">
+                    <span>Blazor</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<style>
+    /* About Page Variables */
+    :root {
+        --primary: #4a6bff;
+        --primary-light: rgba(74, 107, 255, 0.1);
+        --secondary: #6c757d;
+        --dark: #2c3e50;
+        --light: #f8f9fa;
+        --white: #ffffff;
+        --gradient: linear-gradient(135deg, var(--primary), #6a11cb);
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    }
+
+    /* Base Styles */
+    .about-page {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        color: var(--dark);
+        line-height: 1.6;
+        overflow-x: hidden;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Hero Section */
+    .about-hero {
+        position: relative;
+        height: 60vh;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: var(--gradient);
+        color: var(--white);
+        overflow: hidden;
+        padding-top: 80px;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 0 20px;
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-subtitle {
+        font-size: clamp(1.1rem, 2vw, 1.5rem);
+        opacity: 0.9;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .hero-waves {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+    }
+
+        .hero-waves svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hero-waves path {
+            fill: var(--white);
+        }
+
+    /* Features Section */
+    .about-features {
+        padding: 100px 0;
+        background: var(--white);
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+        .section-header h2 {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+
+    .feature-card {
+        background: var(--white);
+        border-radius: 15px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(74, 107, 255, 0.15);
+    }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 25px;
+        background: var(--primary-light);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--primary);
+        transition: var(--transition);
+    }
+
+    .feature-card:hover .feature-icon {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .feature-card h3 {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+        color: var(--dark);
+    }
+
+    .feature-card p {
+        color: var(--secondary);
+        margin-bottom: 20px;
+    }
+
+    .feature-wave {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--primary);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    .feature-card:hover .feature-wave {
+        transform: scaleX(1);
+    }
+
+    /* Story Section */
+    .about-story {
+        padding: 100px 0;
+        background: var(--light);
+    }
+
+    .story-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 50px;
+    }
+
+    .story-text {
+        flex: 1;
+        min-width: 300px;
+    }
+
+        .story-text h2 {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .story-text p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+    .story-stats {
+        display: flex;
+        gap: 30px;
+        margin-top: 40px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: var(--secondary);
+        font-size: 0.9rem;
+    }
+
+    .story-image {
+        flex: 1;
+        min-width: 300px;
+        position: relative;
+    }
+
+    .image-wrapper {
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+        .image-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+    .image-highlight {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(74, 107, 255, 0.3), transparent);
+        z-index: 1;
+    }
+
+    /* Technology Section */
+    .about-tech {
+        padding: 100px 0;
+        background: var(--white);
+    }
+
+    .tech-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .tech-item {
+        width: 100px;
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--white);
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        transition: var(--transition);
+    }
+
+        .tech-item:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .tech-item img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+            object-fit: contain;
+        }
+
+        .tech-item span {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+    /* Animations */
+    @@keyframes pulse {
+        0%
+
+    {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+    }
+
+    .pulse-animation {
+        animation: pulse 3s infinite;
+    }
+
+    .zoom-animation {
+        transition: transform 0.5s ease;
+    }
+
+    .image-wrapper:hover .zoom-animation {
+        transform: scale(1.05);
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 992px) {
+        .about-hero
+
+    {
+        height: 50vh;
+    }
+
+    .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .about-hero
+
+    {
+        height: 45vh;
+        padding-top: 70px;
+    }
+
+    .story-content {
+        flex-direction: column;
+    }
+
+    .story-text, .story-image {
+        min-width: 100%;
+    }
+
+    .story-stats {
+        justify-content: center;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .about-hero
+
+    {
+        height: 40vh;
+    }
+
+    .feature-card {
+        padding: 30px 20px;
+    }
+
+    .tech-item {
+        width: 80px;
+        height: 80px;
+    }
+
+        .tech-item img {
+            width: 40px;
+            height: 40px;
+        }
+
+    }
+</style>
+<script>
+        // Add this to your existing JavaScript or create a new file
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS (Animate On Scroll) if not already included
+        if (typeof AOS === 'undefined') {
+            const aosScript = document.createElement('script');
+            aosScript.src = 'https://unpkg.com/aos@2.3.1/dist/aos.js';
+            document.head.appendChild(aosScript);
+
+            aosScript.onload = function() {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-in-out',
+                    once: true,
+                    offset: 100
+                });
+            };
+        } else {
+            AOS.init();
+        }
+
+        // Counter animation for stats
+        const counters = document.querySelectorAll('.counter');
+        const speed = 200;
+
+        function animateCounters() {
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-count');
+                const count = +counter.innerText;
+                const increment = target / speed;
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + increment);
+                    setTimeout(animateCounters, 1);
+                } else {
+                    counter.innerText = target;
+                }
+            });
+        }
+
+        // Start counter when element is in viewport
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+    });
+</script>

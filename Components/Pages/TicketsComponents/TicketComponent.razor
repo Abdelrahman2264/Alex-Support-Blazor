@@ -6,10 +6,11 @@
 @inject IAppUserRepoistory _IAppUser
 @rendermode InteractiveServer
 @inject IJSRuntime JS
+@attribute [Authorize]
 
 <AssignFormModal Title="@(!string.IsNullOrWhiteSpace(TicketStatus) ? "Re-Assign Ticket" : "Assign Ticket")"
-OnModalConfirmation="ConfirmAssign_Click"
-Agents="agents" />
+                 OnModalConfirmation="ConfirmAssign_Click"
+                 Agents="agents" />
 <div class="tickets-container">
     @if (tickets == null)
     {
@@ -41,7 +42,7 @@ Agents="agents" />
                     <div class="d-flex gap-2">
 
                         <button class="btn btn-sm btn-outline-secondary"
-                        onclick="toggleCollapse(this)">
+                                onclick="toggleCollapse(this)">
                             ▼ Details
                         </button>
                     </div>
@@ -118,23 +119,28 @@ Agents="agents" />
 
                     }
 
+                   
 
-                    <div class="card-footer p-3 d-flex justify-content-end gap-2">
-                        <a href="tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">Details</a>
-                        <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">
-                            @if (ticket.Status == "Assigned")
-                            {
-                                <span>Re-Assign</span>
-                            }
-                            else
-                            {
-                                <span>Assign</span>
-                            }
+                        <div class="card-footer p-3 d-flex justify-content-end gap-2">
+                            <a href="tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">Details</a>
+                             <AuthorizeView Roles="Admin">
+                            <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">
+                                @if (ticket.Status == "Assigned")
+                                {
+                                    <span>Re-Assign</span>
+                                }
+                                else
+                                {
+                                    <span>Assign</span>
+                                }
 
 
 
-                        </button>
-                    </div>
+                            </button>
+                        </AuthorizeView>
+
+                        </div>
+
                 </div>
             </div>
         }

@@ -1,0 +1,892 @@
+﻿@page "/SignUp"
+@layout AuthLayout
+@inject NavigationManager Navigation
+@inject IAppUserRepoistory _IUser
+@inject IDepartmentRepository _IDepartment
+@inject EmailServices _EmailServices
+@inject IJSRuntime JS
+@inject IPasswordHasherRepository _IPassword
+@inject ILogService LogService
+
+<style>
+    /* Base Styles */
+    :root {
+        --primary-color: #4361ee;
+        --primary-dark: #3a56d4;
+        --secondary-color: #3f37c9;
+        --accent-color: #4895ef;
+        --danger-color: #f72585;
+        --success-color: #4cc9f0;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --gray-color: #6c757d;
+        --border-radius: 12px;
+        --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+        --icon-color: #4361ee;
+        --label-color: #3a56d4;
+    }
+
+    /* Sign Up Container */
+    .split-auth-container {
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        background-color: #f5f7ff;
+    }
+
+    /* Photo Column */
+    .auth-photo-column {
+        flex: 1;
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.9) 0%, rgba(72, 149, 239, 0.9) 100%), url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') no-repeat center center;
+        background-size: cover;
+        color: white;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Geometric Pattern for Photo Column */
+    .photo-column-pattern {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0.15;
+        overflow: hidden;
+    }
+
+    .pattern-circle {
+        position: absolute;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .pattern-square {
+        position: absolute;
+        border: 2px solid white;
+        transform: rotate(45deg);
+    }
+
+    .pattern-triangle {
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-bottom: 30px solid white;
+    }
+
+    .photo-content {
+        position: relative;
+        z-index: 1;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2.5rem;
+    }
+
+    .auth-brand-logo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 3rem;
+        font-size: 1.75rem;
+        font-weight: 600;
+    }
+
+        .auth-brand-logo i {
+            font-size: 2.5rem;
+            margin-right: 0.75rem;
+            color: white;
+        }
+
+    .auth-welcome-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .auth-welcome-text {
+        font-size: 1.35rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    /* Form Column */
+    .auth-form-column {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Geometric Background for Form */
+    .form-background {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .form-bg-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(67, 97, 238, 0.08);
+    }
+
+    .form-bg-square {
+        position: absolute;
+        background: rgba(67, 97, 238, 0.05);
+        transform: rotate(45deg);
+    }
+
+    .form-bg-triangle {
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-left: 25px solid transparent;
+        border-right: 25px solid transparent;
+        border-bottom: 50px solid rgba(67, 97, 238, 0.06);
+    }
+
+    .auth-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 3rem;
+        width: 100%;
+        max-width: 650px; /* Increased max-width */
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .card-animate:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .auth-form-header {
+        margin-bottom: 2.5rem;
+        text-align: center;
+    }
+
+    .auth-form-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+    }
+
+    .auth-form-subtitle {
+        color: var(--gray-color);
+        font-size: 1.05rem;
+    }
+
+    /* Form Elements */
+    .floating-input-group {
+        margin-bottom: 1.75rem;
+        position: relative;
+    }
+
+    .floating-label {
+        position: absolute;
+        top: -10px;
+        left: 15px;
+        background: white;
+        padding: 0 5px;
+        font-size: 0.9rem;
+        color: var(--label-color); /* Colored label */
+        font-weight: 500;
+        z-index: 1;
+        transition: var(--transition);
+    }
+
+    .input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        color: var(--icon-color); /* Colored icon */
+        font-size: 1.2rem;
+    }
+
+    .floating-input {
+        width: 100%;
+        padding: 16px 16px 16px 50px;
+        border: 1px solid #e0e0e0;
+        border-radius: var(--border-radius);
+        font-size: 1.05rem;
+        transition: var(--transition);
+    }
+
+        .floating-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        background: none;
+        border: none;
+        color: var(--icon-color); /* Colored icon */
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: var(--transition);
+    }
+
+        .toggle-password:hover {
+            color: var(--primary-dark);
+        }
+
+    .validation-message {
+        color: var(--danger-color);
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    /* Form Options */
+    .auth-form-options {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 1.75rem;
+    }
+
+    .auth-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: var(--transition);
+    }
+
+        .auth-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+    /* Submit Button */
+    .submit-button {
+        width: 100%;
+        padding: 16px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.75rem;
+    }
+
+        .submit-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .submit-button i {
+            margin-left: 10px;
+            transition: var(--transition);
+        }
+
+        .submit-button:hover i {
+            transform: translateX(5px);
+        }
+
+    /* Social Login */
+    .auth-social-login {
+        margin-bottom: 1.75rem;
+    }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.75rem;
+        color: var(--gray-color);
+        font-size: 0.95rem;
+    }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .auth-divider::before {
+            margin-right: 1rem;
+        }
+
+        .auth-divider::after {
+            margin-left: 1rem;
+        }
+
+    .social-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .social-button {
+        padding: 13px;
+        border: 1px solid #e0e0e0;
+        border-radius: var(--border-radius);
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+        .social-button i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .social-button.google {
+            color: #DB4437;
+        }
+
+            .social-button.google:hover {
+                background: rgba(219, 68, 55, 0.1);
+                border-color: #DB4437;
+            }
+
+        .social-button.microsoft {
+            color: #0078d4;
+        }
+
+            .social-button.microsoft:hover {
+                background: rgba(0, 120, 212, 0.1);
+                border-color: #0078d4;
+            }
+
+    /* Alternative CTA */
+    .auth-alt-cta {
+        text-align: center;
+        font-size: 1rem;
+        color: var(--gray-color);
+    }
+
+    /* Error Message */
+    .auth-error-message {
+        background-color: rgba(247, 37, 133, 0.1);
+        color: var(--danger-color);
+        padding: 1.25rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1.75rem;
+        font-size: 0.95rem;
+        border-left: 4px solid var(--danger-color);
+    }
+
+        .auth-error-message ul {
+            margin: 0;
+            padding-left: 1rem;
+        }
+
+    /* Form Rows for Sign Up */
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        flex: 1;
+        position: relative;
+    }
+
+    .password-input {
+        position: relative;
+    }
+
+    /* Animation */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-card {
+        animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    @@keyframes float {
+        0% {
+            transform: translateY(0px) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-20px) rotate(5deg);
+        }
+
+        100% {
+            transform: translateY(0px) rotate(0deg);
+        }
+    }
+
+    .form-bg-circle,
+    .form-bg-square,
+    .form-bg-triangle,
+    .pattern-circle,
+    .pattern-square,
+    .pattern-triangle {
+        animation: float 12s ease-in-out infinite;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 1200px) {
+        .split-auth-container {
+            flex-direction: column;
+        }
+
+        .auth-photo-column {
+            padding: 2rem;
+            min-height: 350px;
+        }
+
+        .photo-content {
+            padding: 2rem;
+            text-align: center;
+            max-width: 100%;
+        }
+
+        .auth-brand-logo {
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-welcome-title {
+            font-size: 2.5rem;
+        }
+
+        .auth-welcome-text {
+            font-size: 1.2rem;
+        }
+
+        .auth-form-column {
+            padding: 2rem;
+        }
+
+        .auth-card {
+            padding: 2.5rem;
+            max-width: 700px; /* Adjusted for larger width */
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .auth-card {
+            padding: 2rem;
+        }
+
+        .auth-form-title {
+            font-size: 1.75rem;
+        }
+
+        .auth-form-subtitle {
+            font-size: 1rem;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .auth-photo-column {
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        .auth-welcome-title {
+            font-size: 2rem;
+        }
+
+        .auth-welcome-text {
+            font-size: 1.1rem;
+        }
+
+        .auth-form-column {
+            padding: 1.5rem;
+        }
+
+        .auth-card {
+            padding: 1.75rem;
+        }
+
+        .social-buttons {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Error message styling */
+    .ErrorMessage {
+        color: var(--danger-color);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    /* Department select styling */
+    select.floating-input {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234361ee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+    }
+</style>
+
+<div class="split-auth-container">
+    <!-- Photo Column (Left) -->
+    <div class="auth-photo-column">
+        <!-- Geometric Pattern -->
+        <div class="photo-column-pattern">
+            <div class="pattern-circle" style="width: 120px; height: 120px; top: 10%; left: 15%;"></div>
+            <div class="pattern-circle" style="width: 80px; height: 80px; bottom: 20%; right: 10%;"></div>
+            <div class="pattern-square" style="width: 100px; height: 100px; top: 30%; right: 20%;"></div>
+            <div class="pattern-triangle" style="top: 70%; left: 25%;"></div>
+            <div class="pattern-square" style="width: 60px; height: 60px; bottom: 15%; left: 20%;"></div>
+        </div>
+
+        <div class="photo-content">
+            <div class="auth-brand-logo">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Alex Support IT Ticketing System</span>
+            </div>
+            <h2 class="auth-welcome-title">Join Us Today</h2>
+            <p class="auth-welcome-text">Create your account to submit support tickets, track issues, and collaborate with our IT team.</p>
+        </div>
+    </div>
+
+    <!-- Form Column (Right) -->
+    <div class="auth-form-column">
+        <!-- Geometric Background -->
+        <div class="form-background">
+            <div class="form-bg-circle" style="width: 150px; height: 150px; top: 10%; right: 15%;"></div>
+            <div class="form-bg-circle" style="width: 80px; height: 80px; bottom: 20%; left: 10%;"></div>
+            <div class="form-bg-square" style="width: 120px; height: 120px; top: 30%; left: 20%;"></div>
+            <div class="form-bg-triangle" style="top: 70%; right: 25%;"></div>
+            <div class="form-bg-square" style="width: 70px; height: 70px; bottom: 15%; right: 20%;"></div>
+            <div class="form-bg-circle" style="width: 100px; height: 100px; top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+        </div>
+
+        <div class="auth-card card-animate">
+            <div class="auth-form-header">
+                <h1 class="auth-form-title">Sign Up</h1>
+                <p class="auth-form-subtitle">Create your account to get started</p>
+            </div>
+
+            <EditForm Model="@SignUpModel" OnValidSubmit="@HandleSignUp" FormName="SignUpForm">
+                <DataAnnotationsValidator />
+
+                @if (IsInVaild)
+                {
+                    <div class="auth-error-message">
+                        <ul>
+                            @if (IsEmailExist)
+                            {
+                                <li>@EmailExistErrorMessage</li>
+                            }
+                            @if (IsFingerprintExist)
+                            {
+                                <li>@FingerprintExistErrorMessage</li>
+                            }
+                            @if (IsPhoneNumberExist)
+                            {
+                                <li>@PhoneNumberExistErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <div class="form-row">
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">First Name</label>
+                        <div class="input-container">
+                            <i class="bi bi-person input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.Fname" class="floating-input" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.Fname)" class="validation-message" />
+                    </div>
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Last Name</label>
+                        <div class="input-container">
+                            <i class="bi bi-person input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.Lname" class="floating-input" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.Lname)" class="validation-message" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Email</label>
+                        <div class="input-container">
+                            <i class="bi bi-envelope input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.Email" class="floating-input" style="@(IsEmailExist ? "border-color:red":"")" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.Email)" class="validation-message" />
+                        @if (IsEmailExist)
+                        {
+                            <span class="ErrorMessage">@EmailExistErrorMessage</span>
+                        }
+                    </div>
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Fingerprint</label>
+                        <div class="input-container">
+                            <i class="bi bi-fingerprint input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.Fingerprint" class="floating-input" style="@(IsFingerprintExist ? "border-color:red":"")" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.Fingerprint)" class="validation-message" />
+                        @if (IsFingerprintExist)
+                        {
+                            <span class="ErrorMessage">@FingerprintExistErrorMessage</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Password</label>
+                        <div class="input-container password-input">
+                            <i class="bi bi-lock input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.Password"
+                                       type="@(showPassword ? "text" : "password")"
+                                       class="floating-input" />
+                            <button type="button" class="toggle-password" @onclick="TogglePasswordVisibility">
+                                <i class="@(showPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.Password)" class="validation-message" />
+                    </div>
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Confirm Password</label>
+                        <div class="input-container">
+                            <i class="bi bi-lock input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.ConfirmPassword"
+                                       type="@(showPassword ? "text" : "password")"
+                                       class="floating-input" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.ConfirmPassword)" class="validation-message" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Mobile Phone</label>
+                        <div class="input-container">
+                            <i class="bi bi-phone input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.Phone" class="floating-input" style="@(IsPhoneNumberExist ? "border-color:red":"")" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.Phone)" class="validation-message" />
+                        @if (IsPhoneNumberExist)
+                        {
+                            <span class="ErrorMessage">@PhoneNumberExistErrorMessage</span>
+                        }
+                    </div>
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Fiber Me <span style="color:dimgrey">(optional)</span></label>
+                        <div class="input-container">
+                            <i class="bi bi-phone input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.MobilePhone" class="floating-input" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.MobilePhone)" class="validation-message" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Job Title</label>
+                        <div class="input-container">
+                            <i class="bi bi-briefcase input-icon"></i>
+                            <InputText @bind-Value="SignUpModel.JobTitle" class="floating-input" />
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.JobTitle)" class="validation-message" />
+                    </div>
+                    <div class="form-group floating-input-group">
+                        <label class="floating-label">Department</label>
+                        <div class="input-container">
+                            <i class="bi bi-building input-icon"></i>
+                            <InputSelect @bind-Value="SignUpModel.DID" class="floating-input">
+                                <option value="0">Select Department</option>
+                                @foreach (var department in Departments)
+                                {
+                                    <option value="@department.DID">@department.DepartmentName</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <ValidationMessage For="@(() => SignUpModel.DID)" class="validation-message" />
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-button">
+                    <span>Sign Up</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+                <div class="auth-alt-cta">
+                    Already have an account? <a href="/SignIn" class="auth-link">Sign In</a>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<VerifyCodeComponent verificationModel="verificationModel"
+                     OnModalConfirmation="Confirm_Verification"
+                     OnResendCode="HandleResendCode" />
+
+@code {
+    [SupplyParameterFromForm]
+    public SignUpModel SignUpModel { get; set; } = new SignUpModel();
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+    private IEnumerable<Department> Departments { get; set; } = new List<Department>();
+    private AppUser user { get; set; } = new AppUser();
+    private bool showPassword = false;
+    private bool IsEmailExist = false;
+    private string EmailExistErrorMessage { get; set; } = "";
+    private bool IsFingerprintExist = false;
+    private string FingerprintExistErrorMessage { get; set; } = "";
+    private bool IsPhoneNumberExist = false;
+    private string PhoneNumberExistErrorMessage { get; set; } = "";
+    private bool IsInVaild = false;
+    private VerificationModel verificationModel { get; set; } = new VerificationModel();
+    private bool showVerificationModal = false;
+
+    private void TogglePasswordVisibility() => showPassword = !showPassword;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Departments = await _IDepartment.AllDepartmentsAsync();
+    }
+
+    private async Task HandleSignUp()
+    {
+        IsInVaild = false;
+        IsEmailExist = await _IUser.IsEmailExists(SignUpModel.Email);
+        IsFingerprintExist = await _IUser.IsFingerprintExists(SignUpModel.Fingerprint);
+        IsPhoneNumberExist = await _IUser.IsPhoneNumberExists(SignUpModel.Phone);
+
+        if (IsEmailExist)
+        {
+            EmailExistErrorMessage = "This Email Is Already Exist";
+            IsInVaild = true;
+        }
+        if (IsFingerprintExist)
+        {
+            FingerprintExistErrorMessage = "This Fingerprint Is Already Exist";
+            IsInVaild = true;
+        }
+        if (IsPhoneNumberExist)
+        {
+            PhoneNumberExistErrorMessage = "This Phone Number Is Already Exist";
+            IsInVaild = true;
+        }
+        if (IsInVaild)
+        {
+            return;
+        }
+
+        var code = _IUser.GenerateVerifyCode();
+        verificationModel.Code = code.ToString();
+        await _EmailServices.SendEmailAsync(
+            SignUpModel.Email,
+            $"Hello {SignUpModel.Fname + " " + SignUpModel.Lname}",
+            "Verification to Sign Up",
+            $"<p>Dear {SignUpModel.Fname} {SignUpModel.Lname},</p><p>You have successfully logged in to the Alex Support IT Ticketing System.</p><p>If this was not you, please contact support immediately.</p>",
+            code.ToString()
+        );
+
+        showVerificationModal = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (showVerificationModal)
+        {
+            showVerificationModal = false;
+            await JS.InvokeVoidAsync("ShowVerificationModalFormModal");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async Task Confirm_Verification(VerificationModel Model)
+    {
+        await JS.InvokeVoidAsync("HideVerificationModalFormModal");
+        if (Model.Code == verificationModel.Code)
+        {
+            user = new AppUser
+                {
+                    Fname = SignUpModel.Fname,
+                    Lname = SignUpModel.Lname,
+                    Email = SignUpModel.Email,
+                    Fingerprint = int.Parse(SignUpModel.Fingerprint),
+                    Phone = SignUpModel.Phone,
+                    MobilePhone = SignUpModel.MobilePhone,
+                    JobTitle = SignUpModel.JobTitle,
+                    DID = SignUpModel.DID,
+                    Password = _IPassword.HashPassword(SignUpModel.Password),
+                };
+            user = await _IUser.SignUp(user);
+            if (user != null)
+            {
+                await LogService.CreateSystemLogAsync($"{user.LoginName} Sign Up In The System.", "APP USERS");
+                await JS.InvokeVoidAsync("ShowToast", "Sign Up Successful", "You have successfully signed up.", "success");
+            }
+
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task HandleResendCode()
+    {
+        var code = _IUser.GenerateVerifyCode();
+        verificationModel.Code = code.ToString();
+        await _EmailServices.SendEmailAsync(
+            SignUpModel.Email,
+            $"Hello {SignUpModel.Fname + " " + SignUpModel.Lname}",
+            "Verification to Sign Up",
+            $"<p>Dear {SignUpModel.Fname} {SignUpModel.Lname},</p><p>You have successfully logged in to the Alex Support IT Ticketing System.</p><p>If this was not you, please contact support immediately.</p>",
+            code.ToString()
+        );
+        await JS.InvokeVoidAsync("ShowVerificationModalFormModal");
+    }
+}

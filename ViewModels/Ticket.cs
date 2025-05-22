@@ -90,6 +90,7 @@ namespace AlexSupport.ViewModels
         public AppUser? User { get; set; }
         public AppUser? Agent { get; set; }
         public  ICollection<Tlog> Tlogs { get; set; }   
+        public  ICollection<ChatMessage> ChatMessages { get; set; }   
         [ForeignKey(nameof(category))]
         [Column(TypeName = "INT")]
         [Display(Name = "Issue Category")]

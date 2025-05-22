@@ -63,6 +63,12 @@ namespace AlexSupport.Migrations
                         .HasColumnType("NVARCHAR(50)")
                         .HasColumnName("Fname");
 
+                    b.Property<string>("ImageContentType")
+                        .HasColumnType("NVARCHAR(100)");
+
+                    b.Property<byte[]>("ImageData")
+                        .HasColumnType("VARBINARY(MAX)");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -91,20 +97,20 @@ namespace AlexSupport.Migrations
                     b.Property<string>("MobilePhone")
                         .HasMaxLength(11)
                         .IsUnicode(false)
-                        .HasColumnType("NVARCHAR(11)")
+                        .HasColumnType("NVARCHAR(20)")
                         .HasColumnName("MobilePhone");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(50)
+                        .HasMaxLength(250)
                         .IsUnicode(false)
-                        .HasColumnType("NVARCHAR(50)")
+                        .HasColumnType("NVARCHAR(250)")
                         .HasColumnName("Password");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(10)
                         .IsUnicode(false)
-                        .HasColumnType("NVARCHAR(10)");
+                        .HasColumnType("NVARCHAR(20)");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -156,6 +162,47 @@ namespace AlexSupport.Migrations
                         .HasName("CATEGORYID_PK");
 
                     b.ToTable("Categories", "dbo");
+                });
+
+            modelBuilder.Entity("AlexSupport.ViewModels.ChatMessage", b =>
+                {
+                    b.Property<int>("CHID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CHID"));
+
+                    b.Property<string>("ImageContentType")
+                        .HasColumnType("NVARCHAR(100)");
+
+                    b.Property<byte[]>("ImageData")
+                        .HasColumnType("VARBINARY(MAX)");
+
+                    b.Property<bool?>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MessageText")
+                        .IsRequired()
+                        .HasMaxLength(2147483647)
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("INT");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TicketId")
+                        .HasColumnType("INT");
+
+                    b.HasKey("CHID")
+                        .HasName("CHATMESSAGEID_PK");
+
+                    b.HasIndex("SenderId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("ChatMessages", "dbo");
                 });
 
             modelBuilder.Entity("AlexSupport.ViewModels.DailyTasks", b =>
@@ -253,6 +300,89 @@ namespace AlexSupport.Migrations
                         .HasName("LOCATIONID_PK");
 
                     b.ToTable("Locations", "dbo");
+                });
+
+            modelBuilder.Entity("AlexSupport.ViewModels.SystemLogs", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INT")
+                        .HasColumnName("SYSTEMLOGS ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("Action");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("UID")
+                        .HasColumnType("INT");
+
+                    b.Property<DateTime>("actionTime")
+                        .HasColumnType("datetime2(0)")
+                        .HasColumnName("Action Time");
+
+                    b.HasKey("Id")
+                        .HasName("SYSTEMLOGID_PK");
+
+                    b.HasIndex("UID");
+
+                    b.ToTable("SystemLogs", "dbo");
+                });
+
+            modelBuilder.Entity("AlexSupport.ViewModels.SystemNotification", b =>
+                {
+                    b.Property<int>("NID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INT");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NID"));
+
+                    b.Property<int?>("AppUserUID")
+                        .HasColumnType("INT");
+
+                    b.Property<int?>("AppUserUID1")
+                        .HasColumnType("INT");
+
+                    b.Property<int>("FromUserId")
+                        .HasColumnType("INT");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ToUserId")
+                        .HasColumnType("INT");
+
+                    b.HasKey("NID")
+                        .HasName("NOTIFICATIONNID_PK");
+
+                    b.HasIndex("AppUserUID");
+
+                    b.HasIndex("AppUserUID1");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("ToUserId");
+
+                    b.ToTable("Notifications", "dbo");
                 });
 
             modelBuilder.Entity("AlexSupport.ViewModels.Ticket", b =>
@@ -364,21 +494,8 @@ namespace AlexSupport.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("Action");
-
-                    b.Property<string>("ImageContentType")
-                        .HasColumnType("NVARCHAR(100)");
-
-                    b.Property<byte[]>("ImageData")
-                        .HasColumnType("VARBINARY(MAX)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(850)
-                        .IsUnicode(false)
-                        .HasColumnType("nvarchar(850)")
-                        .HasColumnName("Description");
 
                     b.Property<int>("TID")
                         .HasColumnType("INT")
@@ -412,6 +529,25 @@ namespace AlexSupport.Migrations
                     b.Navigation("Department");
                 });
 
+            modelBuilder.Entity("AlexSupport.ViewModels.ChatMessage", b =>
+                {
+                    b.HasOne("AlexSupport.ViewModels.AppUser", "Sender")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("SenderId")
+                        .IsRequired()
+                        .HasConstraintName("FK_APPUSER_CHATMESSAGES");
+
+                    b.HasOne("AlexSupport.ViewModels.Ticket", "Ticket")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("TicketId")
+                        .IsRequired()
+                        .HasConstraintName("FK_TICKET_CHATMESSAGES");
+
+                    b.Navigation("Sender");
+
+                    b.Navigation("Ticket");
+                });
+
             modelBuilder.Entity("AlexSupport.ViewModels.DailyTasks", b =>
                 {
                     b.HasOne("AlexSupport.ViewModels.Category", "category")
@@ -420,6 +556,44 @@ namespace AlexSupport.Migrations
                         .HasConstraintName("FK_DailyTask_Category");
 
                     b.Navigation("category");
+                });
+
+            modelBuilder.Entity("AlexSupport.ViewModels.SystemLogs", b =>
+                {
+                    b.HasOne("AlexSupport.ViewModels.AppUser", "AppUser")
+                        .WithMany("SystemLogs")
+                        .HasForeignKey("UID")
+                        .IsRequired()
+                        .HasConstraintName("FK_SystemTLog_AppUserId");
+
+                    b.Navigation("AppUser");
+                });
+
+            modelBuilder.Entity("AlexSupport.ViewModels.SystemNotification", b =>
+                {
+                    b.HasOne("AlexSupport.ViewModels.AppUser", null)
+                        .WithMany("ReceivedNotifications")
+                        .HasForeignKey("AppUserUID");
+
+                    b.HasOne("AlexSupport.ViewModels.AppUser", null)
+                        .WithMany("SentNotifications")
+                        .HasForeignKey("AppUserUID1");
+
+                    b.HasOne("AlexSupport.ViewModels.AppUser", "FromUser")
+                        .WithMany()
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AlexSupport.ViewModels.AppUser", "ToUser")
+                        .WithMany()
+                        .HasForeignKey("ToUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("ToUser");
                 });
 
             modelBuilder.Entity("AlexSupport.ViewModels.Ticket", b =>
@@ -478,6 +652,14 @@ namespace AlexSupport.Migrations
                 {
                     b.Navigation("AgentTicket");
 
+                    b.Navigation("ChatMessages");
+
+                    b.Navigation("ReceivedNotifications");
+
+                    b.Navigation("SentNotifications");
+
+                    b.Navigation("SystemLogs");
+
                     b.Navigation("Ticket");
 
                     b.Navigation("Tlogs");
@@ -502,6 +684,8 @@ namespace AlexSupport.Migrations
 
             modelBuilder.Entity("AlexSupport.ViewModels.Ticket", b =>
                 {
+                    b.Navigation("ChatMessages");
+
                     b.Navigation("Tlogs");
                 });
 #pragma warning restore 612, 618

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<!-- saved from url=(0023)https://localhost:7144/ -->
+<html lang="en" b-jzaxhreenm=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<base href="/signIn">--><base href=".">
+
+    <link rel="stylesheet" href="./Home_files/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="./Home_files/toastr.min.css">
+    <link href="./Home_files/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="./Home_files/bootstrap-icons.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="./Home_files/toastr.min.css">
+
+    <link href="./Home_files/blazor.bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="./Home_files/all.min.css">
+    <link rel="stylesheet" href="./Home_files/AlexSupport.i42kt40u2h.styles.css">
+    <link rel="stylesheet" href="./Home_files/app.css">
+
+
+    <script type="importmap">{
+  "imports": {
+    "./JS/notification.js": "./JS/notification.5pghp6fpk8.js",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.5vmds449nb.js",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.pdf.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.pdf.ct0ej5e0q0.js",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.sortable-list.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.sortable-list.ezlxc6gzv3.js",
+    "./_content/Blazor.Bootstrap/blazor.bootstrap.theme-switcher.js": "./_content/Blazor.Bootstrap/blazor.bootstrap.theme-switcher.pisakkcwob.js",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.min.js": "./_content/Blazor.Bootstrap/pdfjs-4.0.379.min.j8zp7bt7w3.js",
+    "./_content/Blazor.Bootstrap/pdfjs-4.0.379.worker.min.js": "./_content/Blazor.Bootstrap/pdfjs-4.0.379.worker.min.79hai7knhw.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "./lib/bootstrap/dist/js/bootstrap.bundle.6cfz1n2cew.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "./lib/bootstrap/dist/js/bootstrap.esm.vr1egmr9el.js",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js",
+    "./lib/bootstrap/dist/js/bootstrap.js": "./lib/bootstrap/dist/js/bootstrap.notf2xhcfb.js"
+  }
+}</script>
+    <link rel="icon" type="image/png" href="https://localhost:7144/favicon.png">
+    </head>
+
+<body b-jzaxhreenm="">
+
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" b-jzaxhreenm="">
+    <title b-jzaxhreenm="">Home</title>
+    <link rel="stylesheet" href="./Home_files/style.css" b-jzaxhreenm="">
+    <script type="text/javascript" src="./Home_files/app.js.download" defer="" b-jzaxhreenm=""></script>
+<nav id="sidebar" b-jzaxhreenm=""><ul class="start-0" b-jzaxhreenm=""><li b-jzaxhreenm=""><span class="logo" b-jzaxhreenm="">Alex Support</span>
+                <button onclick="toggleSidebar()" id="toggle-btn" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="m313-480 155 156q11 11 11.5 27.5T468-268q-11 11-28 11t-28-11L228-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l184-184q11-11 27.5-11.5T468-692q11 11 11 28t-11 28L313-480Zm264 0 155 156q11 11 11.5 27.5T732-268q-11 11-28 11t-28-11L492-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l184-184q11-11 27.5-11.5T732-692q11 11 11 28t-11 28L577-480Z" b-jzaxhreenm=""></path></svg></button></li>
+            <li class="active" b-jzaxhreenm=""><a href="https://localhost:7144/index.html" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="M240-200h120v-200q0-17 11.5-28.5T400-440h160q17 0 28.5 11.5T600-400v200h120v-360L480-740 240-560v360Zm-80 0v-360q0-19 8.5-36t23.5-28l240-180q21-16 48-16t48 16l240 180q15 11 23.5 28t8.5 36v360q0 33-23.5 56.5T720-120H560q-17 0-28.5-11.5T520-160v-200h-80v200q0 17-11.5 28.5T400-120H240q-33 0-56.5-23.5T160-200Zm320-270Z" b-jzaxhreenm=""></path></svg>
+                    <span b-jzaxhreenm="">Home</span></a></li>
+            <li b-jzaxhreenm=""><a href="https://localhost:7144/dashboard" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="M520-640v-160q0-17 11.5-28.5T560-840h240q17 0 28.5 11.5T840-800v160q0 17-11.5 28.5T800-600H560q-17 0-28.5-11.5T520-640ZM120-480v-320q0-17 11.5-28.5T160-840h240q17 0 28.5 11.5T440-800v320q0 17-11.5 28.5T400-440H160q-17 0-28.5-11.5T120-480Zm400 320v-320q0-17 11.5-28.5T560-520h240q17 0 28.5 11.5T840-480v320q0 17-11.5 28.5T800-120H560q-17 0-28.5-11.5T520-160Zm-400 0v-160q0-17 11.5-28.5T160-360h240q17 0 28.5 11.5T440-320v160q0 17-11.5 28.5T400-120H160q-17 0-28.5-11.5T120-160Zm80-360h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z" b-jzaxhreenm=""></path></svg>
+                    <span b-jzaxhreenm="">Dashboard</span></a></li>
+            <li b-jzaxhreenm=""><button onclick="toggleSubMenu(this)" class="dropdown-btn" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h207q16 0 30.5 6t25.5 17l57 57h320q33 0 56.5 23.5T880-640v400q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H447l-80-80H160v480Zm0 0v-480 480Zm400-160v40q0 17 11.5 28.5T600-320q17 0 28.5-11.5T640-360v-40h40q17 0 28.5-11.5T720-440q0-17-11.5-28.5T680-480h-40v-40q0-17-11.5-28.5T600-560q-17 0-28.5 11.5T560-520v40h-40q-17 0-28.5 11.5T480-440q0 17 11.5 28.5T520-400h40Z" b-jzaxhreenm=""></path></svg>
+                    <span b-jzaxhreenm="">Basics</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 156-156q11-11 28-11t28 11q11 11 11 28t-11 28L508-372q-6 6-13 8.5t-15 2.5Z" b-jzaxhreenm=""></path></svg></button>
+                <ul class="sub-menu" b-jzaxhreenm=""><div b-jzaxhreenm=""><li b-jzaxhreenm=""><a href="https://localhost:7144/Sites" b-jzaxhreenm="">Locations</a></li>
+                    <li b-jzaxhreenm=""><a href="https://localhost:7144/Departments" b-jzaxhreenm="">Departments</a></li>
+                    <li b-jzaxhreenm=""><a href="https://localhost:7144/Categories" b-jzaxhreenm="">Categories</a></li></div></ul></li>
+            <li b-jzaxhreenm=""><button onclick="toggleSubMenu(this)" class="dropdown-btn" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="m221-313 142-142q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L250-228q-12 12-28 12t-28-12l-86-86q-11-11-11-28t11-28q11-11 28-11t28 11l57 57Zm0-320 142-142q12-12 28-11.5t28 12.5q11 12 11 28t-11 28L250-548q-12 12-28 12t-28-12l-86-86q-11-11-11-28t11-28q11-11 28-11t28 11l57 57Zm339 353q-17 0-28.5-11.5T520-320q0-17 11.5-28.5T560-360h280q17 0 28.5 11.5T880-320q0 17-11.5 28.5T840-280H560Zm0-320q-17 0-28.5-11.5T520-640q0-17 11.5-28.5T560-680h280q17 0 28.5 11.5T880-640q0 17-11.5 28.5T840-600H560Z" b-jzaxhreenm=""></path></svg>
+                    <span b-jzaxhreenm="">Tickets</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 156-156q11-11 28-11t28 11q11 11 11 28t-11 28L508-372q-6 6-13 8.5t-15 2.5Z" b-jzaxhreenm=""></path></svg></button>
+                <ul class="sub-menu" b-jzaxhreenm=""><div b-jzaxhreenm=""><li b-jzaxhreenm=""><a href="https://localhost:7144/Tickets/createticket" b-jzaxhreenm="">Create Ticket</a></li>
+                    <li b-jzaxhreenm=""><a href="https://localhost:7144/tickets/Assigned" b-jzaxhreenm="">Assigned Ticket</a></li>
+                    <li b-jzaxhreenm=""><a href="https://localhost:7144/Tickets" b-jzaxhreenm="">Open Tickets</a></li>
+                    <li b-jzaxhreenm=""><a href="https://localhost:7144/DailyTasks" b-jzaxhreenm="">Daily Tasks</a></li>
+                    <li b-jzaxhreenm=""><a href="https://localhost:7144/tickets/Closed" b-jzaxhreenm="">Closed Tickets</a></li></div></ul></li>
+          
+            <li b-jzaxhreenm=""><a href="https://localhost:7144/SystemUsers" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" b-jzaxhreenm=""><path d="M0-240v-63q0-43 44-70t116-27q13 0 25 .5t23 2.5q-14 21-21 44t-7 48v65H0Zm240 0v-65q0-32 17.5-58.5T307-410q32-20 76.5-30t96.5-10q53 0 97.5 10t76.5 30q32 20 49 46.5t17 58.5v65H240Zm540 0v-65q0-26-6.5-49T754-397q11-2 22.5-2.5t23.5-.5q72 0 116 26.5t44 70.5v63H780Zm-455-80h311q-10-20-55.5-35T480-370q-55 0-100.5 15T325-320ZM160-440q-33 0-56.5-23.5T80-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T160-440Zm640 0q-33 0-56.5-23.5T720-520q0-34 23.5-57t56.5-23q34 0 57 23t23 57q0 33-23 56.5T800-440Zm-320-40q-50 0-85-35t-35-85q0-51 35-85.5t85-34.5q51 0 85.5 34.5T600-600q0 50-34.5 85T480-480Zm0-80q17 0 28.5-11.5T520-600q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600q0 17 11.5 28.5T480-560Zm1 240Zm-1-280Z" b-jzaxhreenm=""></path></svg>                    <span b-jzaxhreenm="">System Users</span></a></li>
+            <li b-jzaxhreenm=""><a href="https://localhost:7144/profile" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" b-jzaxhreenm=""><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-240v-32q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v32q0 33-23.5 56.5T720-160H240q-33 0-56.5-23.5T160-240Zm80 0h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z" b-jzaxhreenm=""></path></svg>
+                    <span b-jzaxhreenm="">Profile</span></a></li>
+            <li b-jzaxhreenm=""><a href="https://localhost:7144/signout" b-jzaxhreenm=""><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3" b-jzaxhreenm=""><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z" b-jzaxhreenm=""></path></svg>                    <span b-jzaxhreenm="">Sign Out</span></a></li></ul></nav>
+    <main b-jzaxhreenm=""><notificationcomponent b-jzaxhreenm=""></notificationcomponent> 
+        <!--!--><!--!--><h3>Notifications</h3><div class="alert alert-info">You sent: Hello from Abd!</div><button class="btn btn-primary">Send Test Notification</button></main>
+<!-- Visual Studio Browser Link -->
+<script type="text/javascript" src="./Home_files/browserLink" async="async" id="__browserLink_initializationData" data-requestid="162d202a83064d3c9a9728c60e6bb038" data-requestmappingfromserver="false" data-connecturl="http://localhost:53631/b8c6ad44748e4e3493984bb6fa49c2f9/browserLink"></script>
+<!-- End Browser Link -->
+
+<div id="blazor-error-ui" data-nosnippet="" b-jzaxhreenm="">
+    An unhandled error has occurred.
+    <a href="https://localhost:7144/" class="reload" b-jzaxhreenm="">Reload</a>
+    <span class="dismiss" b-jzaxhreenm="">🗙</span></div>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate>
+
+    <script src="./Home_files/blazor.web.js.download"></script>
+    <script src="./Home_files/jquery.min.js.download" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+    <script src="./Home_files/chart.js.download"></script>
+
+    <script src="./Home_files/bootstrap.bundle.min.js.download" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="./Home_files/bootstrap.bundle.min(1).js.download" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <script src="./Home_files/chart.umd.js.download" integrity="sha512-gQhCDsnnnUfaRzD8k1L5llCCV6O9HN09zClIzzeJ8OJ9MpGmIlCxm+pdCkqTwqJ4JcjbojFr79rl2F1mzcoLMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script src="./Home_files/chartjs-plugin-datalabels.min.js.download" integrity="sha512-JPcRR8yFa8mmCsfrw4TNte1ZvF1e3+1SdGMslZvmrzDYxS69J7J49vkFL8u6u8PlPJK+H3voElBtUCzaXj+6ig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script src="./Home_files/Sortable.min.js.download"></script>
+    <script src="./Home_files/blazor.bootstrap.js.download"></script>
+    <script src="./Home_files/toastr.min.js.download"></script>
+    <script src="./Home_files/notification.js.download"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.initializeNotificationHandler();
+        });
+    </script>
+    <script src="./Home_files/ChartJsBlazorInterop.js.download"></script>
+    <script src="./Home_files/Chart.min.js.download"></script>
+    <script>
+        const toggleButton = document.getElementById('toggle-btn')
+                const sidebar = document.getElementById('sidebar')
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('close')
+            toggleButton.classList.toggle('rotate')
+
+            closeAllSubMenus()
+        }
+
+        function toggleSubMenu(button) {
+
+            if (!button.nextElementSibling.classList.contains('show')) {
+                closeAllSubMenus()
+            }
+
+            button.nextElementSibling.classList.toggle('show')
+            button.classList.toggle('rotate')
+
+            if (sidebar.classList.contains('close')) {
+                sidebar.classList.toggle('close')
+                toggleButton.classList.toggle('rotate')
+            }
+        }
+
+        function closeAllSubMenus() {
+            Array.from(sidebar.getElementsByClassName('show')).forEach(ul => {
+                ul.classList.remove('show')
+                ul.previousElementSibling.classList.remove('rotate')
+            })
+        }
+    </script>
+    <script>
+        function toggleActive(button) {
+            const isActive = button.classList.contains("btn-action-active");
+
+            if (isActive) {
+                button.classList.remove("btn-action-active");
+                button.classList.add("btn-action-inactive");
+                button.textContent = "Activate";
+            } else {
+                button.classList.remove("btn-action-inactive");
+                button.classList.add("btn-action-active");
+                button.textContent = "Deactivate";
+            }
+        }
+
+        function toggleCollapse(button) {
+            const card = button.closest('.ticket-card');
+            const body = card.querySelector('.collapse-body');
+            const isVisible = body.style.display !== 'none';
+
+            if (isVisible) {
+                body.style.display = 'none';
+                button.textContent = "▼ Details";
+            } else {
+                body.style.display = 'block';
+                button.textContent = "▲ Hide";
+            }
+        }
+    </script>
+    <script>
+                window.notification = {
+            init: function (dotNetHelper) {
+                window.dotNetHelper = dotNetHelper;
+            },
+
+            playSound: function (soundPath) {
+                const audio = document.getElementById('notificationSound');
+                audio.src = soundPath;
+                audio.play().catch(e => console.log("Audio play failed:", e));
+            }
+        };
+    </script>
+    <script>
+        window.audioPlayer = {
+            play: function (url) {
+                const audio = new Audio(url);
+                audio.play();
+            }
+        };
+
+    </script></body></html>

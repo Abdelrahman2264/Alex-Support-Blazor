@@ -1,0 +1,307 @@
+﻿@using AlexSupport.ViewModels
+@using Microsoft.AspNetCore.SignalR.Client
+@inject ITicketChatService ChatService
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+@inject ILogService Log
+@inject IJSRuntime JS
+@attribute [Authorize]
+
+<div class="chat-container">
+    <div class="chat-card">
+        <div class="chat-header">
+            <h3>Ticket @TicketId Group Chat</h3>
+            <div class="connection-status @ConnectionState.ToString().ToLower()">
+                <span class="status-dot"></span>
+                @ConnectionState
+            </div>
+        </div>
+
+        <div class="chat-messages" @ref="messagesContainer">
+            @if (Messages.Count == 0)
+            {
+                <div class="empty-chat">
+                    <i class="fas fa-comments"></i>
+                    <p>No messages yet. Start the conversation!</p>
+                </div>
+            }
+            else
+            {
+                DateTime? currentDate = null;
+                @foreach (var message in Messages)
+                {
+                    // Check if we need to show a date separator
+                    var messageDate = message.SentDate.Date;
+                    if (currentDate == null || messageDate != currentDate)
+                    {
+                        currentDate = messageDate;
+                        <div class="date-separator">
+                            @if (messageDate == DateTime.Today)
+                            {
+                                <span>Today</span>
+                            }
+                            else if (messageDate == DateTime.Today.AddDays(-1))
+                            {
+                                <span>Yesterday</span>
+                            }
+                            else
+                            {
+                                <span>@messageDate.ToShortDateString()</span>
+                            }
+                        </div>
+                    }
+
+
+                    <div class="message @(message.SenderId == CurrentUserId ? "sent" : "received")">
+                        <div class="message-content">
+                            <div class="message-meta">
+                                <span class="message-sender">@message.Sender?.LoginName</span>
+                                <span class="message-time">@message.SentDate.ToShortTimeString()</span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(message.MessageText))
+                            {
+                                <div class="message-text">@message.MessageText</div>
+                            }
+
+                            @if (message.ImageData != null)
+                            {
+                                var base64Image = Convert.ToBase64String(message.ImageData);
+                                var imageDataUrl = $"data:{message.ImageContentType};base64,{base64Image}";
+
+                                <div class="message-image-container">
+                                    <img src="@imageDataUrl"
+                                         class="message-image"
+                                         @onclick="() => OpenFullscreenImage(imageDataUrl, message.ImageContentType)" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+
+                }
+            }
+        </div>
+
+        <div class="chat-input-area">
+            @if (imageData != null)
+            {
+                <div class="image-preview">
+                    <img src="data:@imageContentType;base64,@Convert.ToBase64String(imageData)" />
+                    <button class="remove-image" @onclick="RemoveImage">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            }
+            <div class="input-group">
+                <textarea @bind="NewMessage"
+                          placeholder="Type your message..."
+                          @onkeypress="HandleKeyPress"
+                          disabled="@(ConnectionState != HubConnectionState.Connected)"></textarea>
+                <div class="input-actions">
+                    <label class="file-upload">
+                        <i class="fas fa-image"></i>
+                        <InputFile type="file"
+                                   class="d-none"
+                                   @ref="fileInput"
+                                   OnChange="HandleFileUpload"
+                                   accept="image/*"
+                                   disabled="@(ConnectionState != HubConnectionState.Connected)" />
+                    </label>
+                    <button @onclick="SendMessage"
+                            class="btn-send"
+                            disabled="@(string.IsNullOrWhiteSpace(NewMessage) && imageData == null ||
+                                      ConnectionState != HubConnectionState.Connected)">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (showFullscreenImage)
+{
+    <div class="fullscreen-image-overlay" @onclick="CloseFullscreen">
+        <div class="fullscreen-image-container" @onclick:stopPropagation>
+            <img src="@fullscreenImageSrc" class="fullscreen-image" />
+            <button class="close-fullscreen" @onclick="CloseFullscreen">
+                <i class="fas fa-times"></i>
+            </button>
+            <button class="download-image" @onclick="DownloadImage">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+    </div>
+}
+@code {
+    [Parameter] public int TicketId { get; set; }
+    public int CurrentUserId { get; set; }
+
+    private List<ChatMessage> Messages { get; set; } = new();
+    private string NewMessage { get; set; } = string.Empty;
+    private ElementReference messagesContainer;
+    private InputFile? fileInput;
+    private byte[]? imageData;
+    private string? imageContentType;
+    private HubConnectionState ConnectionState => NotificationService.ConnectionState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentUserId = await Log.ReturnCurrentUserID();
+        await LoadMessages();
+        await InitializeSignalR();
+    }
+
+    private async Task LoadMessages()
+    {
+        Messages = (await ChatService.GetTicketMessagesAsync(TicketId)).ToList();
+        await ChatService.MarkMessagesAsReadAsync(TicketId, CurrentUserId.ToString());
+        StateHasChanged();
+        await ScrollToBottom();
+    }
+
+    private async Task InitializeSignalR()
+    {
+        await NotificationService.InitializeAsync(async (message) =>
+        {
+        });
+
+        NotificationService.OnChatMessageReceived += async (fromUserId, messageText) =>
+        {
+            await InvokeAsync(async () =>
+            {
+                if (!Messages.Any(m => m.MessageText == messageText &&
+                                     m.SenderId.ToString() == fromUserId &&
+                                     (DateTime.Now - m.SentDate).TotalSeconds < 2))
+                {
+                    await LoadMessages();
+                }
+                await JS.InvokeVoidAsync("audioPlayer.play", "Sounds/you-have-new-message-484.mp3");
+
+            });
+        };
+    }
+
+    private async Task SendMessage()
+    {
+        if ((!string.IsNullOrWhiteSpace(NewMessage) || imageData != null) &&
+            ConnectionState == HubConnectionState.Connected)
+        {
+            var chatMessage = new ChatMessage
+                {
+                    TicketId = TicketId,
+                    SenderId = CurrentUserId,
+                    MessageText = NewMessage,
+                    ImageData = imageData,
+                    ImageContentType = imageContentType,
+                    SentDate = DateTime.Now,
+                    IsRead = false
+                };
+
+            Messages.Add(chatMessage);
+            StateHasChanged();
+            await ScrollToBottom();
+
+            try
+            {
+                await ChatService.SendMessageAsync(TicketId, CurrentUserId.ToString(), NewMessage);
+                NewMessage = string.Empty;
+                imageData = null;
+                imageContentType = null;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Messages.Remove(chatMessage);
+                StateHasChanged();
+                Console.WriteLine($"Error sending message: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null && file.Size < 5 * 1024 * 1024) // 5MB limit
+        {
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                await file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024).CopyToAsync(memoryStream);
+                imageData = memoryStream.ToArray();
+                imageContentType = file.ContentType;
+                StateHasChanged();
+                await ScrollToBottom();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error uploading file: {ex.Message}");
+            }
+        }
+        else if (file != null)
+        {
+            Console.WriteLine("File size exceeds 5MB limit");
+        }
+    }
+
+    private void RemoveImage()
+    {
+        imageData = null;
+        imageContentType = null;
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("scrollToBottom", messagesContainer);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error scrolling: {ex.Message}");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        NotificationService.OnChatMessageReceived -= async (fromUserId, message) => { };
+    }
+    // Add these new fields to your existing code
+    private bool showFullscreenImage = false;
+    private string fullscreenImageSrc = string.Empty;
+    private string fullscreenImageType = string.Empty;
+
+    // Add this method to handle image clicks
+    private void OpenFullscreenImage(string imageSrc, string contentType)
+    {
+        fullscreenImageSrc = imageSrc;
+        fullscreenImageType = contentType;
+        showFullscreenImage = true;
+        StateHasChanged();
+    }
+
+    private void CloseFullscreen()
+    {
+        showFullscreenImage = false;
+        StateHasChanged();
+    }
+
+    private async Task DownloadImage()
+    {
+        var fileName = $"ticket{TicketId}-image-{DateTime.Now:yyyyMMddHHmmss}";
+        var extension = fullscreenImageType.Split('/').Last();
+        await JS.InvokeVoidAsync("downloadFile", fullscreenImageSrc, $"{fileName}.{extension}");
+    }
+}
+
+        @inject IJSRuntime JS

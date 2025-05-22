@@ -20,7 +20,9 @@ namespace AlexSupport.Data
         public virtual DbSet<Tlog> Tlogs { get; set; } = default!;
         public virtual DbSet<Location> Locations { get; set; } = default!;
         public virtual DbSet<DailyTasks> DailyTasks { get; set; } = default!;
-
+        public virtual DbSet<SystemNotification> Notifications { get; set; } = default!;
+        public virtual DbSet<ChatMessage> ChatMessages { get; set; } = default!;
+        public virtual DbSet<SystemLogs> SystemLogs { get; set; } = default!;
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -61,7 +63,7 @@ namespace AlexSupport.Data
                     .IsUnicode(false)
                     .HasColumnName("Lname");
                 entity.Property(e => e.Password)
-                    .HasMaxLength(50)
+                    .HasMaxLength(250)
                     .IsUnicode(false)
                     .HasColumnName("Password");
                 entity.Property(e => e.JobTitle)
@@ -109,7 +111,7 @@ namespace AlexSupport.Data
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .HasColumnName("Status");
-     
+
                 entity.Property(e => e.OpenDate)
                     .HasColumnType("datetime2(0)")
                     .HasColumnName("OpenDate");
@@ -173,10 +175,6 @@ namespace AlexSupport.Data
                 entity.Property(e => e.actionTime)
                     .HasColumnType("datetime2(0)")
                     .HasColumnName("Action Time");
-                entity.Property(e => e.Message)
-                    .HasMaxLength(850)
-                    .IsUnicode(false)
-                    .HasColumnName("Description");
                 entity.Property(e => e.Action)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -203,13 +201,96 @@ namespace AlexSupport.Data
                 entity.Property(e => e.Issue)
                     .HasMaxLength(850)
                     .IsUnicode(false)
-                    .HasColumnName("Issue");              
+                    .HasColumnName("Issue");
                 entity.HasOne(e => e.category)
                     .WithMany(d => d.DailyTask)
                     .HasForeignKey(e => e.CategoryID)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_DailyTask_Category");
-               
+                // Delete notifications when user is deleted
+
+            }); modelBuilder.Entity<SystemNotification>(entity =>
+            {
+                // Primary Key
+                entity.HasKey(e => e.NID).HasName("NOTIFICATIONNID_PK");
+
+                // FromUserId - required, foreign key
+                entity.Property(n => n.FromUserId)
+                      .IsRequired();
+                // Assuming IdentityUser key length
+
+                entity.HasOne(n => n.FromUser)
+                      .WithMany()
+                      .HasForeignKey(n => n.FromUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // ToUserId - required, foreign key
+                entity.Property(n => n.ToUserId)
+                      .IsRequired();
+
+                entity.HasOne(n => n.ToUser)
+                      .WithMany()
+                      .HasForeignKey(n => n.ToUserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Message - required with a max length (optional tweak)
+                entity.Property(n => n.Message)
+                      .IsRequired()
+                      .HasMaxLength(1000);
+
+                // SentAt - required
+                entity.Property(n => n.SentAt)
+                      .IsRequired();
+
+                // ReadAt - optional
+                entity.Property(n => n.ReadAt)
+                      .IsRequired(false);
+
+                // IsRead - required
+                entity.Property(n => n.IsRead)
+                      .IsRequired();
+            });
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.HasKey(c => c.CHID).HasName("CHATMESSAGEID_PK");
+                entity.HasIndex(m => m.TicketId);
+                entity.HasIndex(m => m.SenderId);
+                entity.HasOne(e => e.Ticket)
+                                  .WithMany(d => d.ChatMessages)
+                                  .HasForeignKey(e => e.TicketId)
+                                  .OnDelete(DeleteBehavior.ClientSetNull)
+                                  .HasConstraintName("FK_TICKET_CHATMESSAGES");
+                entity.HasOne(e => e.Sender)
+                               .WithMany(d => d.ChatMessages)
+                               .HasForeignKey(e => e.SenderId)
+                               .OnDelete(DeleteBehavior.ClientSetNull)
+                               .HasConstraintName("FK_APPUSER_CHATMESSAGES");
+                entity.Property(n => n.IsRead)
+                     .IsRequired(false);
+                entity.Property(n => n.SenderId).IsRequired();
+                entity.Property(n => n.TicketId).IsRequired();
+                entity.Property(n => n.MessageText).IsRequired();
+                entity.Property(n => n.SentDate).IsRequired();
+                entity.Property(n => n.MessageText).HasMaxLength(int.MaxValue);
+            });
+            modelBuilder.Entity<SystemLogs>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("SYSTEMLOGID_PK");
+                entity.Property(e => e.Id).HasColumnName("SYSTEMLOGS ID");
+                entity.Property(e => e.actionTime)
+                    .HasColumnType("datetime2(0)")
+                    .HasColumnName("Action Time");
+                entity.Property(e => e.Action)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("Action");
+                entity.HasOne(e => e.AppUser)
+                    .WithMany(d => d.SystemLogs)
+                    .HasForeignKey(e => e.UID)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_SystemTLog_AppUserId");
+
+     
             });
         }
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

@@ -1,7 +1,565 @@
 ﻿@page "/"
+@layout AuthLayout
+@rendermode InteractiveServer
+<section class="hero">
+    <div class="floating-elements" id="floating-elements"></div>
+    <div class="container">
+        <div class="hero-content animate__animated animate__fadeIn">
+            <h2 class="animate__animated animate__fadeInDown">IT Support Ticketing System</h2>
+            <p class="animate__animated animate__fadeIn animate__delay-1s">Submit, track, and manage your IT support requests with our easy-to-use ticketing system. Get help when you need it.</p>
+            <div class="hero-buttons">
+                <a href="SignIn" class="btn btn-primary animate__animated animate__fadeInLeft animate__delay-2s">
+                    <i class="fas fa-ticket-alt"></i> Submit a Ticket
+                </a>
+                <a href="UserGuide" class="btn btn-secondary animate__animated animate__fadeInRight animate__delay-2s">
+                    <i class="fas fa-play-circle"></i> How It Works
+                </a>
+            </div>
+        </div>
 
-<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+    </div>
+</section>
+<div class="container">
+    <div class="section-header">
+        <h2>Why Choose Our Ticketing System</h2>
+        <p>We provide the best IT support experience with our cutting-edge ticketing system and dedicated team.</p>
+    </div>
 
-Welcome to your new app.
+    <div class="features">
+        <div class="feature-card animate-fadeInUp delay-100">
+            <div class="feature-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3>Quick Response Times</h3>
+            <p>Our average first response time is under 30 minutes for critical issues, with 24/7 support availability.</p>
+        </div>
+
+        <div class="feature-card animate-fadeInUp delay-200">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Real-time Tracking</h3>
+            <p>Monitor your ticket status in real-time with our interactive dashboard and receive instant notifications.</p>
+        </div>
+
+        <div class="feature-card animate-fadeInUp delay-300">
+            <div class="feature-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <h3>Knowledge Base</h3>
+            <p>Access hundreds of articles, how-to guides, and video tutorials in our comprehensive knowledge base.</p>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats">
+        <div class="particles" id="particles-1"></div>
+        <div class="container stats-container">
+            <div class="stats-grid">
+                <div class="stat-item animate__animated animate__fadeIn">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Satisfaction Rate</div>
+                </div>
+                <div class="stat-item animate__animated animate__fadeIn animate__delay-1s">
+                    <div class="stat-number">30m</div>
+                    <div class="stat-label">Avg. Response Time</div>
+                </div>
+                <div class="stat-item animate__animated animate__fadeIn animate__delay-2s">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">Tickets Resolved</div>
+                </div>
+                <div class="stat-item animate__animated animate__fadeIn animate__delay-3s">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support Availability</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="testimonials">
+        <div class="section-header">
+            <h2>What Our Users Say</h2>
+            <p>Don't just take our word for it - hear from our satisfied customers.</p>
+        </div>
+
+        <div class="testimonial-grid">
+            <div class="testimonial-card animate__animated animate__fadeInLeft">
+                <div class="testimonial-content">
+                    "The IT ticketing system has transformed how we handle support requests. The interface is intuitive and the response times are incredible."
+                </div>
+                <div class="testimonial-author">
+                    <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Sarah Johnson" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Sarah Johnson</h4>
+                        <p>CTO, TechSolutions Inc.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card animate__animated animate__fadeInUp">
+                <div class="testimonial-content">
+                    "As someone who's not very tech-savvy, I appreciate how easy it is to submit tickets and track their progress. The support team is fantastic!"
+                </div>
+                <div class="testimonial-author">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael Chen" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Michael Chen</h4>
+                        <p>Marketing Director</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card animate__animated animate__fadeInRight">
+                <div class="testimonial-content">
+                    "We've reduced our IT resolution time by 60% since implementing this system. The analytics dashboard is particularly valuable for our team."
+                </div>
+                <div class="testimonial-author">
+                    <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Emily Rodriguez" class="author-avatar">
+                    <div class="author-info">
+                        <h4>Emily Rodriguez</h4>
+                        <p>IT Manager</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+
+    /* Hero Section */
+    .hero {
+        background: var(--gradient);
+        color: var(--white);
+        padding: 120px 0 100px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') center/cover;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero h2 {
+        font-size: 3.2rem;
+        margin-bottom: 24px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero p {
+        font-size: 1.3rem;
+        margin: 0 auto 40px;
+        opacity: 0.9;
+        max-width: 700px;
+    }
+
+    .hero-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 40px;
+    }
+
+    .btn {
+        padding: 16px 32px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-primary {
+        background-color: var(--white);
+        color: var(--primary-color);
+        box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+        }
+
+    .btn-secondary {
+        background-color: transparent;
+        color: var(--white);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+    .hero-image {
+        margin-top: 60px;
+        position: relative;
+        perspective: 1000px;
+    }
+
+    .dashboard-img {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        display: block;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        transform: rotateX(10deg) rotateY(-5deg) rotateZ(1deg);
+        transition: transform 0.5s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .hero-image:hover .dashboard-img {
+        transform: rotateX(5deg) rotateY(0deg) rotateZ(0deg);
+    }
+
+    /* Floating Elements Animation */
+    .floating-elements {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .floating-element {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 15s infinite linear;
+    }
+
+    @@keyframes float {
+        0% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        100% {
+            transform: translateY(-1000px) rotate(720deg);
+        }
+    }
+
+    /* Main Content */
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: #6c757d;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 40px;
+        margin-bottom: 80px;
+    }
+
+    .feature-card {
+        background-color: var(--white);
+        border-radius: 16px;
+        padding: 40px 30px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: var(--gradient);
+            transition: height 0.4s ease;
+            z-index: -1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+
+            .feature-card:hover::before {
+                height: 100%;
+            }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(58, 12, 163, 0.1));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        color: var(--primary-color);
+        font-size: 1.8rem;
+    }
+
+    .feature-card h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--dark-color);
+    }
+
+    .feature-card p {
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+
+    .feature-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--primary-color);
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .feature-link i {
+            transition: transform 0.3s ease;
+        }
+
+        .feature-link:hover {
+            color: var(--secondary-color);
+        }
+
+            .feature-link:hover i {
+                transform: translateX(5px);
+            }
+
+    /* Stats Section */
+    .stats {
+        background: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') center/cover;
+        padding: 100px 0;
+        position: relative;
+        margin: 80px 0;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(27, 38, 59, 0.9);
+            z-index: 0;
+        }
+
+    .stats-container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 40px;
+        text-align: center;
+    }
+
+    .stat-item {
+        padding: 30px;
+    }
+
+    .stat-number {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 10px;
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    /* Email Search Section */
+    .email-search {
+        background-color: var(--white);
+        border-radius: 16px;
+        padding: 60px;
+        text-align: center;
+        box-shadow: var(--shadow-md);
+        margin: 80px auto;
+        max-width: 900px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .email-search::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient);
+        }
+
+        .email-search h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+        }
+
+        .email-search p {
+            color: #6c757d;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+    .email-search-form {
+        display: flex;
+        max-width: 600px;
+        margin: 0 auto;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+    }
+
+        .email-search-form input {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .email-search-form button {
+            padding: 0 30px;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .email-search-form button:hover {
+                opacity: 0.9;
+                transform: translateY(-2px);
+            }
+
+    /* Testimonials */
+    .testimonials {
+        margin: 100px 0;
+    }
+
+    .testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+
+    .testimonial-card {
+        background-color: var(--white);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+    }
+
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 5rem;
+            color: rgba(67, 97, 238, 0.1);
+            font-family: serif;
+            line-height: 1;
+            z-index: 0;
+        }
+
+    .testimonial-content {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 20px;
+        font-style: italic;
+        color: #495057;
+    }
+
+    .testimonial-author {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .author-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--medium-gray);
+    }
+
+    .author-info h4 {
+        font-size: 1.1rem;
+        margin-bottom: 4px;
+        color: var(--dark-color);
+    }
+
+    .author-info p {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+</style>

@@ -3,6 +3,7 @@
 @inject IJSRuntime JS
 @using AlexSupport.ViewModels;
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin,Agent")]
 <PageTitle>Category Types</PageTitle>
 
 <BsModal OnModalConfirmation="ConfirmDelete_Click"
@@ -13,73 +14,145 @@
 
 @if (isProcessing)
 {
-    <div class="position-absolute w-75 h-75 d-flex flex-column align-items-center bg-white justify-content-center">
-        <img src="/images/loading.gif" alt="Loading" />
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white bg-opacity-75 z-index-1050">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Processing...</p>
     </div>
 }
 else
 {
-    <div class="card shadow  mt-4">
-        <div class="card-header bg-dark bg-gradient ml-0 py-3 ">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <h2 class="text-white py-2">Types Category List</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-body p-4">
-            <div class="row pb-3">
-                <div class="col-12 text-end">
-                    <a href="Categories/Create" class="btn btn-lg btn-success"><i class="bi bi-plus-square"></i> Add New Type</a>
-
-                </div>
-            </div>
-        </div>
-        @if (Types.Any())
-        {
-            <div class="d-flex flex-wrap gap-3 justify-content-center mb-5 mt-5">
-                @foreach (var obj in Types)
-                {
-                    <div class="card CardDesign shadow-sm p-3" style="width: 300px;">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">@obj.CategoryName</h5>
-                            <div class="d-flex flex-column align-items-center gap-2 mt-3">
-
-                                <div class="d-flex gap-2">
-                                    <a href="@($"Categories/update/{obj.CID}")" class="btn btn-primary btn-sm">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </a>
-                                    <button type="button" class="btn btn-danger btn-sm" @onclick="() => HandleDelete(obj.CID)">
-                                        <i class="bi bi-trash3"></i> Delete
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            <style>
-                                .disabled-style {
-                                    opacity: 0.6;
-                                    cursor: not-allowed;
-                                    pointer-events: none;
-                                }
-                            </style>
-
+    <div class="container-fluid px-4 py-3">
+        <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+            <div class="card-header bg-primary-gradient py-4">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-8">
+                        <h2 class="text-white mb-0">
+                            <i class="bi bi-tags me-2"></i>Category Types
+                        </h2>
+                    </div>
+                    <AuthorizeView Roles="Admin">
+                        <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+                            <a href="Categories/Create" class="btn btn-light btn-lg rounded-pill">
+                                <i class="bi bi-plus-circle me-2"></i>Add New Type
+                            </a>
                         </div>
+                    </AuthorizeView>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                @if (Types.Any())
+                {
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                        @foreach (var obj in Types)
+                        {
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm transition-all hover-shadow">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
+                                                <i class="bi bi-tag text-primary fs-4"></i>
+                                            </div>
+                                            <h5 class="card-title mb-0 text-truncate">@obj.CategoryName</h5>
+                                        </div>
+
+                                        <div class="mt-auto pt-3">
+                                            <AuthorizeView Roles="Admin">
+                                                <Authorized>
+                                                    <div class="d-flex gap-2">
+                                                        <a href="@($"Categories/update/{obj.CID}")"
+                                                           class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1">
+                                                            <i class="bi bi-pencil-square me-1"></i>Edit
+                                                        </a>
+                                                        <button type="button"
+                                                                class="btn btn-outline-danger btn-sm rounded-pill flex-grow-1"
+                                                                @onclick="() => HandleDelete(obj.CID)">
+                                                            <i class="bi bi-trash3 me-1"></i>Delete
+                                                        </button>
+                                                    </div>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <div class="d-flex gap-2">
+                                                        <button class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 disabled" disabled>
+                                                            <i class="bi bi-pencil-square me-1"></i>Edit
+                                                        </button>
+                                                        <button class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 disabled" disabled>
+                                                            <i class="bi bi-trash3 me-1"></i>Delete
+                                                        </button>
+                                                    </div>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="text-muted mb-3">No Category Types Found</h4>
+                        <p class="text-muted">Start by adding your first category type</p>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized>
+                                <a href="Categories/Create" class="btn btn-primary rounded-pill px-4">
+                                    <i class="bi bi-plus-circle me-2"></i>Create Category
+                                </a>
+                            </Authorized>
+                            <NotAuthorized>
+                                <button class="btn btn-secondary rounded-pill px-4 disabled" disabled>
+                                    <i class="bi bi-plus-circle me-2"></i>Create Category
+                                </button>
+                            </NotAuthorized>
+                        </AuthorizeView>
                     </div>
                 }
             </div>
-        }
-        else
-        {
-            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
-                <p>No data available.</p>
-            </div>
-        }
-
+        </div>
     </div>
-
 }
+
+<style>
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    }
+
+    .transition-all {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-2px);
+    }
+
+    .z-index-1050 {
+        z-index: 1050;
+    }
+
+    .card-title {
+        font-weight: 500;
+    }
+
+    .rounded-3 {
+        border-radius: 0.75rem !important;
+    }
+
+    .rounded-pill {
+        border-radius: 50rem !important;
+    }
+
+    .disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+</style>
 @code {
     private bool isProcessing { get; set; } = false;
     private IEnumerable<Category> Types { get; set; } = new List<Category>();

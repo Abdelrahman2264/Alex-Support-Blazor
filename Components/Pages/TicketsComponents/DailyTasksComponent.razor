@@ -7,6 +7,7 @@
 @inject ILocationRepository _ILocation
 @inject IAppUserRepoistory _IAppUser
 @inject ITicketRepository _ITicket
+@attribute [Authorize(Roles = "Admin,Agent")]
 
 <CreateNewdailyTaskComponent Title="Create New Daily Task"
                              ticket="newtask"
@@ -42,12 +43,18 @@
             <option value="Urgent">Urgent</option>
         </select>
         <div class="filter-controls">
-
-
-
-            <button class="btn btn-primary" @onclick="AddNewTicket">
-                <i class="bi bi-plus-lg"></i> New Task
-            </button>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <button class="btn btn-primary" @onclick="AddNewTicket">
+                        <i class="bi bi-plus-lg"></i> New Task
+                    </button>
+                </Authorized>
+                <NotAuthorized>
+                    <button class="btn btn-primary disabled" disabled>
+                        <i class="bi bi-plus-lg"></i> New Task
+                    </button>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
     </div>
 
@@ -64,18 +71,50 @@
                             <span class="ticket-status @task.Priority.ToLower()">@task.Priority.ToLower()</span>
                         </div>
                         <div class="header-actions">
-                            <button class="btn-action" @onclick="() => EditTicket(task.DTID)" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                                <span class="action-text">Edit</span>
-                            </button>
-                            <button class="btn-action" @onclick="() => AssignTicket(task.DTID)" title="Assign">
-                                <i class="bi bi-person-plus"></i>
-                                <span class="action-text">Assign</span>
-                            </button>
-                            <button class="btn-action" @onclick="() => RemoveTicket(task.DTID)" title="Delete">
-                                <i class="bi bi-trash"></i>
-                                <span class="action-text">Delete</span>
-                            </button>
+                            <AuthorizeView Roles="Admin">
+                                <Authorized>
+                                    <button class="btn-action" @onclick="() => EditTicket(task.DTID)" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                        <span class="action-text">Edit</span>
+                                    </button>
+                                </Authorized>
+                                <NotAuthorized>
+                                    <button class="btn-action disabled" disabled title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                        <span class="action-text">Edit</span>
+                                    </button>
+                                </NotAuthorized>
+                            </AuthorizeView>
+
+                            <AuthorizeView Roles="Admin">
+                                <Authorized>
+                                    <button class="btn-action" @onclick="() => AssignTicket(task.DTID)" title="Assign">
+                                        <i class="bi bi-person-plus"></i>
+                                        <span class="action-text">Assign</span>
+                                    </button>
+                                </Authorized>
+                                <NotAuthorized>
+                                    <button class="btn-action disabled" disabled title="Assign">
+                                        <i class="bi bi-person-plus"></i>
+                                        <span class="action-text">Assign</span>
+                                    </button>
+                                </NotAuthorized>
+                            </AuthorizeView>
+
+                            <AuthorizeView Roles="Admin">
+                                <Authorized>
+                                    <button class="btn-action" @onclick="() => RemoveTicket(task.DTID)" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                        <span class="action-text">Delete</span>
+                                    </button>
+                                </Authorized>
+                                <NotAuthorized>
+                                    <button class="btn-action disabled" disabled title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                        <span class="action-text">Delete</span>
+                                    </button>
+                                </NotAuthorized>
+                            </AuthorizeView>
                         </div>
                     </div>
                     <h4 class="ticket-title">@task.Subject</h4>
@@ -99,16 +138,7 @@
             </div>
         }
     </div>
-
-
 </div>
-
-
-
-<style>
-   
-</style>
-
 @code {
     private List<Ticket> tickets = new();
     private Ticket? selectedTicket;
@@ -206,7 +236,7 @@
     {
         await JS.InvokeVoidAsync("HideAddTaskFormModal"); // Hide modal
 
-        if (updatedid != 0)
+        if (updatedid == 0)
         {
             var temp = await _ITask.CreateDailyTaskAsync(ticket);
             if (temp.IsActive == true)

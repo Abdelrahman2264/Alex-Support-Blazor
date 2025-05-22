@@ -1,5 +1,6 @@
 ﻿using AlexSupport.Data;
 using AlexSupport.Repository.IRepository;
+using AlexSupport.Services.Extensions;
 using AlexSupport.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -10,10 +11,12 @@ namespace AlexSupport.Repository
     {
         private readonly AlexSupportDB alexsupportdb;
         private readonly ILogger<DailyTasksRepository> _logger;
-        public DailyTasksRepository(AlexSupportDB alexsupportdb, ILogger<DailyTasksRepository> _logger)
+        private readonly ILogService LogService;
+        public DailyTasksRepository(AlexSupportDB alexsupportdb, ILogger<DailyTasksRepository> _logger , ILogService logService )
         {
             this.alexsupportdb = alexsupportdb;
             this._logger = _logger;
+            this.LogService = logService;
 
         }
         public async Task<DailyTasks> CreateDailyTaskAsync(DailyTasks dailytask)
@@ -26,6 +29,7 @@ namespace AlexSupport.Repository
                     dailytask.IsActive = true;
                     await alexsupportdb.DailyTasks.AddAsync(dailytask);
                     await alexsupportdb.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"Create A New Daily Task With Id: {dailytask.DTID} In The System", "DAILY TASK");
                     return dailytask;
                 }
                 return new DailyTasks();
@@ -84,6 +88,9 @@ namespace AlexSupport.Repository
                     DailyTask.IsActive = false;
                     alexsupportdb.DailyTasks.Update(DailyTask);
                     await alexsupportdb.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"In Active A Daily Task With Id: {DailyTask.DTID} In The System", "DAILY TASK");
+
+
                     return true;
 
                 }
@@ -110,6 +117,8 @@ namespace AlexSupport.Repository
                     UpdatedDailyTask.Due_Minutes = dailytask.Due_Minutes;
                     alexsupportdb.DailyTasks.Update(UpdatedDailyTask);
                     await alexsupportdb.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"Update A Daily Task With Id: {UpdatedDailyTask.DTID} In The System", "DAILY TASK");
+
                     return true;
                 }
                 return false;

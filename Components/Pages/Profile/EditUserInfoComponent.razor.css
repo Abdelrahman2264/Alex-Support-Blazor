@@ -1,0 +1,469 @@
+﻿
+.edit-profile-page {
+    padding: 2rem 1rem;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.edit-profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.edit-profile-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .edit-profile-header h2 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+.edit-profile-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Profile Photo Section */
+.profile-photo-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.photo-preview-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.photo-preview {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background-color: #f5f7fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border: 6px solid #e9ecef;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    .photo-preview:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.initials-circle {
+    font-size: 3.5rem;
+    font-weight: 600;
+    color: #5e72e4;
+    text-transform: uppercase;
+}
+
+.photo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.photo-preview:hover .photo-overlay {
+    opacity: 1;
+}
+
+.photo-upload-actions {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.btn-upload {
+    background-color: #5e72e4;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    width: fit-content;
+}
+
+    .btn-upload:hover {
+        background-color: #4a5acf;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(94, 114, 228, 0.3);
+    }
+
+.btn-remove {
+    background-color: transparent;
+    color: #f5365c;
+    border: 1px solid #f5365c;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    width: fit-content;
+}
+
+    .btn-remove:hover {
+        background-color: rgba(245, 54, 92, 0.1);
+    }
+
+.upload-constraints {
+    margin-top: 0.5rem;
+}
+
+.upload-error-message {
+    color: #f5365c;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 2rem 0;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background-color: #e9ecef;
+}
+
+.divider-text {
+    padding: 0 1rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Form Sections */
+.form-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.section-title {
+    color: #5e72e4;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+    .form-group.floating label {
+        position: absolute;
+        top: 0.75rem;
+        left: 1rem;
+        color: #6c757d;
+        transition: all 0.2s ease;
+        pointer-events: none;
+        background-color: white;
+        padding: 0 0.25rem;
+        transform-origin: left top;
+    }
+
+    .form-group.floating.disabled label {
+        background-color: #f8f9fa;
+    }
+
+.form-control:focus + label,
+.form-control:not(:placeholder-shown) + label {
+    transform: translateY(-1.25rem) scale(0.85);
+    color: #5e72e4;
+}
+
+.form-control {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    height: calc(2.7rem + 2px);
+
+}
+
+    .form-control:focus {
+        border-color: #5e72e4;
+        box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25);
+    }
+
+    .form-control::placeholder {
+        color: transparent;
+    }
+
+    .form-control:disabled {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
+
+.form-select {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    height: calc(2.5rem + 2px);
+}
+
+    .form-select:focus {
+        border-color: #5e72e4;
+        box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25);
+    }
+
+.form-note {
+    color: #6c757d;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+/* Validation */
+.validation-summary {
+    background-color: #fff3f3;
+    border-left: 4px solid #f5365c;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    border-radius: 4px;
+}
+
+.validation-message {
+    color: #f5365c;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-cancel {
+    background-color: white;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .btn-cancel:hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+.btn-save {
+    background-color: #5e72e4;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .btn-save:hover:not(:disabled) {
+        background-color: #4a5acf;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(94, 114, 228, 0.3);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .edit-profile-card {
+        padding: 2rem;
+    }
+
+    .profile-photo-section {
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .edit-profile-card {
+        padding: 1.5rem;
+    }
+
+    .profile-photo-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .photo-upload-actions {
+        align-items: center;
+    }
+
+    .btn-upload,
+    .btn-remove {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-actions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .edit-profile-page {
+        padding: 1rem 0.5rem;
+    }
+
+    .edit-profile-card {
+        padding: 1.25rem;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        width: 100%;
+    }
+}
+/* Updated Form Control Heights */
+.form-control, .form-select {
+    min-height: 50px; /* Increased from previous */
+    padding: 1rem 1rem;
+    font-size: 1rem;
+}
+
+/* Floating Label Adjustments */
+.form-group.floating label {
+    top: 1rem;
+    left: 1rem;
+    font-size: 1rem;
+}
+
+.form-control:focus + label,
+.form-control:not(:placeholder-shown) + label {
+    transform: translateY(-1.5rem) scale(0.85);
+}
+
+/* File Upload Fixes */
+.btn-upload {
+    position: relative;
+    overflow: hidden;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.file-name {
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+    color: white;
+}
+
+/* Department Select Fix */
+.form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+}
+
+/* Button Height Consistency */
+.btn {
+    min-height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Photo Upload Section Fixes */
+.photo-upload-actions {
+    min-width: 280px;
+}
+
+/* Disabled Field Styling */
+.form-control:disabled, .form-select:disabled {
+    background-color: #f8f9fa;
+    opacity: 1; /* Fix for Safari */
+}
+
+/* Validation Message Positioning */
+.validation-message {
+    position: absolute;
+    bottom: -1.25rem;
+    left: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .form-control, .form-select {
+        min-height: 45px;
+    }
+
+    .btn {
+        min-height: 45px;
+    }
+}
+

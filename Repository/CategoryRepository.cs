@@ -1,5 +1,6 @@
 ﻿using AlexSupport.Data;
 using AlexSupport.Repository.IRepository;
+using AlexSupport.Services.Extensions;
 using AlexSupport.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,14 @@ namespace AlexSupport.Repository
     {
         private readonly AlexSupportDB alexSupportDB;
         private readonly ILogger<CategoryRepository> logger;
-        public CategoryRepository(AlexSupportDB alexSupportDB, ILogger<CategoryRepository> logger)
+        private readonly INotificationService Note;
+        private readonly ILogService LogService;
+        public CategoryRepository(AlexSupportDB alexSupportDB, ILogger<CategoryRepository> logger, INotificationService note, ILogService logService)
         {
             this.alexSupportDB = alexSupportDB;
             this.logger = logger;
+            this.Note = note;
+            LogService = logService;
         }
 
         public async Task<Category> CreateCategoryAsync(Category category)
@@ -49,6 +54,8 @@ namespace AlexSupport.Repository
                 {
                     category.isActive = false;
                     await alexSupportDB.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"In Active Category  With Id: {category.CID} In the System", "CATEGORY");
+
                     return true;
                 }
                 logger.LogError("Category Not Found");
@@ -66,6 +73,7 @@ namespace AlexSupport.Repository
         {
             try
             {
+
                 return await alexSupportDB.Category.OrderBy(c => c.CategoryName).ToListAsync();
             }
             catch (Exception ex)
@@ -111,6 +119,7 @@ namespace AlexSupport.Repository
                     UpdatedCategory.isActive = true;
                     alexSupportDB.Category.Update(UpdatedCategory);
                     await alexSupportDB.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"Update Category With Id: {UpdatedCategory.CID} In the System", "CATEGORY");
                     return UpdatedCategory;
                 }
                 else

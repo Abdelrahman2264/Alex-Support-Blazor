@@ -1,5 +1,6 @@
 ﻿using AlexSupport.Data;
 using AlexSupport.Repository.IRepository;
+using AlexSupport.Services.Extensions;
 using AlexSupport.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,12 @@ namespace AlexSupport.Repository
     {
         private readonly AlexSupportDB alexSupportDB;
         private readonly ILogger<LocationRepository> logger;
-        public LocationRepository(AlexSupportDB alexSupportDB, ILogger<LocationRepository> logger)
+        private readonly ILogService LogService;
+        public LocationRepository(AlexSupportDB alexSupportDB, ILogger<LocationRepository> logger , ILogService logService)
         {
             this.alexSupportDB = alexSupportDB;
             this.logger = logger;
+            this.LogService = logService;
         }
 
         public async Task<Location> CreateLocationAsync(Location Location)
@@ -25,6 +28,8 @@ namespace AlexSupport.Repository
                     Location.CreatedDate = DateTime.Now;
                     await alexSupportDB.Locations.AddAsync(Location);
                     await alexSupportDB.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"Create A New Location With Id {Location.LID} In The System", "LOCATION");
+
                     return Location;
                 }
                 else
@@ -49,6 +54,8 @@ namespace AlexSupport.Repository
                 {
                     Location.isActive = false;
                     await alexSupportDB.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"In Active A Location With Id {Location.LID} In The System", "LOCATION");
+
                     return true;
                 }
                 logger.LogError("Location Not Found");
@@ -111,6 +118,8 @@ namespace AlexSupport.Repository
                     UpdatedLocation.isActive = true;
                     alexSupportDB.Locations.Update(UpdatedLocation);
                     await alexSupportDB.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"Update A Location With Id {UpdatedLocation.LID} In The System", "LOCATION");
+
                     return UpdatedLocation;
                 }
                 else

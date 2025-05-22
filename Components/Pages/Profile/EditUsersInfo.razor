@@ -1,0 +1,418 @@
+﻿@page "/users/Edit/{id:int}"
+@using System.ComponentModel.DataAnnotations
+@inject IAppUserRepoistory _userRepo
+@inject ILogService _logService
+@inject IDepartmentRepository _IDepartment
+@inject IJSRuntime JS
+@inject NavigationManager _navigation
+@inject IPasswordHasherRepository _IHash
+@rendermode InteractiveServer
+@attribute [Authorize(Roles ="Admin")]
+<PageTitle>Edit Profile</PageTitle>
+
+<div class="edit-profile-page">
+    <div class="edit-profile-container">
+        <div class="edit-profile-header">
+            <h2><i class="fas fa-user-edit me-2"></i>Edit Profile</h2>
+            <p class="text-muted">Update your personal and professional information</p>
+        </div>
+
+        <div class="edit-profile-card">
+            <div class="profile-photo-section">
+                <div class="photo-preview-container">
+                    <div class="photo-preview">
+                        @if (Model.ImageData != null)
+                        {
+                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.ImageData)"
+                                 class="profile-image" />
+                        }
+                        else if (!string.IsNullOrEmpty(Model.PhotoUrl))
+                        {
+                            <img src="@Model.PhotoUrl" alt="Profile picture" class="profile-image" />
+                        }
+                        else
+                        {
+                            <div class="initials-circle">@GetInitials(Model.FirstName, Model.LastName)</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="photo-upload-actions">
+                    <label class="btn btn-upload">
+                        <InputFile id="fileUpload" OnChange="HandleFileUpload" accept="image/*"
+                                   class="visually-hidden" />
+                        <i class="fas fa-cloud-upload-alt me-2"></i> Upload New Photo
+                        <span id="fileName" class="file-name"></span>
+                    </label>
+                    @if (!string.IsNullOrEmpty(_tempImageUrl) || Model.ImageData != null || !string.IsNullOrEmpty(Model.PhotoUrl))
+                    {
+                        <button class="btn btn-remove" @onclick="RemoveTempImage">
+                            <i class="fas fa-trash-alt me-2"></i> Remove Photo
+                        </button>
+                    }
+                    <div class="upload-constraints">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i> JPG or PNG, max 5MB • 300x300 recommended
+                        </small>
+                    </div>
+                    @if (_uploadError)
+                    {
+                        <div class="upload-error-message">
+                            <i class="fas fa-exclamation-circle me-2"></i>@_uploadErrorMessage
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="divider">
+                <span class="divider-line"></span>
+                <span class="divider-text">PERSONAL INFORMATION</span>
+                <span class="divider-line"></span>
+            </div>
+
+            <EditForm Model="@Model" OnValidSubmit="HandleValidSubmit" FormName="EditUserData">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="validation-summary" />
+
+                <div class="form-sections">
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-id-card me-2"></i>Basic Details
+                        </h4>
+                        <div class="form-grid">
+                            <div class="form-group floating">
+                                <InputText id="firstName" @bind-Value="Model.FirstName" class="form-control" />
+                                <label for="firstName">First Name</label>
+                                <ValidationMessage For="@(() => Model.FirstName)" class="validation-message" />
+                            </div>
+
+                            <div class="form-group floating">
+                                <InputText id="lastName" @bind-Value="Model.LastName" class="form-control" />
+                                <label for="lastName">Last Name</label>
+                                <ValidationMessage For="@(() => Model.LastName)" class="validation-message" />
+                            </div>
+
+                            <div class="form-group floating disabled">
+                                <InputText id="email" @bind-Value="Model.Email" class="form-control" disabled />
+                                <label for="email">Email Address</label>
+                                <small class="form-note">
+                                    <i class="fas fa-lock me-1"></i> Contact admin to change
+                                </small>
+                            </div>
+
+                            <div class="form-group floating disabled">
+                                <InputNumber id="fingerprint" @bind-Value="Model.fingerprint" class="form-control" disabled />
+                                <label for="fingerprint">Fingerprint ID</label>
+                                <small class="form-note">
+                                    <i class="fas fa-lock me-1"></i> Contact admin to change
+                                </small>
+                            </div>
+                            <div class="form-group floating disabled">
+                                <InputText id="role" @bind-Value="Model.Role" class="form-control" disabled />
+                                <label for="role">Role</label>
+                                <small class="form-note">
+                                    <i class="fas fa-lock me-1"></i> Contact admin to change
+                                </small>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-phone-alt me-2"></i>Contact Information
+                        </h4>
+                        <div class="form-grid">
+                            <div class="form-group floating">
+                                <InputText id="phone" @bind-Value="Model.Phone" class="form-control" />
+                                <label for="phone">Phone Number</label>
+                                <ValidationMessage For="@(() => Model.Phone)" class="validation-message" />
+                            </div>
+
+                            <div class="form-group floating">
+                                <InputText id="mobile" @bind-Value="Model.MobilePhone" class="form-control" />
+                                <label for="mobile">Fiber Me (Mobile)</label>
+                            </div>
+
+                            <div class="form-group floating disabled">
+                                <InputText id="username" @bind-Value="Model.LoginName" class="form-control" disabled />
+                                <label for="username">Sign In Name</label>
+                                <small class="form-note">
+                                    <i class="fas fa-lock me-1"></i> Contact admin to change
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-briefcase me-2"></i>Professional Information
+                        </h4>
+                        <div class="form-grid">
+                            <div class="form-group floating">
+                                <InputText id="jobTitle" @bind-Value="Model.JobTitle" class="form-control" />
+                                <label for="jobTitle">Job Title</label>
+                            </div>
+
+                            <div class="form-group floating">
+                                <InputSelect id="department" @bind-Value="Model.DepartmentId" class="form-control">
+                                    <option value="">Select Department</option>
+                                    @foreach (var dept in _departments)
+                                    {
+                                        <option value="@dept.DID">@dept.DepartmentName</option>
+                                    }
+                                </InputSelect>
+                                <label for="department">Department</label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel" @onclick="CancelEditing">
+                        <i class="fas fa-times me-2"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-save" disabled="@_isSaving">
+                        @if (_isSaving)
+                        {
+                            <span>
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Saving...
+                            </span>
+                        }
+                        else
+                        {
+                            <span><i class="fas fa-save me-2"></i> Save Changes</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; } = 0;
+    private EditUserModel Model { get; set; } = new();
+    private IEnumerable<Department> _departments = new List<Department>();
+    private string _tempImageUrl = string.Empty;
+    private IBrowserFile _uploadedFile;
+    private bool _uploadError = false;
+    private string _uploadErrorMessage = string.Empty;
+    private bool _isSaving = false;
+    private AppUser user { get; set; } = new AppUser();
+    private const int maxFileSize = 5 * 1024 * 1024; // 5MB
+    private readonly string[] allowedContentTypes = new[] { "image/jpeg", "image/png" };
+    private string? imagePreviewUrl;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var userId = 0;
+            // Load user data
+            if (Id == 0)
+            {
+                userId = await _logService.ReturnCurrentUserID();
+
+            }
+            else
+            {
+                userId = Id;
+            }
+            user = await _userRepo.GetUserByIdAsync(userId);
+
+            if (user != null)
+            {
+                Model = new EditUserModel
+                    {
+                        Id = user.UID,
+                        FirstName = user.Fname,
+                        LastName = user.Lname,
+                        Email = user.Email,
+                        Phone = user.Phone,
+                        JobTitle = user.JobTitle,
+                        DepartmentId = user.DID,
+                        MobilePhone = user.MobilePhone,
+                        PhotoUrl = user.ImageContentType,
+                        ImageData = user.ImageData,
+                        fingerprint = user.Fingerprint,
+                        LoginName = user.LoginName,
+                        Role = user.Role,
+
+                    };
+            }
+
+            // Load departments
+            _departments = await _IDepartment.AllDepartmentsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading user data: {ex.Message}");
+            _navigation.NavigateTo("/profile");
+        }
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("setupFileUpload");
+        }
+    }
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+
+        StateHasChanged();
+
+        try
+        {
+            var file = e.File;
+            if (file == null) return;
+
+            // Validate file
+            if (file.Size > maxFileSize)
+            {
+                await JS.ToastrError("File size exceeds 5MB limit");
+                return;
+            }
+
+            if (!allowedContentTypes.Contains(file.ContentType))
+            {
+                await JS.ToastrError("Only JPG, PNG, or GIF images are allowed");
+                return;
+            }
+
+            // Process image
+            var resizedImage = await file.RequestImageFileAsync(file.ContentType, 800, 800);
+            var buffer = new byte[resizedImage.Size];
+            await resizedImage.OpenReadStream(maxFileSize).ReadAsync(buffer);
+
+            // Update UI and model
+            imagePreviewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
+
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(maxFileSize).CopyToAsync(memoryStream);
+            Model.ImageData = memoryStream.ToArray();
+            Model.PhotoUrl = file.ContentType;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error processing image: {ex.Message}");
+            await JS.ToastrError("Error processing image");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+
+    }
+
+    private void RemoveTempImage()
+    {
+        Model.ImageData = null;
+        Model.PhotoUrl = string.Empty;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        _isSaving = true;
+
+        try
+        {
+
+
+
+
+            user.UID = Model.Id;
+            user.Fname = Model.FirstName;
+            user.Lname = Model.LastName;
+            user.Email = Model.Email;
+            user.Phone = Model.Phone;
+            user.JobTitle = Model.JobTitle;
+            user.DID = Model.DepartmentId ?? 1;
+            user.MobilePhone = Model.MobilePhone;
+            user.ImageContentType = Model.PhotoUrl;
+            user.ImageData = Model.ImageData;
+
+
+
+
+            // Save user data
+            await _userRepo.UpdateUserAsync(user);
+            if (Id != 0)
+            {
+                _navigation.NavigateTo("/SystemUsers");
+            }
+            else
+            {
+                _navigation.NavigateTo("/profile");
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating user data: {ex.Message}");
+
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void CancelEditing()
+    {
+        if (Id != 0)
+        {
+            _navigation.NavigateTo("/SystemUsers");
+        }
+        else
+        {
+            _navigation.NavigateTo("/profile");
+
+        }
+    }
+
+    private string GetInitials(string firstName, string lastName)
+    {
+        if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
+            return "US";
+
+        var firstInitial = string.IsNullOrWhiteSpace(firstName) ? "" : firstName[0].ToString();
+        var lastInitial = string.IsNullOrWhiteSpace(lastName) ? "" : lastName[0].ToString();
+
+        return $"{firstInitial}{lastInitial}".ToUpper();
+    }
+
+    public class EditUserModel
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "First name is required")]
+        [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
+        public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "Last name is required")]
+        [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
+        public string LastName { get; set; }
+
+        public string Email { get; set; }
+
+        [Phone(ErrorMessage = "Invalid phone number")]
+        public string Phone { get; set; }
+
+        public string JobTitle { get; set; }
+        public int? DepartmentId { get; set; }
+        public string MobilePhone { get; set; }
+        public string PhotoUrl { get; set; }
+        public byte[]? ImageData { get; set; }
+        public int fingerprint { get; set; }
+        public string LoginName { get; set; }
+        public string Role { get; set; }
+
+    }
+}

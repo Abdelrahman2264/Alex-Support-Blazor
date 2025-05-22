@@ -1,24 +1,24 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    
+    <base href="SignIn" />
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
+
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-    
+
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
-    
+
     <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     <link rel="stylesheet" href="@Assets["AlexSupport.styles.css"]" />
     <link rel="stylesheet" href="app.css" />
-    
-    
+
+
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
@@ -26,6 +26,7 @@
 
 <body>
     <Routes />
+
     <script src="_framework/blazor.web.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
@@ -43,6 +44,13 @@
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="js/notification.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.initializeNotificationHandler();
+        });
+    </script>
+    <script src="_content/ChartJs.Blazor/ChartJsBlazorInterop.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <script>
         const toggleButton = document.getElementById('toggle-btn')
                 const sidebar = document.getElementById('sidebar')
@@ -105,6 +113,95 @@
             }
         }
     </script>
+    <script>
+                window.notification = {
+            init: function (dotNetHelper) {
+                window.dotNetHelper = dotNetHelper;
+            },
+
+            playSound: function (soundPath) {
+                const audio = document.getElementById('notificationSound');
+                audio.src = soundPath;
+                audio.play().catch(e => console.log("Audio play failed:", e));
+            }
+        };
+    </script>
+    <script>
+        window.audioPlayer = {
+            play: function (url) {
+                const audio = new Audio(url);
+                audio.play();
+            }
+        };
+
+    </script>
+    <script>
+        // Wait for the DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAccordion();
+
+            function initializeAccordion() {
+                const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+                accordionHeaders.forEach(header => {
+                    // Remove any previous click handlers to avoid duplicates
+                    header.removeEventListener('click', handleAccordionClick);
+                    // Add new click handler
+                    header.addEventListener('click', handleAccordionClick);
+                });
+            }
+
+            function handleAccordionClick() {
+                const accordionItem = this.parentElement;
+                const accordionContent = this.nextElementSibling;
+                const icon = this.querySelector('i');
+
+                // Toggle current item
+                this.classList.toggle('active');
+                accordionContent.classList.toggle('active');
+
+                // Close all other accordion items
+                document.querySelectorAll('.accordion-item').forEach(item => {
+                    if (item !== accordionItem) {
+                        item.querySelector('.accordion-header').classList.remove('active');
+                        item.querySelector('.accordion-content').classList.remove('active');
+                    }
+                });
+            }
+
+            // Initialize other FAQ functionality
+            const categoryCards = document.querySelectorAll('.category-card');
+            categoryCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    alert(`Showing FAQs for ${this.querySelector('h3').textContent}`);
+                    document.querySelector('.faq-accordion').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Search functionality
+            const searchBtn = document.querySelector('.search-btn');
+            const searchBox = document.querySelector('.search-box input');
+
+            searchBtn.addEventListener('click', performSearch);
+            searchBox.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            function performSearch() {
+                const searchTerm = searchBox.value.trim();
+                if (searchTerm) {
+                    alert(`Searching for: ${searchTerm}`);
+                }
+            }
+        });
+    </script>
+
 </body>
 
 </html>
+
+
+

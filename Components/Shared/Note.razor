@@ -1,0 +1,143 @@
+﻿@attribute [Authorize]
+@inject INotificationService NotificationService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+<div class="notification-container">
+    @if (!string.IsNullOrEmpty(_message))
+    {
+        <div class="notification-card">
+            <div class="notification-header">
+                <span class="notification-icon">🔔</span>
+                <span class="notification-title">Notification</span>
+                <button class="notification-close" @onclick="() => _message = null">×</button>
+            </div>
+            <div class="notification-content">
+                @_message
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string? _message;
+    private bool _initialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initialized && IsClient())
+        {
+            _initialized = true;
+            await NotificationService.InitializeAsync(async (message) =>
+            {
+                await InvokeAsync(() =>
+                {
+                    _message = message;
+                    StateHasChanged();
+                    // Auto-hide after 5 seconds
+                    Task.Delay(5000).ContinueWith(_ =>
+                    {
+                        InvokeAsync(() =>
+                        {
+                            _message = null;
+                            StateHasChanged();
+                        });
+                    });
+                });
+            });
+        }
+    }
+
+    private bool IsClient() => !Nav.Uri.StartsWith("about:");
+
+    public async ValueTask DisposeAsync()
+    {
+        await NotificationService.DisposeAsync();
+    }
+}
+
+<style>
+    .notification-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+        max-width: 100%;
+        width: 350px;
+        box-sizing: border-box;
+        padding: 0 1rem;
+    }
+
+    .notification-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        border-left: 4px solid #4a6bdf;
+        animation: slideIn 0.3s ease-out;
+        margin-bottom: 1rem;
+    }
+
+    .notification-header {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+
+    .notification-icon {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        flex-grow: 1;
+    }
+
+    .notification-close {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        cursor: pointer;
+        color: #6c757d;
+        padding: 0 0.25rem;
+    }
+
+        .notification-close:hover {
+            color: #343a40;
+        }
+
+    .notification-content {
+        padding: 1rem;
+        line-height: 1.5;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 576px) {
+        .notification-container {
+            width: calc(100% - 2rem);
+            right: 1rem;
+            left: 1rem;
+            top: 1rem;
+        }
+
+        .notification-card {
+            width: 100%;
+        }
+    }
+</style>

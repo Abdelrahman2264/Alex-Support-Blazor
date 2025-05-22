@@ -1,0 +1,161 @@
+﻿@inject INotificationRepoisitory NotificationService
+@inject ILogService Log
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<div class="floating-notification-bell">
+    <div class="bell-container @(showNotifications ? "active" : "")" @onclick="ToggleNotifications">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+            <path d="M160-200v-80h80v-280q0-83 50-147.5T420-792v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v280h80v80H160Zm320-300Zm0 420q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-280h320v-280q0-66-47-113t-113-47q-66 0-113 47t-47 113v280Z" />
+        </svg>
+        @if (unreadCount > 0)
+        {
+            <span class="notification-counter">@unreadCount</span>
+        }
+    </div>
+
+    @if (showNotifications)
+    {
+        <div class="notification-card">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <button @onclick="MarkAllAsRead" class="mark-all-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Mark all read
+                </button>
+            </div>
+
+            <div class="notification-list">
+                @if (notifications.Any())
+                {
+                    @foreach (var notification in notifications.OrderByDescending(n => n.SentAt))
+                    {
+                        <div class="notification @(notification.IsRead ? "" : "unread")"
+                             @onclick="() => MarkAsRead(notification.NID)">
+                            <div class="notification-content">
+                                <p>@notification.Message</p>
+                                <span class="notification-time">@FormatTime(notification.SentAt)</span>
+                            </div>
+                            @if (!notification.IsRead)
+                            {
+                                <div class="unread-indicator"></div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <p>No new notifications</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private int unreadCount = 0;
+    private IEnumerable<SystemNotification> notifications = new List<SystemNotification>();
+    private bool showNotifications = false;
+    private DotNetObjectReference<NotificationBell>? objRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNotifications();
+
+        // Set up periodic refresh (every 30 seconds)
+        var timer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadNotifications();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("floatingNotification.init", objRef);
+        }
+    }
+
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            var currentuserid = await Log.ReturnCurrentUserID();
+            notifications = await NotificationService.GetAllUnReadNotificationAsyncForUser(currentuserid);
+            unreadCount = notifications.Count(n => !n.IsRead);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading notifications: {ex.Message}");
+        }
+    }
+
+    private void ToggleNotifications()
+    {
+        showNotifications = !showNotifications;
+    }
+
+    private async Task MarkAsRead(int notificationId)
+    {
+        var notification = await NotificationService.GetNotificationAsync(notificationId);
+        if (!notification.IsRead)
+        {
+            await NotificationService.ReadNotificationAsync(notification);
+            await LoadNotifications();
+        }
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        foreach (var notification in notifications.Where(n => !n.IsRead))
+        {
+            await NotificationService.ReadNotificationAsync(notification);
+        }
+        await LoadNotifications();
+    }
+
+    private string FormatTime(DateTime dateTime)
+    {
+        var timeSince = DateTime.Now - dateTime;
+
+        if (timeSince.TotalSeconds < 60)
+            return "Just now";
+
+        if (timeSince.TotalMinutes < 60)
+            return $"{(int)timeSince.TotalMinutes} min ago";
+
+        if (timeSince.TotalHours < 24)
+            return $"{(int)timeSince.TotalHours} hour{(timeSince.TotalHours >= 2 ? "s" : "")} ago";
+
+        if (timeSince.TotalDays < 7)
+            return $"{(int)timeSince.TotalDays} day{(timeSince.TotalDays >= 2 ? "s" : "")} ago";
+
+        return dateTime.ToString("MMM dd");
+    }
+
+    [JSInvokable]
+    public async Task CloseNotifications()
+    {
+        showNotifications = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        objRef?.Dispose();
+    }
+}

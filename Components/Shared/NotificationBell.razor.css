@@ -1,0 +1,214 @@
+﻿/* Floating Notification Bell */
+.floating-notification-bell {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+    .floating-notification-bell.mobile {
+        right: 50%;
+        transform: translateX(50%);
+    }
+
+.bell-container {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #4285f4, #34a853);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+    .bell-container:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .bell-container.active {
+        background: linear-gradient(135deg, #34a853, #4285f4);
+    }
+
+.notification-counter {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    border: 2px solid white;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Notification Card */
+.notification-card {
+    width: 360px;
+    max-height: 70vh;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+    .notification-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #212529;
+        font-weight: 600;
+    }
+
+.mark-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: #4285f4;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+    .mark-all-btn:hover {
+        background: rgba(66, 133, 244, 0.1);
+    }
+
+.notification-list {
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+.notification {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f3f5;
+    display: flex;
+    gap: 12px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+    .notification:hover {
+        background: #f8f9fa;
+    }
+
+    .notification.unread {
+        background: #f0f7ff;
+    }
+
+.notification-content {
+    flex: 1;
+}
+
+    .notification-content p {
+        margin: 0;
+        color: #212529;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+.notification-time {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.unread-indicator {
+    width: 8px;
+    height: 8px;
+    background: #4285f4;
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+.empty-state {
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #6c757d;
+}
+
+    .empty-state svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+        color: #adb5bd;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 14px;
+    }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .notification-card {
+        width: 90vw;
+        right: 5vw;
+        left: 5vw;
+    }
+
+    .bell-container {
+        width: 50px;
+        height: 50px;
+    }
+}

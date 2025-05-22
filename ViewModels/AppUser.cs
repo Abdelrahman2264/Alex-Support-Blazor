@@ -30,27 +30,27 @@ namespace AlexSupport.ViewModels
         [Column(TypeName = "NVARCHAR(50)")]
         [Required(ErrorMessage = "Enter Login Name")]
         [Display(Name = "Login Name")]
-        public required string LoginName { get; set; }
+        public  string LoginName { get; set; }
 
         [Column(TypeName = "NVARCHAR(150)")]
         [Required(ErrorMessage = "Enter Email")]
         [Display(Name = "Email")]
-        public required string Email { get; set; }
+        public  string Email { get; set; }
 
         [Column(TypeName = "NVARCHAR(50)")]
         [Required(ErrorMessage = "Enter First Name")]
         [Display(Name = "First Name")]
-        public required string Fname { get; set; }
+        public  string Fname { get; set; }
 
         [Column(TypeName = "NVARCHAR(50)")]
         [Required(ErrorMessage = "Enter Last Name")]
         [Display(Name = "Last Name")]
-        public required string Lname { get; set; }
+        public  string Lname { get; set; }
 
-        [Column(TypeName = "NVARCHAR(50)")]
+        [Column(TypeName = "NVARCHAR(250)")]
         [Required(ErrorMessage = "Enter Password")]
         [Display(Name = "Password")]
-        public required string Password { get; set; }
+        public  string Password { get; set; }
 
         [Column(TypeName = "NVARCHAR(100)")]
         [Display(Name = "Job Title")]
@@ -58,11 +58,11 @@ namespace AlexSupport.ViewModels
 
     
 
-        [Column(TypeName = "NVARCHAR(11)")]
+        [Column(TypeName = "NVARCHAR(20)")]
         [Display(Name = "Mobile")]
         public string? MobilePhone { get; set; }
 
-        [Column(TypeName = "NVARCHAR(10)")]
+        [Column(TypeName = "NVARCHAR(20)")]
         [Display(Name = "InternalPhone")]
         public string? Phone { get; set; }
 
@@ -80,18 +80,27 @@ namespace AlexSupport.ViewModels
         public DateTime Create_Date { get; set; }
 
 
-        public required bool IsActive { get; set; } = true; // Active/Disabled
+        public  bool IsActive { get; set; } = true; // Active/Disabled
 
 
         [ForeignKey("Department")]
         [Column(TypeName = "INT")]
         [Required]
         public int DID { get; set; }
+        [Column(TypeName = "VARBINARY(MAX)")]
+        public byte[]? ImageData { get; set; }
+
+        [Column(TypeName = "NVARCHAR(100)")]
+        public string? ImageContentType { get; set; } // e.g. "image/jpeg", "image/png"
 
         public Department Department { get; set; }
         public  ICollection<Ticket> Ticket { get; set; }
         public  ICollection<Ticket> AgentTicket { get; set; }
         public virtual ICollection<Tlog> Tlogs { get; set; }
+        public virtual ICollection<SystemNotification> SentNotifications { get; set; }
+        public virtual ICollection<SystemNotification> ReceivedNotifications { get; set; }
+        public virtual ICollection<ChatMessage> ChatMessages { get; set; }
+        public virtual ICollection<SystemLogs> SystemLogs { get; set; }
 
 
     }

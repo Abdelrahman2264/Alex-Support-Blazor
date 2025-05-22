@@ -1,0 +1,216 @@
+﻿@page "/profile"
+@inject ILogService _Log
+@inject IAppUserRepoistory _IAppUser
+@inject NavigationManager Navigation
+@using System.Security.Claims
+@rendermode InteractiveServer
+@attribute [Authorize]
+<PageTitle>User Profile</PageTitle>
+
+
+<div class="profile-page">
+    @if (loading)
+    {
+        <div class="loading-container">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="mt-2">Loading your profile...</p>
+        </div>
+    }
+    else if (errorOccurred)
+    {
+        <div class="error-container">
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error loading profile:</strong> @errorMessage
+            </div>
+            <button class="btn btn-primary mt-3" @onclick="RetryLoading">
+                <i class="fas fa-sync-alt me-2"></i> Try Again
+            </button>
+        </div>
+    }
+    else if (user != null)
+    {
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="avatar-container">
+                    <div class="avatar">
+                        @if (user?.ImageData != null)
+                        {
+                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(user.ImageData)"
+                                 class="profile-image" alt="Profile picture" />
+                        }
+                        else
+                        {
+                            <img src="@ProfileImageUrl" class="profile-image" alt="Default profile picture" />
+                        }
+                    </div>
+                    <button class="btn btn-edit-gradient edit-btn" @onclick="NavigateToEdit">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+
+                </div>
+                <div class="profile-info">
+                    <h1>@user.Fname @user.Lname</h1>
+                    <p class="text-white-50">@user.JobTitle</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-value">@user.Department?.DepartmentName</span>
+                            <span class="stat-label">Department</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">@FormatCreateDate(user.Create_Date)</span>
+                            <span class="stat-label">Member Since</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-details">
+                <div class="detail-section">
+                    <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value">@user.Email</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone</span>
+                            <span class="detail-value">@(user.Phone ?? "Not provided")</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Fingerprint</span>
+                            <span class="detail-value">@(user.Fingerprint.ToString() ?? "Not registered")</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Sign In Name</span>
+                            <span class="detail-value">@user.LoginName</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">First Name</span>
+                            <span class="detail-value">@user.Fname</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Last Name</span>
+                            <span class="detail-value">@user.Lname</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3><i class="fas fa-briefcase"></i> Work Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Position</span>
+                            <span class="detail-value">@user.JobTitle</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">@(user.Department?.DepartmentName ?? "Not assigned")</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Fiber Me </span>
+                            <span class="detail-value">@(user.MobilePhone ?? "Not provided")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-user-container">
+            <div class="alert alert-warning">
+                <i class="fas fa-user-slash me-2"></i>
+                <strong>No user data found.</strong> Please contact support if this is unexpected.
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private AppUser user { get; set; }
+    private bool loading = true;
+    private bool errorOccurred = false;
+    private string errorMessage = string.Empty;
+    private string ProfileImageUrl = "/Images/defaultmanavatar.png";
+    private string Initials => GetInitials(user?.Fname, user?.Lname);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserData();
+        // Example usage with sound:
+      
+        // Or use the new method if you added AddNotificationWithSound
+    
+    }
+
+    private async Task LoadUserData()
+    {
+        try
+        {
+            loading = true;
+            errorOccurred = false;
+            StateHasChanged(); // Force UI update to show loading state
+
+            var authState = await _Log.ReturnCurrentUserID();
+            if (authState == null)
+            {
+                throw new Exception("Unable to determine current user");
+            }
+
+
+
+            user = await _IAppUser.GetUserByIdAsync(authState);
+
+            if (user == null)
+            {
+                throw new Exception("User not found in database");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorOccurred = true;
+            errorMessage = ex.Message;
+
+            // Log the error (you might want to inject a logger here)
+            Console.Error.WriteLine($"Error loading profile: {ex}");
+
+            // Optionally show a toast notification
+            // ToastService.ShowError($"Error loading profile: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RetryLoading()
+    {
+        await LoadUserData();
+    }
+
+    private string GetInitials(string firstName, string lastName)
+    {
+        if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
+            return "US";
+
+        var firstInitial = string.IsNullOrWhiteSpace(firstName) ? "" : firstName[0].ToString();
+        var lastInitial = string.IsNullOrWhiteSpace(lastName) ? "" : lastName[0].ToString();
+
+        return $"{firstInitial}{lastInitial}".ToUpper();
+    }
+
+    private string FormatCreateDate(DateTime? date)
+    {
+        return date?.ToString("MMMM yyyy") ?? "Unknown";
+    }
+
+    private void NavigateToEdit()
+    {
+        Navigation.NavigateTo("/profile/edit");
+    }
+}
+<Notification />

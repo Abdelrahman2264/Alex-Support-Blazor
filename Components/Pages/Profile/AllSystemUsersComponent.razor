@@ -1,0 +1,312 @@
+﻿@page "/SystemUsers"
+@inject IAppUserRepoistory _IAppUser
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@attribute [Authorize(Roles = "Admin,Agent")]
+
+<PageTitle>User Management</PageTitle>
+
+<BsModal Title="@title"
+         ButtonText="@buttontext"
+         ButtonBootstrapStyle="@buttonstyle"
+         OnModalConfirmation="Activation" />
+
+
+
+<div class="users-page">
+    <AuthorizeView Roles="Admin">
+
+        <div class="page-header">
+            <h2>System Users Management</h2>
+            <div class="actions">
+                <button class="btn btn-primary" @onclick="NavigateToAddNewUser">
+                    <i class="fas fa-plus me-2"></i> Add New User
+                </button>
+            </div>
+        </div>
+    </AuthorizeView>
+
+    <div class="user-filters mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="form-control" placeholder="Search users..."
+                           @bind="searchTerm" @bind:event="oninput" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="filter-controls">
+                    <label>Status:</label>
+                    <select class="form-select" @bind="statusFilter">
+                        <option value="">All Users</option>
+                        <option value="true">Active Only</option>
+                        <option value="false">Inactive Only</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading users...</p>
+        </div>
+    }
+    else if (allUsers.Any())
+    {
+        <div class="user-cards">
+            @foreach (var user in filteredUsers)
+            {
+                <div class="user-card @(user.IsActive ? "" : "inactive")">
+                    <div class="status-badge @(user.IsActive ? "active" : "inactive")">
+                        @(user.IsActive ? "Active" : "Inactive")
+                    </div>
+
+                    <div class="user-info">
+                        <h5>@user.Fname @user.Lname</h5>
+                        <div class="user-login">@user.LoginName</div>
+
+                        <div class="user-meta">
+                            <div><i class="fas fa-envelope"></i> @user.Email</div>
+                            <div><i class="fas fa-briefcase"></i> @user.JobTitle</div>
+                            <div><i class="fas fa-building"></i> @(user.Department?.DepartmentName ?? "No Department")</div>
+                            <div><i class="fas fa-fingerprint"></i> @user.Fingerprint</div>
+                        </div>
+                    </div>
+                    <AuthorizeView Roles="Admin">
+                        <Authorized>
+                            <div class="user-actions">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        @onclick="() => EditUser(user.UID)"
+                                        title="Edit user">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+
+                                @if (user.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            @onclick="() => InActiveUserShowModal(user.UID)"
+                                            title="Deactivate user">
+                                        <i class="fas fa-user-slash"></i> Deactivate
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-success"
+                                            @onclick="() => ActiveUserShowModal(user.UID)"
+                                            title="Activate user">
+                                        <i class="fas fa-user-check"></i> Activate
+                                    </button>
+                                }
+                            </div>
+                        </Authorized>
+                        <NotAuthorized>
+                            <div class="user-actions">
+                                <button class="btn btn-sm btn-outline-primary" disabled title="Edit user">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+
+                                @if (user.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger" disabled title="Deactivate user">
+                                        <i class="fas fa-user-slash"></i> Deactivate
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-success" disabled title="Activate user">
+                                        <i class="fas fa-user-check"></i> Activate
+                                    </button>
+                                }
+                            </div>
+                        </NotAuthorized>
+                    </AuthorizeView>
+
+                </div>
+            }
+        </div>
+
+        <div class="pagination-controls">
+            <button class="btn btn-outline-secondary" @onclick="PrevPage" disabled="@(currentPage == 1)">
+                <i class="fas fa-chevron-left me-1"></i> Previous
+            </button>
+            <span>Page @currentPage of @totalPages</span>
+            <button class="btn btn-outline-secondary" @onclick="NextPage" disabled="@(currentPage == totalPages)">
+                Next <i class="fas fa-chevron-right ms-1"></i>
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="no-users">
+            <i class="fas fa-users-slash"></i>
+            <p>No users found matching your criteria</p>
+            @if (!string.IsNullOrEmpty(searchTerm))
+            {
+                <button class="btn btn-sm btn-link" @onclick="ClearFilters">
+                    Clear filters
+                </button>
+            }
+        </div>
+    }
+</div>
+
+
+
+@code {
+    private IEnumerable<AppUser> allUsers = new List<AppUser>();
+    private bool isLoading = true;
+    private string searchTerm = "";
+    private string statusFilter = "";
+    private int currentPage = 1;
+    private int pageSize = 12;
+    private int InActivatedUserId { get; set; } = 0;
+    private int ActivatedUserId { get; set; } = 0;
+    private string title { get; set; } = string.Empty;
+    private string buttonstyle { get; set; } = string.Empty;
+    private string buttontext { get; set; } = string.Empty;
+
+    // Computed properties
+    private IEnumerable<AppUser> filteredUsers => allUsers
+        .Where(u =>
+            string.IsNullOrEmpty(searchTerm) ||
+            (u.Fname?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.Lname?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.LoginName?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.JobTitle?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.Department?.DepartmentName?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.Phone?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.MobilePhone?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (u.Fingerprint.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        )
+        .Where(u =>
+            string.IsNullOrEmpty(statusFilter) ||
+            u.IsActive == bool.Parse(statusFilter)
+        )
+        .OrderBy(u => u.Lname)
+        .ThenBy(u => u.Fname)
+        .ToList();
+
+
+    private IEnumerable
+    <AppUser>
+        pagedUsers => filteredUsers
+        .Skip((currentPage - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
+
+    private int totalPages => (int)Math.Ceiling((double)filteredUsers.Count() / pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            isLoading = true;
+            allUsers = await _IAppUser.GetAllUsersAsync();
+        }
+        catch (Exception ex)
+        {
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void EditUser(int userId)
+    {
+        Navigation.NavigateTo($"/users/edit/{userId}");
+    }
+
+
+
+    private void NextPage()
+    {
+        currentPage++;
+        StateHasChanged(); // Just trigger UI update since filteredUsers is computed
+    }
+
+    private void PrevPage()
+    {
+        currentPage--;
+        StateHasChanged(); // Just trigger UI update since filteredUsers is computed
+    }
+
+    private void ClearFilters()
+    {
+        searchTerm = string.Empty;
+        statusFilter = string.Empty;
+        currentPage = 1;
+        StateHasChanged(); // Just trigger UI update since filteredUsers is computed
+    }
+
+    private void NavigateToAddNewUser()
+    {
+        Navigation.NavigateTo("/SignUp");
+    }
+
+    private async Task InActiveUserShowModal(int dtid)
+    {
+        title = "Are You Sure You Want Deactivate This User";
+        buttonstyle = "btn-danger";
+        buttontext = "Deactivate";
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
+        InActivatedUserId = dtid;
+
+    }
+
+
+
+
+
+    private async Task ActiveUserShowModal(int dtid)
+    {
+        title = "Are You Sure You Want Activate This User";
+        buttonstyle = "btn-success";
+        buttontext = "Activate";
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
+        ActivatedUserId = dtid;
+
+    }
+
+
+
+    private async Task Activation()
+    {
+        await JS.InvokeVoidAsync("HideConfirmationModal");
+
+        if (ActivatedUserId != 0)
+        {
+            bool flag = await _IAppUser.ActiveUserAsync(ActivatedUserId);
+            if (flag)
+                await JS.ToastrSuccess("User Activated Successfully");
+            else
+                await JS.ToastrError($"Failed to active User Please try again !");
+
+        }
+        else if (InActivatedUserId != 0)
+        {
+            bool flag = await _IAppUser.InActiveUserAsync(InActivatedUserId);
+            if (flag)
+                await JS.ToastrSuccess("User Inactivated Successfully");
+            else
+                await JS.ToastrError($"Failed to Inactive User Please try again !");
+
+        }
+        await LoadUsers();
+
+    }
+}

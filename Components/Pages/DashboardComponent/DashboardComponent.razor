@@ -1,0 +1,730 @@
+﻿@page "/dashboard"
+@inject ITicketRepository _ITicket
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inject ITicketLogsHistoryRepository _ITicketLog
+@inject ICategoryRepository _ICategory
+@inject ILocationRepository _ILocation
+@inject IAppUserRepoistory _IUser
+@inject ILogService Log
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.SignalR.Client
+@rendermode InteractiveServer
+@inject INotificationRepoisitory NotificationService
+@attribute [Authorize]
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1 class="fw-bold ">IT Ticket System</h1>
+        <div class="user-info">
+            <span class="user-name fw-bold">@currentuser.Role </span>
+            <i class="fas fa-user-circle user-icon"></i>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card total">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="card-text">
+                    <h3>Total Tickets</h3>
+                    <p>@totalTickets</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card open">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <div class="card-text">
+                    <h3>Open</h3>
+                    <p>@openTickets</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card closed">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-text">
+                    <h3>Closed</h3>
+                    <p>@closedTickets</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card assigned">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-user-tag"></i>
+                </div>
+                <div class="card-text">
+                    <h3>Assigned</h3>
+                    <p>@assignedTickets</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-card escalated">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="card-text">
+                    <h3>Escalated</h3>
+                    <p>@escalatedTickets</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dashboard-content">
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <div class="section-header">
+                <h2 class="fw-bold">Recent Activity</h2>
+            </div>
+            <div class="activity-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Action</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in recentTickets)
+                        {
+                            <tr @onclick="() => ViewTicketDetails(ticket.Id)">
+                                <td>@ticket.TID</td>
+                                <td>@ticket.Action</td>
+                                <td><span class="status-badge @ticket.Ticket.Status.ToLower().Replace(" ", "-")">@ticket.Ticket.Status</span></td>
+                                <td><span class="priority-badge @ticket.Ticket.Priority.ToLower()">@ticket.Ticket.Priority</span></td>
+                                <td>@ticket.actionTime.ToString("g")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="section-header">
+                <h2 class="fw-bold">Quick Actions</h2>
+            </div>
+            <div class="action-buttons">
+                <button class="btn action-btn open-tickets" @onclick="OpenTicketsView">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Open Tickets (@openTickets)</span>
+                </button>
+                <button class="btn action-btn assigned-tickets" @onclick="AssignedTicketsView">
+                    <i class="fas fa-user-tag"></i>
+                    <span>Assigned Tickets (@assignedTickets)</span>
+                </button>
+                <button class="btn action-btn create-ticket" @onclick="CreateNewTicketView">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Create New Ticket</span>
+                </button>
+                <button class="btn action-btn closed-tickets" @onclick="ClosedTicketsView">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <span>Closed Tickets(@closedTickets)</span>
+                </button>
+                <AuthorizeView Roles="Admin,Agent">
+
+                    <button class="btn action-btn daily-tickets" @onclick="DailyTasksView">
+                        <i class="bi bi-calendar-week-fill"></i>
+                        <span>Daily Tasks</span>
+                    </button>
+                </AuthorizeView>
+
+            </div>
+        </div>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>Tickets VS Category</h3>
+                </div>
+                <div class="chart-card-body">
+                    <div class="chart-container">
+                        <BarChart @ref="barChart" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>Tickets VS Priority</h3>
+                </div>
+                <div class="chart-card-body">
+                    <div class="chart-container">
+                        <PieChart @ref="pieChart" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="locations-card">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Most Frequent 10 Locations</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Location</th>
+                                    <th>Count</th>
+                                    <th class="pe-3">Distribution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (frequentLocations?.Any() == true)
+                                {
+                                    @foreach (var location in frequentLocations)
+                                    {
+                                        var progressBarClass = GetProgressBarClass(location.Percentage);
+                                        <tr>
+                                            <td class="ps-3 text-truncate" style="max-width: 150px;" title="@location.LocationName">
+                                                @location.LocationName
+                                            </td>
+                                            <td>@location.TicketCount</td>
+                                            <td class="pe-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                                        <div class="progress-bar @progressBarClass"
+                                                             role="progressbar"
+                                                             style="width: @location.Percentage%"
+                                                             aria-valuenow="@location.Percentage"
+                                                             aria-valuemin="0"
+                                                             aria-valuemax="100">
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted ps-2">@location.Percentage.ToString("0.0")%</small>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center py-3 text-muted">No location data available</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <AuthorizeView Roles="Admin,Agent">
+
+
+            <div class="metrics-card">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">System Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-container">
+                            <!-- Categories Count -->
+                            <div class="metric-item">
+                                <div class="metric-icon bg-primary-light">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <div class="metric-value">@categoriesCount</div>
+                                    <div class="metric-label">Categories</div>
+                                </div>
+                            </div>
+
+                            <!-- Locations Count -->
+                            <div class="metric-item">
+                                <div class="metric-icon bg-success-light">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <div class="metric-value">@locationsCount</div>
+                                    <div class="metric-label">Locations</div>
+                                </div>
+                            </div>
+
+                            <!-- Users Count -->
+                            <div class="metric-item">
+                                <div class="metric-icon bg-warning-light">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <div class="metric-value">@usersCount</div>
+                                    <div class="metric-label">Users</div>
+                                </div>
+                            </div>
+
+                            <!-- Tickets Count (Optional) -->
+                            <div class="metric-item">
+                                <div class="metric-icon bg-info-light">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <div class="metric-info">
+                                    <div class="metric-value">@ticketsCount</div>
+                                    <div class="metric-label">Tickets</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </AuthorizeView>
+
+    </div>
+</div>
+
+
+@code {
+    private int categoriesCount = 0;
+
+    private int totalTickets { get; set; } = 125;
+    private int openTickets { get; set; } = 42;
+    private int closedTickets { get; set; } = 65;
+    private int assignedTickets { get; set; } = 38;
+    private int escalatedTickets { get; set; } = 18;
+    private DateOnly currentMonth { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+    private IEnumerable<Tlog> recentTickets = new List<Tlog>();
+    private IEnumerable<Ticket> AllClosedTickets = new List<Ticket>();
+    private bool showCreateModal = false;
+    private int locationsCount = 0;
+    private int usersCount = 0;
+    private int ticketsCount = 0;
+    private AppUser currentuser { get; set; } = new AppUser();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await LoadData();
+        InitializeChart();
+        await LoadData2(); // Load data and prepare the chart
+        InitializePieChart();
+        await LoadFrequentLocations();
+
+
+
+
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (chartData != null && barChartOptions != null && chartData2 != null)
+        {
+            await barChart.InitializeAsync(chartData, barChartOptions);
+            await pieChart.InitializeAsync(chartData2, pieChartOptions);
+
+
+        }
+    }
+    public async Task LoadData()
+    {
+
+
+        var AllTickets = await _ITicket.GetAllTicketsAsync();
+        totalTickets = AllTickets.Count();
+        var AllAssignedTickets = await _ITicket.GetAllAssignedTickets();
+        assignedTickets = AllAssignedTickets.Count();
+        var AllOpenTickets = await _ITicket.GetAllOpendTicketsAsync();
+        openTickets = AllOpenTickets.Count();
+        AllClosedTickets = await _ITicket.GetAllClosedTicketsAsync();
+        closedTickets = AllClosedTickets.Count();
+        var AllEsclatedTickets = AllTickets.Where(u => u.Status == "Escalated");
+        escalatedTickets = AllEsclatedTickets.Count();
+        ticketsCount = AllTickets.Count();
+        var AllCategories = await _ICategory.AllCategoriesAsync();
+        categoriesCount = AllCategories.Count();
+        var AllLocations = await _ILocation.AllLocationsAsync();
+        locationsCount = AllLocations.Count();
+        var AllUsers = await _IUser.GetAllUsersAsync();
+        usersCount = AllUsers.Count();
+        var id = await Log.ReturnCurrentUserID();
+        currentuser = await _IUser.GetUserByIdAsync(id);
+        if (currentuser.Role == "Admin")
+        {
+            recentTickets = await _ITicketLog.GetAllLogsAsync();
+        }
+        else
+        {
+            var tlogs = await _ITicketLog.GetAllLogsAsync();
+            recentTickets = tlogs.Where(t => t.UID == id || t.Ticket.UID == id || t.Ticket.AgentID == id).OrderByDescending(t => t.actionTime).Take(5);
+        }
+
+
+    }
+    private List<string> colors = new List<string>
+    {
+    "#4e79a7", // Blue
+    "#f28e2b", // Orange
+    "#e15759", // Red
+    "#76b7b2", // Teal
+    "#59a14f", // Green
+    "#edc948", // Yellow
+    "#b07aa1", // Purple
+    "#ff9da7", // Pink
+    "#9c755f", // Brown
+    "#bab0ac", // Gray
+    "#8cd17d", // Light Green
+    "#86bcb6"  // Light Teal
+    };
+
+
+
+
+
+    private void OpenTicketsView()
+    {
+        NavigationManager.NavigateTo("/tickets");
+    }
+    private void ViewTicketDetails(int id)
+    {
+        NavigationManager.NavigateTo($"/tickets/ticketdetails/{id}");
+    }
+    private void ClosedTicketsView()
+    {
+        NavigationManager.NavigateTo("/tickets/Closed");
+    }
+    private void CreateNewTicketView()
+    {
+        NavigationManager.NavigateTo("/tickets/createticket");
+    }
+
+    private void AssignedTicketsView()
+    {
+        NavigationManager.NavigateTo("/tickets/Assigned");
+    }
+    private void DailyTasksView()
+    {
+        NavigationManager.NavigateTo("/DailyTasks");
+    }
+
+    private BarChart barChart = default!;
+    private BarChartOptions barChartOptions = default!;
+    private ChartData chartData = default!;
+
+    private void InitializeChart()
+    {
+        var AssetSummaries = AllClosedTickets
+        .GroupBy(a => a.category?.CategoryName) // Null check for Type
+        .Where(g => g.Key != null) // Filter out null keys
+        .Select(g => new CategorySummary()
+            {
+                Name = g.Key!,
+                Count = g.Count(),
+            })
+        .ToList();
+
+
+
+        var labels = AllClosedTickets.Select(a => a.category?.CategoryName).Distinct().ToList();
+        var datasets = new List<IChartDataset>();
+
+        var Data = new BarChartDataset()
+            {
+                Label = "Categories",
+                Data = AssetSummaries.Select(a => (double?)a.Count).ToList(),
+                BackgroundColor = colors.Take(labels.Count).ToList(), // Assign one color per label
+                BorderColor = colors.Take(labels.Count).Select(c => DarkenColor(c, 20)).ToList(),
+                BorderWidth = new List<double> { 1 },
+
+            };
+
+        datasets.Add(Data);
+
+        chartData = new ChartData { Labels = labels, Datasets = datasets };
+
+        barChartOptions = new()
+            {
+                Locale = "de-DE",
+                Responsive = true,
+                Interaction = new Interaction { Mode = InteractionMode.Y },
+                IndexAxis = "y",
+                Scales = new()
+                {
+                    X = new()
+                    {
+                        Title = new ChartAxesTitle { Text = "Count", Display = true },
+                        Stacked = true,
+                        BeginAtZero = true, // Ensure x-axis starts at zero
+                    },
+                    Y = new()
+                    {
+                        Title = new ChartAxesTitle { Text = "Category Type", Display = true },
+                        Stacked = true,
+                        BeginAtZero = true
+                    }
+                },
+                Plugins = new()
+                {
+                    Title = new()
+                    {
+                        Text = "Status",
+                        Display = true
+                    }
+                }
+            };
+    }
+    private string DarkenColor(string hexColor, int percent)
+    {
+        // Convert hex to RGB
+        var color = System.Drawing.ColorTranslator.FromHtml(hexColor);
+
+        // Darken each component
+        return $"rgb({(int)(color.R * (100 - percent) / 100)}, " +
+        $"{(int)(color.G * (100 - percent) / 100)}, " +
+        $"{(int)(color.B * (100 - percent) / 100)})";
+    }
+
+    private class CategorySummary
+    {
+        public string Name { get; set; } = string.Empty;
+        public double Count { get; set; }
+    }
+}
+    @code {
+    private string GetProgressBarClass(double percentage)
+    {
+        if (percentage <= 25)
+        {
+            return "bg-danger";
+        }
+        else if (percentage <= 50 && percentage > 25)
+        {
+            return "bg-warning";
+        }
+        else if (percentage <= 75 && percentage > 50)
+        {
+            return "bg-primary";
+        }
+        else
+        {
+            return "bg-success";
+        }
+    }
+}
+    @code {
+    private PieChart pieChart = default!;
+    private PieChartOptions pieChartOptions = default!;
+    private ChartData chartData2 = default!;
+    private string[]? backgroundColors;
+    private int datasetsCount = 0;
+    private int dataLabelsCount = 0;
+
+    private Random random = new();
+
+    private async Task LoadData2()
+    {
+        // Fetch logs and group by user
+        AllClosedTickets = await _ITicket.GetAllClosedTicketsAsync();
+
+        // Join logs with users to get usernames
+        var Priority = AllClosedTickets
+        .GroupBy(u => u.Priority)
+        .Select(group => new
+        {
+            Name = group.Key,
+            Count = group.Count(),
+
+        })
+        .ToList();
+
+        // Prepare pie chart data
+        var labels = Priority.Select(u => u.Name).ToList(); // Use username instead of "User {UserId}"
+        var data = Priority.Select(u => (double?)u.Count).ToList();
+
+        chartData2 = new ChartData
+            {
+                Labels = labels,
+                Datasets = new List<IChartDataset>
+    {
+    new PieChartDataset
+    {
+    Label = "Prioiry VS Tickets",
+    Data = data,
+    BackgroundColor = colors
+    }
+    }
+            };
+    }
+    private void InitializePieChart()
+    {
+        pieChartOptions = new PieChartOptions
+            {
+                Responsive = true,
+                Plugins = new()
+                {
+                    Title = new() { Text = "Most Frequent Priorities", Display = true },
+                    Legend = new() { Position = "right" }
+                }
+            };
+    }
+
+
+    }
+
+
+    @code {
+    private List<LocationFrequency> frequentLocations = new();
+
+
+
+    private async Task LoadFrequentLocations()
+    {
+        // Get all tickets with locations
+        var allTickets = await _ITicket.GetAllTicketsAsync();
+
+        // Group by location and count
+        var locationGroups = allTickets
+        .Where(t => !string.IsNullOrEmpty(t.location.LocationName))
+        .GroupBy(t => t?.location?.LocationName)
+        .Select(g => new LocationFrequency
+            {
+                LocationName = g?.Key,
+                TicketCount = g.Count()
+            })
+        .OrderByDescending(x => x.TicketCount)
+        .Take(10)
+        .ToList();
+
+        // Calculate percentages if we have data
+        if (locationGroups.Any())
+        {
+            var totalTickets = allTickets.Count();
+            foreach (var location in locationGroups)
+            {
+                location.Percentage = (location.TicketCount * 100.0) / totalTickets;
+            }
+        }
+
+        frequentLocations = locationGroups;
+    }
+
+    private class LocationFrequency
+    {
+        public string LocationName { get; set; }
+        public int TicketCount { get; set; }
+        public double Percentage { get; set; }
+    }
+
+    }
+
+<style>
+    .locations-card {
+        margin-bottom: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        overflow: hidden;
+    }
+
+        .locations-card .card {
+            border: none;
+        }
+
+        .locations-card .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 0.75rem 1rem;
+        }
+
+        .locations-card .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .locations-card .table {
+            margin-bottom: 0;
+        }
+
+            .locations-card .table th {
+                font-weight: 500;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: #6c757d;
+                white-space: nowrap;
+            }
+
+            .locations-card .table td {
+                vertical-align: middle;
+                padding: 0.75rem;
+            }
+
+        .locations-card .progress {
+            background-color: #e9ecef;
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .locations-card {
+            margin-bottom: 1rem;
+            border-radius: 0;
+        }
+
+            .locations-card .card-header {
+                padding: 0.5rem;
+            }
+
+            .locations-card .card-title {
+                font-size: 0.9rem;
+            }
+
+            .locations-card .table td,
+            .locations-card .table th {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+    }
+
+    @@media (max-width: 576px) {
+        .locations-card .table-responsive {
+            border: 0;
+        }
+
+        .locations-card .table th:nth-child(3),
+        .locations-card .table td:nth-child(3) {
+            display: none;
+        }
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
+
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    /* Gradient color option (alternative) */
+    .progress-bar-gradient {
+        background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+    }
+
+    /* Rest of your existing styles... */
+    .locations-card {
+        margin-bottom: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        overflow: hidden;
+    }
+</style>

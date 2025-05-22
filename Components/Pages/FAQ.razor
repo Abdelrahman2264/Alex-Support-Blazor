@@ -1,0 +1,514 @@
+﻿@page "/faq"
+@layout AuthLayout
+@rendermode InteractiveServer
+<main class="faq-container">
+    <div class="container">
+        <!-- FAQ Hero Section -->
+        <section class="faq-hero">
+            <h1 class="faq-title animate-fade-in">Frequently Asked Questions</h1>
+            <p class="faq-subtitle animate-fade-in">Find quick answers to common questions about our IT Support Ticketing System</p>
+        </section>
+
+        <!-- FAQ Categories -->
+        <section class="faq-categories animate-fade-in">
+            <h2>Category Of Questions</h2>
+            <div class="category-grid">
+                <div class="category-card" data-category="tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h3>Ticket Submission</h3>
+                </div>
+                <div class="category-card" data-category="account">
+                    <i class="fas fa-user-cog"></i>
+                    <h3>Account Issues</h3>
+                </div>
+                <div class="category-card" data-category="technical">
+                    <i class="fas fa-laptop-code"></i>
+                    <h3>Technical Problems</h3>
+                </div>
+                <div class="category-card" data-category="status">
+                    <i class="fas fa-spinner"></i>
+                    <h3>Status Updates</h3>
+                </div>
+            </div>
+        </section>
+
+
+
+
+        <section class="faq-accordion">
+            <h2 class="animate-fade-in">Common Questions</h2>
+
+            <div class="accordion-item animate-slide-up">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>How do I submit a new support ticket?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="accordion-content">
+                    <p>To submit a new support ticket, log in to your account and click on the "Tickets" button in the sidebar menu then click on create ticket...</p>
+                </div>
+            </div>
+
+            <div class="accordion-item animate-slide-up">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>How can I check the status of my ticket?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="accordion-content">
+                    <p>You can check your ticket status by going to the "Open Tickets" section or from dashboard...</p>
+                </div>
+            </div>      
+            <div class="accordion-item animate-slide-up">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>What's the expected response time for tickets?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="accordion-content">
+                    <p>
+                        Our response times vary based on priority:
+                        <ul>
+                            <li><strong>Urgent:</strong> Within 30 minutes (24/7)</li>
+                            <li><strong>High:</strong> Within 1  business hour</li>
+                            <li><strong>Medium:</strong> Within 3 to 4 business hours</li>
+                            <li><strong>Low:</strong> Within 5 to 7 business hours</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>     
+            <div class="accordion-item animate-slide-up">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>Can I reopen a closed ticket?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="accordion-content">
+                    <p>Yes, you can reopen a closed ticket within 7 days of resolution. Navigate to the closed ticket in your dashboard and click "Reopen Ticket." If it's been longer than 7 days, please submit a new ticket referencing the original ticket number.</p>
+                </div>
+            </div>  
+            <div class="accordion-item animate-slide-up">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>How do I escalate an urgent issue?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="accordion-content">
+                    <p>For urgent issues, mark the ticket as "Critical" priority when submitting. If you need to escalate an existing ticket, add a comment with "URGENT" in the subject and call our support hotline at 111 Or 119 to notify the team immediately or you can go to the ticket details and click to escalate button if it's still open'.</p>
+                </div>
+            </div>
+            <div class="accordion-item animate-slide-up">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>How can I reset my password?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="accordion-content">
+                    <p>Navigate to sign in page and then click on forggot password then enter you email and you will receive verification code on the mail after it you can enter a new password </p>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="contact-cta animate-fade-in">
+            <div class="cta-card">
+                <i class="fas fa-headset"></i>
+                <h2>Still need help?</h2>
+                <p>Our support team is available 24/7 to assist you with any issues.</p>
+                <div class="cta-buttons">
+                    <a href="ContactUs" class="btn-primary">Contact Support</a>
+                    <a href="SignIn" class="btn-secondary">Live Chat</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<style>
+    /* Main FAQ Container */
+    .faq-container {
+        padding: 3rem 0;
+    }
+
+    /* FAQ Hero Section */
+    .faq-hero {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .faq-title {
+        font-size: 2.5rem;
+        color: #2b2d42;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .faq-subtitle {
+        font-size: 1.1rem;
+        color: #6c757d;
+        max-width: 700px;
+        margin: 0 auto 2rem;
+    }
+
+    .search-box {
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+    }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            border: 1px solid #dee2e6;
+            font-size: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: #4361ee;
+                box-shadow: 0 2px 15px rgba(67, 97, 238, 0.2);
+            }
+
+    .search-btn {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        background: #4361ee;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .search-btn:hover {
+            background: #3a56d4;
+        }
+
+    /* FAQ Categories */
+    .faq-categories {
+        margin-bottom: 3rem;
+    }
+
+        .faq-categories h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #2b2d42;
+        }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .category-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f3f5;
+    }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            border-color: #4361ee;
+        }
+
+        .category-card i {
+            font-size: 2rem;
+            color: #4361ee;
+            margin-bottom: 1rem;
+        }
+
+        .category-card h3 {
+            font-size: 1.1rem;
+            color: #2b2d42;
+        }
+
+    /* FAQ Accordion */
+    .faq-accordion {
+        margin-bottom: 3rem;
+    }
+
+        .faq-accordion h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #2b2d42;
+        }
+
+    .accordion-item {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f3f5;
+        background: white;
+    }
+
+    .accordion-header {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        text-align: left;
+        background: white;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .accordion-header:hover {
+            background: #f8f9fa;
+        }
+
+        .accordion-header span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #2b2d42;
+        }
+
+        .accordion-header i {
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-header.active i {
+            transform: rotate(180deg);
+        }
+
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        padding: 0 1.5rem;
+        background: white;
+    }
+
+        .accordion-content.active {
+            max-height: 500px;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .accordion-content p {
+            color: #495057;
+            line-height: 1.7;
+        }
+
+        .accordion-content ul {
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .accordion-content li {
+            margin-bottom: 0.5rem;
+        }
+
+    /* Contact CTA */
+    .contact-cta {
+        text-align: center;
+    }
+
+    .cta-card {
+        background: linear-gradient(135deg, #4361ee, #3f37c9);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 12px;
+        max-width: 800px;
+        margin: 0 auto;
+        box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
+    }
+
+        .cta-card i {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .cta-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-card p {
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+
+    .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .btn-primary {
+        background: white;
+        color: #4361ee;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+    /* Animations */
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.6s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive Styles */
+    @@media (max-width: 768px) {
+        .faq-title {
+            font-size: 2rem;
+        }
+
+        .category-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cta-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .cta-buttons {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .faq-title {
+            font-size: 1.75rem;
+        }
+
+        .category-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .accordion-header {
+            padding: 1rem;
+        }
+
+            .accordion-header span {
+                font-size: 0.9rem;
+            }
+    }
+
+    /* Accordion Content - Hidden by default */
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        padding: 0 1.5rem;
+    }
+
+        /* Expanded state */
+        .accordion-content.active {
+            max-height: 500px;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+    /* Chevron icon rotation */
+    .accordion-header.active i {
+        transform: rotate(180deg);
+    }
+</style>
+<script>
+    // Simple accordion toggle function
+    function toggleAccordion(button) {
+        const accordionItem = button.parentElement;
+        const accordionContent = button.nextElementSibling;
+        const icon = button.querySelector('i');
+
+        // Toggle current item
+        button.classList.toggle('active');
+        accordionContent.classList.toggle('active');
+
+        // Close all other accordion items
+        document.querySelectorAll('.accordion-item').forEach(item => {
+            if (item !== accordionItem) {
+                item.querySelector('.accordion-header').classList.remove('active');
+                item.querySelector('.accordion-content').classList.remove('active');
+            }
+        });
+    }
+
+    // Initialize other functionality when DOM loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category cards
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', function() {
+                alert(`Showing FAQs for ${this.querySelector('h3').textContent}`);
+            });
+        });
+
+        // Search functionality
+        document.querySelector('.search-btn').addEventListener('click', performSearch);
+        document.querySelector('.search-box input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        function performSearch() {
+            const term = document.querySelector('.search-box input').value.trim();
+            if (term) alert(`Searching for: ${term}`);
+        }
+    });
+</script>

@@ -1,0 +1,262 @@
+﻿@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<div class="modal fade align-content-center" id="VerificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 p-sm-4">
+                <EditForm Model="verificationModel" OnSubmit="ConfirmationClicked">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger mb-3" />
+
+                    <div class="text-center mb-3">
+                        <p class="mb-3">We've sent a verification code to your email/phone</p>
+
+                        <div class="d-flex justify-content-center gap-2 mb-3 verification-code-inputs" id="verificationInputs">
+                            @for (int i = 0; i < 6; i++)
+                            {
+                                <input type="text"
+                                       class="form-control text-center verification-digit"
+                                       maxlength="1"
+                                       data-index="@i" />
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-inline-block border rounded p-2 bg-light" id="timerBox">
+                                <span id="countdownText" class="fw-bold">03:00</span>
+                            </div>
+                        </div>
+
+                        <div class="text-muted small mb-3">
+                            <span id="resendText">Didn't receive code? Wait until the timer finished then can resend</span>
+                            <a href="#" id="resendCodeLink" class="text-white d-none btn btn-sm btn-primary " @onclick="ResendCode">Resend</a>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                            }
+                            Verify
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isSubmitting = false;
+    private DotNetObjectReference<VerifyCodeComponent>? dotNetHelper;
+
+    [Parameter]
+    public string Title { get; set; } = "Enter Verification Code";
+
+    [Parameter]
+    public VerificationModel verificationModel { get; set; } = new VerificationModel();
+
+    [Parameter]
+    public EventCallback<VerificationModel> OnModalConfirmation { get; set; }
+
+    [Parameter]
+    public EventCallback OnResendCode { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("setupVerificationModal", dotNetHelper);
+        }
+    }
+
+    private async Task ConfirmationClicked()
+    {
+        var code = await JSRuntime.InvokeAsync<string>("getVerificationCode");
+        verificationModel.Code = code;
+        isSubmitting = true;
+        try
+        {
+            await OnModalConfirmation.InvokeAsync(verificationModel);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task ResendCode()
+    {
+        await OnResendCode.InvokeAsync();
+        await JSRuntime.InvokeVoidAsync("resetVerificationTimer");
+    }
+
+    public void Dispose()
+    {
+        dotNetHelper?.Dispose();
+    }
+}
+<style>
+    /* Base Styling */
+    .modal-content {
+        border-radius: 0.8rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .verification-code-inputs {
+        gap: 0.75rem;
+    }
+
+    .verification-digit {
+        width: 2.8rem;
+        height: 3.2rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        border: 2px solid #dee2e6;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+        .verification-digit:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            outline: none;
+        }
+
+    /* Tablet and Larger Screens */
+    @@media (min-width: 576px) {
+        .verification-digit {
+            width: 3.2rem;
+            height: 3.6rem;
+            font-size: 1.7rem;
+        }
+
+        .modal-footer button {
+            padding: 0.5rem 1rem;
+        }
+    }
+
+    /* Small Phones */
+    @@media (max-width: 400px) {
+        .verification-code-inputs {
+            gap: 0.5rem;
+        }
+
+        .verification-digit {
+            width: 2.2rem;
+            height: 2.8rem;
+            font-size: 1.2rem;
+        }
+
+        .modal-footer button {
+            font-size: 0.875rem;
+            padding: 0.4rem 0.8rem;
+        }
+    }
+
+    /* Very Small Phones */
+    @@media (max-width: 350px) {
+        .verification-digit {
+            width: 1.8rem;
+            height: 2.4rem;
+            font-size: 1rem;
+        }
+
+        .modal-body p {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+<script>
+    let timerInterval;
+    let timeLeft;
+
+    function setupVerificationModal(dotNetHelper) {
+        const inputs = document.querySelectorAll('#verificationInputs input');
+        const countdownText = document.getElementById('countdownText');
+        const resendLink = document.getElementById('resendCodeLink');
+        const resendText = document.getElementById('resendText');
+        const timerBox = document.getElementById('timerBox');
+
+        // Initialize timer (3 minutes)
+        startTimer();
+
+        // Input navigation logic
+        inputs.forEach((input, index) => {
+            // Focus first input
+            if (index === 0) {
+                setTimeout(() => input.focus(), 100);
+            }
+
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value.length === 1) {
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    } else {
+                        e.target.blur();
+                    }
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        function startTimer() {
+            timeLeft = 180; // 3 minutes in seconds
+            updateCountdown();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateCountdown();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerBox.style.display = 'none';
+                    resendLink.classList.remove('d-none');
+                }
+            }, 1000);
+        }
+
+        function updateCountdown() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            countdownText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Make reset function available globally
+        window.resetVerificationTimer = function() {
+            timerBox.style.display = 'inline-block';
+            resendLink.classList.add('d-none');
+            startTimer();
+
+            // Clear inputs and focus first one
+            inputs.forEach(input => input.value = '');
+            inputs[0].focus();
+        };
+    }
+
+    function getVerificationCode() {
+        const inputs = document.querySelectorAll('#verificationInputs input');
+        return Array.from(inputs).map(input => input.value || '').join('');
+    }
+
+    // Initialize when modal is shown
+    document.getElementById('VerificationModal')?.addEventListener('shown.bs.modal', () => {
+        setupVerificationModal();
+    });
+</script>

@@ -4,6 +4,8 @@
 @inject IJSRuntime JS
 @inject NavigationManager NavigationManager
 @inject IAppUserRepoistory _IAppUser
+@attribute [Authorize]
+
 <BsModal Title="Are You Sure You Want Escalte This Ticket To The Leader ?" ButtonText="Confirm" ButtonBootstrapStyle="btn-warning"
          OnModalConfirmation="ConfirmEscalate_Click" />
 <AssignFormModal Title="Assign Ticket"
@@ -207,7 +209,6 @@ else
                     {
                         <img src="data:image/jpeg;base64,@Convert.ToBase64String(ticket.ImageData)"
                              class="ticket-image"
-                             
                              alt="Ticket image" />
                     }
                     else
@@ -223,19 +224,31 @@ else
         <div class="ticket-actions">
             @if (ticket.Status != "Closed")
             {
-                <button class="btn btn-primary" @onclick="HandleAssign">@(ticket.Status == "Assigned" ? "Re-Assign" : "Assign")</button>
+                <AuthorizeView Roles="Admin">
+                    <button class="btn btn-primary" @onclick="HandleAssign">@(ticket.Status == "Assigned" ? "Re-Assign" : "Assign")</button>
+                </AuthorizeView>
                 @if (ticket.Status == "Assigned")
                 {
                     <button class="btn btn-warning" @onclick="HandleEscalate">Escalate</button>
                 }
                 <button class="btn btn-secondary" @onclick="HandleClose">Close Ticket</button>
             }
-            @if (ticket.Status == "Closed" && ticket.IsSolved == true)
-            {
-                <button class="btn btn-info" @onclick="HandleAddSolution">Add Solution</button>
-            }
+            <AuthorizeView Roles="Admin,Agent">
+
+                @if (ticket.Status == "Closed" && ticket.IsSolved == true)
+                {
+                    <button class="btn btn-info" @onclick="HandleAddSolution">Add Solution</button>
+                }
+            </AuthorizeView>
+
         </div>
     </div>
+    @if (ticket.Status != "Closed")
+    {
+        <div class="chat-section">
+            <ChatComponent TicketId="@ticket.TID" />
+        </div>
+    }
 }
 
 @code {

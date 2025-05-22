@@ -1,4 +1,6 @@
-﻿<div class="modal fade align-content-center" id="AddSolution" tabindex="-1" aria-labelledby="assignTicketModalLabel" aria-hidden="true">
+﻿@attribute [Authorize (Roles ="Admin,Agent")]
+
+<div class="modal fade align-content-center" id="AddSolution" tabindex="-1" aria-labelledby="assignTicketModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">

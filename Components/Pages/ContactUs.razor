@@ -1,0 +1,361 @@
+﻿@page "/ContactUs"
+@layout AuthLayout
+@rendermode InteractiveServer
+
+<div class="contact-container">
+    <div class="contact-header animate-fade-in">
+        <h1>Need Help? Contact Our Support Team</h1>
+        <p class="subtitle">We're here to assist you with any technical issues or questions about the system</p>
+        <div class="header-decoration">
+            <div class="pulse-dot dot-1"></div>
+            <div class="pulse-dot dot-2"></div>
+            <div class="pulse-dot dot-3"></div>
+        </div>
+    </div>
+
+
+    <div class="contact-info animate-slide-in-right">
+        <div class="info-card">
+            <div class="card-icon">
+                <i class="icon-phone"></i>
+            </div>
+            <h3>Call Us</h3>
+            <p>Fiber Me 111 Or 119  and WhatsApp +20 11 5552 3096</p>
+            <p class="hours">Sat-Thu: 9:00 AM - 5:30 PM EST</p>
+        </div>
+
+        <div class="info-card">
+            <div class="card-icon">
+                <i class="icon-email"></i>
+            </div>
+            <h3>Email Us</h3>
+            <p>help.d@alpinecreations.com</p>
+            <p class="response-time">Average response time: from 30 minutes to 2 hours</p>
+        </div>
+
+        <div class="info-card">
+            <div class="card-icon">
+                <i class="icon-faq"></i>
+            </div>
+            <h3>Knowledge Base</h3>
+            <p>Check our FAQ for quick solutions</p>
+            <a href="/faq" class="kb-link">Browse Knowledge Base →</a>
+        </div>
+
+        <div class="status-indicator">
+            <div class="status-dot online"></div>
+            <span>Support team is currently online</span>
+        </div>
+    </div>
+</div>
+<style>
+    /* Base Styles */
+    .contact-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+    }
+
+    .contact-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+        .contact-header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+    .subtitle {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .header-decoration {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+    }
+
+    .pulse-dot {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(52, 152, 219, 0.7);
+        animation: pulse 2s infinite;
+    }
+
+    .dot-1 {
+        top: 20%;
+        left: 15%;
+    }
+
+    .dot-2 {
+        top: 60%;
+        right: 20%;
+        animation-delay: 0.5s;
+    }
+
+    .dot-3 {
+        bottom: 10%;
+        left: 30%;
+        animation-delay: 1s;
+    }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+
+        50% {
+            transform: scale(1.5);
+            opacity: 0.3;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+    }
+
+   
+    /* Contact Info Styles */
+    .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .info-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        background: #3498db;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+        .card-icon i {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+        }
+
+    .icon-phone {
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>') no-repeat center;
+    }
+
+    .icon-email {
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>') no-repeat center;
+    }
+
+    .icon-faq {
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>') no-repeat center;
+    }
+
+    .info-card h3 {
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-card p {
+        color: #7f8c8d;
+        margin-bottom: 0.5rem;
+    }
+
+    .hours, .response-time {
+        font-size: 0.9rem;
+        color: #95a5a6;
+    }
+
+    .kb-link {
+        display: inline-block;
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+        .kb-link:hover {
+            color: #2980b9;
+            transform: translateX(5px);
+        }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin-top: 1rem;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+        .status-dot.online {
+            background: #2ecc71;
+            animation: pulse 1.5s infinite;
+        }
+
+    /* Animations */
+    .animate-fade-in {
+        animation: fadeIn 1s ease-out;
+    }
+
+    .animate-slide-in-left {
+        animation: slideInLeft 0.8s ease-out;
+    }
+
+    .animate-slide-in-right {
+        animation: slideInRight 0.8s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Responsive Styles */
+    @@media (max-width: 768px) {
+        .contact-header h1 {
+            font-size: 2rem;
+        }
+
+        .contact-content {
+            flex-direction: column;
+        }
+
+        .contact-form, .contact-info {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .contact-container {
+            padding: 1rem;
+        }
+
+        .contact-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .priority-options {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .priority-option {
+            justify-content: center;
+        }
+    }
+</style>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+        // File upload display
+        const fileInput = document.getElementById('attachment');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileNameDisplay.textContent = this.files[0].name;
+            } else {
+                fileNameDisplay.textContent = 'No file selected';
+            }
+        });
+
+        // Form submission
+        const supportForm = document.getElementById('supportForm');
+
+        supportForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Here you would typically send the form data to your server
+            // For demo purposes, we'll just show a confirmation
+            alert('Your support ticket has been submitted successfully! Our team will get back to you soon.');
+            this.reset();
+            fileNameDisplay.textContent = 'No file selected';
+        });
+
+        // Animate elements when they come into view
+        const animateOnScroll = function() {
+            const elements = document.querySelectorAll('.animate-slide-in-left, .animate-slide-in-right');
+
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+
+                if (elementPosition < windowHeight - 100) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateX(0)';
+                }
+            });
+        };
+
+        // Initial check in case elements are already in view
+        animateOnScroll();
+
+        // Check on scroll
+        window.addEventListener('scroll', animateOnScroll);
+    });
+</script>
