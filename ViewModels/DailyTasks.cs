@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
 namespace AlexSupport.ViewModels
-{     
+{
     [Table("DailyTasks", Schema = "dbo")]
 
     public class DailyTasks
@@ -44,7 +44,35 @@ namespace AlexSupport.ViewModels
         public int? CategoryID { get; set; }
         public Category? category { get; set; }
 
-        
+        [Column(TypeName = "INT")]
+        [Display(Name = "LoopingDays")]
+        [Required(ErrorMessage = "Enter Number Of Days  For This Days Round For This Ticket")]
+        public int TypeName { get; set; }
+        [ForeignKey(nameof(Agent))]
+        [Column(TypeName = "INT")]
+        [Display(Name = "Agent Id")]
+        public int? AgentId { get; set; }
+        public AppUser? Agent { get; set; }
+
+        [Required]
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime LastUpdatedDate { get; set; } = DateTime.Now;
+
+        [ForeignKey(nameof(Location))]
+        [Column(TypeName = "INT")]
+        [Display(Name = "Location")]
+        public int? LocationId { get; set; }
+        public Location? Location { get; set; }
+
+
+        [ForeignKey(nameof(User))]
+        [Column(TypeName = "INT")]
+        [Display(Name = "Created User")]
+        public int? UID { get; set; }
+        public AppUser? User { get; set; }
+
+
+
 
 
     }

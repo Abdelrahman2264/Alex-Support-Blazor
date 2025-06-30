@@ -4,6 +4,7 @@ using AlexSupport.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AlexSupport.Migrations
 {
     [DbContext(typeof(AlexSupportDB))]
-    partial class AlexSupportDBModelSnapshot : ModelSnapshot
+    [Migration("20250707064239_autodailytask")]
+    partial class autodailytask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -219,9 +222,6 @@ namespace AlexSupport.Migrations
                     b.Property<int?>("CategoryID")
                         .HasColumnType("INT");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("Due_Minutes")
                         .HasColumnType("INT");
 
@@ -235,12 +235,6 @@ namespace AlexSupport.Migrations
                         .HasColumnType("NVARCHAR(850)")
                         .HasColumnName("Issue");
 
-                    b.Property<DateTime>("LastUpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("LocationId")
-                        .HasColumnType("INT");
-
                     b.Property<string>("Priority")
                         .IsRequired()
                         .HasColumnType("NVARCHAR(50)");
@@ -252,14 +246,12 @@ namespace AlexSupport.Migrations
                         .HasColumnType("NVARCHAR(50)")
                         .HasColumnName("Subject");
 
-                    b.Property<int>("TypeName")
+                    b.Property<string>("TypeName")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .IsUnicode(false)
-                        .HasColumnType("INT")
+                        .HasColumnType("NVARCHAR(100)")
                         .HasColumnName("Type");
-
-                    b.Property<int?>("UID")
-                        .HasColumnType("INT");
 
                     b.HasKey("DTID")
                         .HasName("DAILYTASKID_PK");
@@ -267,10 +259,6 @@ namespace AlexSupport.Migrations
                     b.HasIndex("AgentId");
 
                     b.HasIndex("CategoryID");
-
-                    b.HasIndex("LocationId");
-
-                    b.HasIndex("UID");
 
                     b.ToTable("DailyTasks", "dbo");
                 });
@@ -587,21 +575,7 @@ namespace AlexSupport.Migrations
                         .HasForeignKey("CategoryID")
                         .HasConstraintName("FK_DailyTask_Category");
 
-                    b.HasOne("AlexSupport.ViewModels.Location", "Location")
-                        .WithMany("Tasks")
-                        .HasForeignKey("LocationId")
-                        .HasConstraintName("FK_DailyTask_Location");
-
-                    b.HasOne("AlexSupport.ViewModels.AppUser", "User")
-                        .WithMany("UserDailyTasks")
-                        .HasForeignKey("UID")
-                        .HasConstraintName("FK_DailyTask_CreatedUser");
-
                     b.Navigation("Agent");
-
-                    b.Navigation("Location");
-
-                    b.Navigation("User");
 
                     b.Navigation("category");
                 });
@@ -713,8 +687,6 @@ namespace AlexSupport.Migrations
                     b.Navigation("Ticket");
 
                     b.Navigation("Tlogs");
-
-                    b.Navigation("UserDailyTasks");
                 });
 
             modelBuilder.Entity("AlexSupport.ViewModels.Category", b =>
@@ -731,8 +703,6 @@ namespace AlexSupport.Migrations
 
             modelBuilder.Entity("AlexSupport.ViewModels.Location", b =>
                 {
-                    b.Navigation("Tasks");
-
                     b.Navigation("Ticket");
                 });
 

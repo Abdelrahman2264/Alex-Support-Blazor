@@ -1,27 +1,46 @@
 ﻿@attribute [Authorize(Roles = "Admin")]
 
-<div class="modal fade" id="bsConfirmationModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="bsConfirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">@Title</h1>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0" style="background:white !important">
+                <div class="d-flex align-items-center w-100">
+                    @if (!string.IsNullOrEmpty(IconClass))
+                    {
+                        <div class="me-3">
+                            <i class="@IconClass fs-2 @IconColorClass"></i>
+                        </div>
+                    }
+                    <h1 class="modal-title fs-4 fw-bold" id="confirmationModalLabel">@Title</h1>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-                <p class="mb-4">@ChildContent</p>
+            <div class="modal-body text-center py-4">
+                @if (!string.IsNullOrEmpty(IconClass) && ShowIconInBody)
+                {
+                    <div class="mb-3">
+                        <i class="@IconClass fs-1 @IconColorClass"></i>
+                    </div>
+                }
+                <p class="mb-4 fs-5">@ChildContent</p>
                 <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                    <button type="button" class="btn  btn-secondary flex-grow-1 flex-sm-grow-0"
-                            data-bs-dismiss="modal" @onclick="()=>ConfirmationClicked(false)"
-                            style="min-width: 120px; max-width: 200px;">
-                        Close
+                    <button type="button"
+                            class="btn btn-outline-secondary flex-grow-1 flex-sm-grow-0 rounded-pill"
+                            data-bs-dismiss="modal"
+                            @onclick="()=>ConfirmationClicked(false)"
+                            style="min-width: 120px;">
+                        <i class="fas fa-times me-2"></i> @CancelButtonText
                     </button>
-                    <button type="button" class="btn  @ButtonBootstrapStyle flex-grow-1 flex-sm-grow-0 "
+                    <button type="button"
+                            class="btn @ButtonBootstrapStyle flex-grow-1 flex-sm-grow-0 rounded-pill position-relative overflow-hidden"
                             @onclick="()=>ConfirmationClicked(true)"
-                            style="min-width: 120px; max-width: 200px;">
-                        @ButtonText
+                            style="min-width: 120px;">
+                        <i class="@ConfirmButtonIcon me-2"></i> @ButtonText
+                        <span class="position-absolute top-0 start-0 w-100 h-100 bg-white opacity-0 hover-opacity-10 transition-all"></span>
                     </button>
                 </div>
             </div>
+  
         </div>
     </div>
 </div>
@@ -29,12 +48,31 @@
 @code {
     [Parameter]
     public EventCallback<bool> OnModalConfirmation { get; set; }
+
     [Parameter]
     public string Title { get; set; } = "Please Confirm";
+
     [Parameter]
     public string ButtonBootstrapStyle { get; set; } = "btn-primary";
+
     [Parameter]
     public string ButtonText { get; set; } = "Confirm";
+
+    [Parameter]
+    public string CancelButtonText { get; set; } = "Cancel";
+
+    [Parameter]
+    public string ConfirmButtonIcon { get; set; } = "fas fa-check";
+
+    [Parameter]
+    public string IconClass { get; set; } = "fas fa-question-circle";
+
+    [Parameter]
+    public string IconColorClass { get; set; } = "text-primary";
+
+    [Parameter]
+    public bool ShowIconInBody { get; set; } = true;
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -46,3 +84,47 @@
         }
     }
 }
+
+<style>
+    /* Add these styles to your CSS file */
+    .modal-content {
+        transition: all 0.3s ease;
+    }
+
+        .modal-content:hover {
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+    .rounded-pill {
+        padding: 0.5rem 1.5rem;
+    }
+
+    .hover-opacity-10:hover {
+        opacity: 0.1 !important;
+    }
+
+    .transition-all {
+        transition: all 0.2s ease;
+    }
+
+
+
+    /* Responsive adjustments */
+   @@media (max-width: 575.98px) {
+        .modal-dialog
+
+    {
+        margin: 0.5rem auto;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem !important;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    }
+</style>

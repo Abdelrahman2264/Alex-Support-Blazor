@@ -10,5 +10,7 @@ namespace AlexSupport.Repository.IRepository
         public Task<DailyTasks> GetDailyTaskAsync(int id);
         public Task<bool> InActiveDailyTaskAsync(int id);
         public Task<IEnumerable<DailyTasks>> GetAllDailyTasksAsync();
+        public Task<bool> AssignDailyTask(DailyTasks dailytask);
+
     }
 }

@@ -7,7 +7,7 @@
 @inject NavigationManager _navigation
 @inject IPasswordHasherRepository _IHash
 @rendermode InteractiveServer
-@attribute [Authorize(Roles ="Admin")]
+@attribute [Authorize(Roles = "Admin")]
 <PageTitle>Edit Profile</PageTitle>
 
 <div class="edit-profile-page">
@@ -92,29 +92,37 @@
                                 <ValidationMessage For="@(() => Model.LastName)" class="validation-message" />
                             </div>
 
-                            <div class="form-group floating disabled">
-                                <InputText id="email" @bind-Value="Model.Email" class="form-control" disabled />
+                            <div class="form-group floating">
+                                <InputText id="email" @bind-Value="Model.Email" class="form-control" />
                                 <label for="email">Email Address</label>
-                                <small class="form-note">
-                                    <i class="fas fa-lock me-1"></i> Contact admin to change
-                                </small>
+                                <ValidationMessage For="@(() => Model.Email)" class="validation-message" />
+                                @if (Model.EmailExists)
+                                {
+                                    <div class="validation-message text-danger">Email address is already in use</div>
+                                }
                             </div>
 
-                            <div class="form-group floating disabled">
-                                <InputNumber id="fingerprint" @bind-Value="Model.fingerprint" class="form-control" disabled />
+                            <div class="form-group floating">
+                                <InputNumber id="fingerprint" @bind-Value="Model.fingerprint" class="form-control" />
                                 <label for="fingerprint">Fingerprint ID</label>
                                 <small class="form-note">
                                     <i class="fas fa-lock me-1"></i> Contact admin to change
                                 </small>
-                            </div>
-                            <div class="form-group floating disabled">
-                                <InputText id="role" @bind-Value="Model.Role" class="form-control" disabled />
-                                <label for="role">Role</label>
-                                <small class="form-note">
-                                    <i class="fas fa-lock me-1"></i> Contact admin to change
-                                </small>
+                                @if (Model.FingerprintExists)
+                                {
+                                    <div class="validation-message text-danger">Fingerprint ID is already in use</div>
+                                }
                             </div>
 
+                            <div class="form-group floating">
+                                <InputSelect id="role" @bind-Value="Model.Role" class="form-control">
+                                    <option value="">Select Role</option>
+                                    <option value="User">User</option>
+                                    <option value="Agent">Agent</option>
+                                    <option value="Admin">Admin</option>
+                                </InputSelect>
+                                <label for="role">Role</label>
+                            </div>
                         </div>
                     </div>
 
@@ -127,6 +135,10 @@
                                 <InputText id="phone" @bind-Value="Model.Phone" class="form-control" />
                                 <label for="phone">Phone Number</label>
                                 <ValidationMessage For="@(() => Model.Phone)" class="validation-message" />
+                                @if (Model.PhoneExists)
+                                {
+                                    <div class="validation-message text-danger">Phone number is already in use</div>
+                                }
                             </div>
 
                             <div class="form-group floating">
@@ -134,12 +146,13 @@
                                 <label for="mobile">Fiber Me (Mobile)</label>
                             </div>
 
-                            <div class="form-group floating disabled">
-                                <InputText id="username" @bind-Value="Model.LoginName" class="form-control" disabled />
+                            <div class="form-group floating">
+                                <InputText id="username" @bind-Value="Model.LoginName" class="form-control" />
                                 <label for="username">Sign In Name</label>
-                                <small class="form-note">
-                                    <i class="fas fa-lock me-1"></i> Contact admin to change
-                                </small>
+                                @if (Model.LoginNameExists)
+                                {
+                                    <div class="validation-message text-danger">Login name is already in use</div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -163,7 +176,6 @@
                                     }
                                 </InputSelect>
                                 <label for="department">Department</label>
-
                             </div>
                         </div>
                     </div>
@@ -212,11 +224,9 @@
         try
         {
             var userId = 0;
-            // Load user data
             if (Id == 0)
             {
                 userId = await _logService.ReturnCurrentUserID();
-
             }
             else
             {
@@ -241,11 +251,13 @@
                         fingerprint = user.Fingerprint,
                         LoginName = user.LoginName,
                         Role = user.Role,
-
+                        EmailExists = false,
+                        FingerprintExists = false,
+                        LoginNameExists = false,
+                        PhoneExists = false
                     };
             }
 
-            // Load departments
             _departments = await _IDepartment.AllDepartmentsAsync();
         }
         catch (Exception ex)
@@ -253,8 +265,8 @@
             Console.WriteLine($"Error loading user data: {ex.Message}");
             _navigation.NavigateTo("/profile");
         }
-
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -262,9 +274,9 @@
             await JS.InvokeVoidAsync("setupFileUpload");
         }
     }
+
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
-
         StateHasChanged();
 
         try
@@ -272,7 +284,6 @@
             var file = e.File;
             if (file == null) return;
 
-            // Validate file
             if (file.Size > maxFileSize)
             {
                 await JS.ToastrError("File size exceeds 5MB limit");
@@ -285,12 +296,10 @@
                 return;
             }
 
-            // Process image
             var resizedImage = await file.RequestImageFileAsync(file.ContentType, 800, 800);
             var buffer = new byte[resizedImage.Size];
             await resizedImage.OpenReadStream(maxFileSize).ReadAsync(buffer);
 
-            // Update UI and model
             imagePreviewUrl = $"data:{file.ContentType};base64,{Convert.ToBase64String(buffer)}";
 
             using var memoryStream = new MemoryStream();
@@ -307,7 +316,6 @@
         {
             StateHasChanged();
         }
-
     }
 
     private void RemoveTempImage()
@@ -322,10 +330,30 @@
 
         try
         {
+            // Reset validation flags
+            Model.EmailExists = false;
+            Model.FingerprintExists = false;
+            Model.LoginNameExists = false;
+            Model.PhoneExists = false;
 
+            // Validate unique fields
+            var emailExists = await _userRepo.IsEmailExists(Model.Email, Model.Id);
+            var fingerprintExists = await _userRepo.IsFingerprintExists(Model.fingerprint.ToString(), Model.Id);
+            var loginNameExists = await _userRepo.IsLoginNameExists(Model.LoginName, Model.Id);
+            var phoneExists = await _userRepo.IsPhoneNumberExists(Model.Phone, Model.Id);
 
+            if (emailExists || fingerprintExists || loginNameExists || phoneExists)
+            {
+                Model.EmailExists = emailExists;
+                Model.FingerprintExists = fingerprintExists;
+                Model.LoginNameExists = loginNameExists;
+                Model.PhoneExists = phoneExists;
+                _isSaving = false;
+                StateHasChanged();
+                return;
+            }
 
-
+            // Update user data
             user.UID = Model.Id;
             user.Fname = Model.FirstName;
             user.Lname = Model.LastName;
@@ -336,12 +364,12 @@
             user.MobilePhone = Model.MobilePhone;
             user.ImageContentType = Model.PhotoUrl;
             user.ImageData = Model.ImageData;
+            user.Role = Model.Role;
+            user.LoginName = Model.LoginName;
+            user.Fingerprint = Model.fingerprint;
 
-
-
-
-            // Save user data
             await _userRepo.UpdateUserAsync(user);
+
             if (Id != 0)
             {
                 _navigation.NavigateTo("/SystemUsers");
@@ -349,14 +377,11 @@
             else
             {
                 _navigation.NavigateTo("/profile");
-
             }
-
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error updating user data: {ex.Message}");
-
         }
         finally
         {
@@ -373,7 +398,6 @@
         else
         {
             _navigation.NavigateTo("/profile");
-
         }
     }
 
@@ -394,25 +418,32 @@
 
         [Required(ErrorMessage = "First name is required")]
         [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
         [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
-        public string Email { get; set; }
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = string.Empty;
 
         [Phone(ErrorMessage = "Invalid phone number")]
-        public string Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
 
-        public string JobTitle { get; set; }
+        public string JobTitle { get; set; } = string.Empty;
         public int? DepartmentId { get; set; }
-        public string MobilePhone { get; set; }
-        public string PhotoUrl { get; set; }
+        public string MobilePhone { get; set; } = string.Empty;
+        public string PhotoUrl { get; set; } = string.Empty;
         public byte[]? ImageData { get; set; }
         public int fingerprint { get; set; }
-        public string LoginName { get; set; }
-        public string Role { get; set; }
+        public string LoginName { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
 
+        // Validation properties
+        public bool EmailExists { get; set; }
+        public bool FingerprintExists { get; set; }
+        public bool LoginNameExists { get; set; }
+        public bool PhoneExists { get; set; }
     }
 }

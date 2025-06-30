@@ -1,7 +1,10 @@
 ﻿using AlexSupport.Data;
 using AlexSupport.Repository.IRepository;
 using AlexSupport.Services.Extensions;
+using AlexSupport.Services.Models;
 using AlexSupport.ViewModels;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
 
@@ -527,6 +530,166 @@ namespace AlexSupport.Repository
             }
         }
 
+        public async Task<List<Ticket>> GetNumberOfClosedAvailableTickets()
+        {
+            try
+            {
+                var id = await Log.ReturnCurrentUserID();
+                var currentuser = await users.GetUserByIdAsync(id);
+                if (currentuser.Role == "Admin")
+                {
+                    return await alexSupportDB.Ticket
+                        .Where(t => t.Status == "Closed" && !string.IsNullOrEmpty(t.Due_Minutes.ToString()))
+                        .ToListAsync();
+                }
+                else
+                {
+                    return await alexSupportDB.Ticket
+                                     .Where(t => t.Status == "Closed" && t.Assign_Date != null && t.AgentID == currentuser.UID)
+                                     .ToListAsync();
+                }
+            }
+            catch
+            {
+                logger.LogError("Error In Get Number of available closed tickets");
+                return new List<Ticket>();
+            }
+
+
+        }
+        public async Task<List<DailyTicketMetric>> GetDailyTicketMetrics()
+        {
+            try
+            {
+
+                var id = await Log.ReturnCurrentUserID();
+                var currentuser = await users.GetUserByIdAsync(id);
+                if (currentuser.Role == "Admin")
+                {
+                    return await alexSupportDB.Ticket
+                        .GroupBy(t => t.OpenDate.Date)
+                        .Select(g => new DailyTicketMetric
+                        {
+                            Date = g.Key,
+                            TotalTickets = g.Count(),
+                            AgentTickets = g.Count(t => t.Agent != null)
+                        })
+                        .OrderBy(x => x.Date)
+                        .ToListAsync();
+                }
+                else
+                {
+                    return await alexSupportDB.Ticket
+                        .Where(u => u.AgentID == currentuser.UID)
+                   .GroupBy(t => t.OpenDate.Date)
+                   .Select(g => new DailyTicketMetric
+                   {
+                       Date = g.Key,
+                       TotalTickets = g.Count(),
+                       AgentTickets = g.Count(t => t.Agent != null)
+                   })
+                   .OrderBy(x => x.Date)
+                   .ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error In Get Daily Ticket Metric" + ex.Message, ex);
+                return new List<DailyTicketMetric>();
+
+            }
+
+        }
+
+        public async Task<List<AgentDailyMetric>> GetAgentDailyMetrics()
+        {
+            try
+            {
+
+                var id = await Log.ReturnCurrentUserID();
+                var currentuser = await users.GetUserByIdAsync(id);
+                if (currentuser.Role == "Admin")
+                {
+                    return await alexSupportDB.Ticket
+                        .Where(t => t.Agent != null && t.OpenDate != null)
+                        .GroupBy(t => new { t.OpenDate.Date, t.Agent.LoginName })
+                        .Select(g => new AgentDailyMetric
+                        {
+                            Date = g.Key.Date,
+                            AgentName = g.Key.LoginName,
+                            TicketCount = g.Count()
+                        })
+                        .OrderBy(x => x.Date)
+                        .ThenByDescending(x => x.TicketCount)
+                        .ToListAsync();
+                }
+                else
+                {
+                    return await alexSupportDB.Ticket
+                      .Where(t => t.Agent != null && t.OpenDate != null && t.AgentID == currentuser.UID)
+                      .GroupBy(t => new { t.OpenDate.Date, t.Agent.LoginName })
+                      .Select(g => new AgentDailyMetric
+                      {
+                          Date = g.Key.Date,
+                          AgentName = g.Key.LoginName,
+                          TicketCount = g.Count()
+                      })
+                      .OrderBy(x => x.Date)
+                      .ThenByDescending(x => x.TicketCount)
+                      .ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error In get Agent Daily Metric");
+                return new List<AgentDailyMetric>();
+            }
+        }
+
+        public async Task<List<DailyResolutionMetric>> GetDailyResolutionMetrics()
+        {
+            try
+            {
+
+                var id = await Log.ReturnCurrentUserID();
+                var currentuser = await users.GetUserByIdAsync(id);
+                if (currentuser.Role == "Admin")
+                {
+                    return await alexSupportDB.Ticket
+                        .Where(t => t.CloseDate.HasValue) // Only include tickets with a CloseDate
+                        .GroupBy(t => t.CloseDate.Value.Date)
+                        .Select(g => new DailyResolutionMetric
+                        {
+                            Date = g.Key,
+                            SolvedTickets = g.Count(t => t.IsSolved == true),
+                            TotalTickets = g.Count()
+                        })
+                        .OrderBy(x => x.Date)
+                        .ToListAsync();
+                }
+                else
+                {
+                    return await alexSupportDB.Ticket
+                        .Where(t => t.CloseDate.HasValue && t.AgentID == currentuser.UID) // Only include tickets with a CloseDate
+                        .GroupBy(t => t.CloseDate.Value.Date)
+                        .Select(g => new DailyResolutionMetric
+                        {
+                            Date = g.Key,
+                            SolvedTickets = g.Count(t => t.IsSolved == true),
+                            TotalTickets = g.Count()
+                        })
+                        .OrderBy(x => x.Date)
+                        .ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error In Get Daily Resolution Metrics: " + ex.Message, ex);
+                return new List<DailyResolutionMetric>();
+
+            }
+
+        }
 
     }
 }

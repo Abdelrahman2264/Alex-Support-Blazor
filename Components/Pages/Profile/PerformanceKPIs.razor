@@ -1,0 +1,1835 @@
+﻿@page "/performancekpis"
+@using System.Globalization
+@inject ITicketRepository ITicket
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+@inject IAppUserRepoistory IUser
+@attribute [Authorize(Roles = "Admin,Agent")]
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="page-title">KPIs Performance</h1>
+        <div class="dashboard-filters">
+            <AuthorizeView Roles="Admin">
+
+                <div class="filter-group">
+
+                    <label for="agentFilter">Filter by Agent:</label>
+                    <select id="agentFilter" @bind="SelectedAgentId" class="form-control">
+                        <option value="0">All Agents</option>
+                        @foreach (var agent in Agents)
+                        {
+                            <option value="@agent.UID">@agent.LoginName</option>
+                        }
+                    </select>
+                </div>
+            </AuthorizeView>
+
+            <div class="filter-group">
+                <label for="monthFilter">Filter by Month:</label>
+                <select id="monthFilter" @bind="SelectedMonth" class="form-control">
+                    <option value="0">All Months</option>
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i">@CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                    }
+                </select>
+            </div>
+            <button class="btn btn-primary" @onclick="ApplyFilters" disabled="@IsLoading">
+                @if (IsLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>Loading...</span>
+                }
+                else
+                {
+                    <span>Apply Filters</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (HasData)
+    {
+        <!-- Summary Cards - First Row -->
+        <div class="kpi-cards">
+            <div class="kpi-card">
+                <h3>Total Tickets</h3>
+                <div class="kpi-value">@NumberOfTickets</div>
+            </div>
+            <div class="kpi-card solved">
+                <h3>Solved Tickets</h3>
+                <div class="kpi-value">@NumberOfSolvedTickets</div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="@GetProgressBarStyle(NumberOfSolvedTickets, NumberOfTickets, "green")"></div>
+                    <span class="progress-text">@GetPercentage(NumberOfSolvedTickets, NumberOfTickets)%</span>
+                </div>
+            </div>
+            <div class="kpi-card unsolved">
+                <h3>Unsolved Tickets</h3>
+                <div class="kpi-value">@NumberOfUnSolvedTickets</div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="@GetProgressBarStyle(NumberOfUnSolvedTickets, NumberOfTickets, "red")"></div>
+                    <span class="progress-text">@GetPercentage(NumberOfUnSolvedTickets, NumberOfTickets)%</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <h3>Total Due Time</h3>
+                <div class="kpi-value">@FormatDuration(TotalDueMinutes)</div>
+            </div>
+        </div>
+
+        <!-- Summary Cards - Second Row -->
+        <div class="kpi-cards">
+            <div class="kpi-card">
+                <h3>Avg Resolution Time</h3>
+                <div class="kpi-value">@FormatDurationFromDays(GetAverageResolutionTimeValue())</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Avg Time Difference</h3>
+                <div class="kpi-value">@FormatDuration(GetAverageTimeDifferenceValue())</div>
+            </div>
+            <div class="kpi-card on-time">
+                <h3>On-Time Tickets</h3>
+                <div class="kpi-value">@OnTimeTicketsCount</div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="@GetProgressBarStyle(OnTimeTicketsCount, NumberOfSolvedTickets, "green")"></div>
+                    <span class="progress-text">@GetPercentage(OnTimeTicketsCount, NumberOfSolvedTickets)%</span>
+                </div>
+            </div>
+            <div class="kpi-card late">
+                <h3>Late Tickets</h3>
+                <div class="kpi-value">@LateTicketsCount</div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="@GetProgressBarStyle(LateTicketsCount, NumberOfSolvedTickets, "red")"></div>
+                    <span class="progress-text">@GetPercentage(LateTicketsCount, NumberOfSolvedTickets)%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Tickets and Resolution Status Section -->
+        <div class="top-section">
+            <div class="top-tickets-card fast">
+                <h3>Top 5 Fastest Tickets</h3>
+                <div class="tickets-list">
+                    @if (FastestTickets.Any())
+                    {
+                        foreach (var ticket in FastestTickets)
+                        {
+                            <div class="ticket-item">
+                                <span class="ticket-id">#@ticket.TID</span>
+                                <span class="ticket-time">@GetResolutionDays(ticket)</span>
+                                <span class="ticket-category">@ticket.CategoryID</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-data">No completed tickets found</div>
+                    }
+                </div>
+            </div>
+
+            <div class="top-tickets-card slow">
+                <h3>Top 5 Slowest Tickets</h3>
+                <div class="tickets-list">
+                    @if (SlowestTickets.Any())
+                    {
+                        foreach (var ticket in SlowestTickets)
+                        {
+                            <div class="ticket-item">
+                                <span class="ticket-id">#@ticket.TID</span>
+                                <span class="ticket-time">@GetResolutionDays(ticket)</span>
+                                <span class="ticket-category">@ticket.CategoryID</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-data">No completed tickets found</div>
+                    }
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Ticket Resolution Status</h3>
+                <div class="chart-wrapper">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>On-Time vs Late Tickets</h3>
+                <div class="chart-wrapper">
+                    <canvas id="timelinessChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Charts Section -->
+        <div class="line-charts-section">
+            <div class="line-chart-container">
+                <h3>Daily Ticket Volume</h3>
+                <div class="chart-wrapper">
+                    <canvas id="dailyVolumeChart"></canvas>
+                </div>
+            </div>
+            <div class="line-chart-container">
+                <h3>Agent Ticket Activity</h3>
+                <div class="chart-wrapper">
+                    <canvas id="agentActivityChart"></canvas>
+                </div>
+            </div>
+            <div class="line-chart-container">
+                <h3>Daily Resolution Rate</h3>
+                <div class="chart-wrapper">
+                    <canvas id="resolutionRateChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category/Location Charts Row -->
+        <div class="charts-row">
+            <div class="chart-container">
+                <h3>Tickets by Category</h3>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>Tickets by Location</h3>
+                <div class="chart-wrapper">
+                    <canvas id="locationChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>Ticket Types</h3>
+                <div class="chart-wrapper">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Tables with Progress Bars -->
+        <div class="data-tables">
+            <div class="table-container">
+                <h3>Tickets by Category</h3>
+                <div class="table-wrapper">
+                    <table class="kpi-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (TicketsPerCategory.Any())
+                            {
+                                foreach (var item in TicketsPerCategory)
+                                {
+                                    var percentage = GetPercentageValue(item.Count, NumberOfTickets);
+                                    <tr>
+                                        <td>@item.Category</td>
+                                        <td>@item.Count</td>
+                                        <td>@percentage%</td>
+                                        <td>
+                                            <div class="table-progress-container">
+                                                <div class="table-progress-bar" style="@GetProgressBarStyle(item.Count, NumberOfTickets, GetColorForPercentage(percentage))"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="no-data">No category data available</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h3>Tickets by Location</h3>
+                <div class="table-wrapper">
+                    <table class="kpi-table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in TicketsPerLocation)
+                            {
+                                var percentage = GetPercentageValue(item.Count, NumberOfTickets);
+                                <tr>
+                                    <td>@item.Location</td>
+                                    <td>@item.Count</td>
+                                    <td>@percentage%</td>
+                                    <td>
+                                        <div class="table-progress-container">
+                                            <div class="table-progress-bar" style="@GetProgressBarStyle(item.Count, NumberOfTickets, GetColorForPercentage(percentage))"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h3>Tickets by Priority</h3>
+                <div class="table-wrapper">
+                    <table class="kpi-table">
+                        <thead>
+                            <tr>
+                                <th>Priority</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in TicketsPerType)
+                            {
+                                var percentage = GetPercentageValue(item.Count, NumberOfTickets);
+                                <tr>
+                                    <td>@item.Type</td>
+                                    <td>@item.Count</td>
+                                    <td>@percentage%</td>
+                                    <td>
+                                        <div class="table-progress-container">
+                                            <div class="table-progress-bar" style="@GetProgressBarStyle(item.Count, NumberOfTickets, GetColorForPercentage(percentage))"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-data-container">
+            <div class="no-data-content">
+                <i class="no-data-icon">📊</i>
+                <h3>No Data Available</h3>
+                <p>No tickets found for the selected filters. Please try different criteria.</p>
+                <button class="btn btn-primary" @onclick="ResetFilters">
+                    Reset Filters
+                </button>
+            </div>
+        </div>
+    }
+</div>
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #1d4ed8;
+        --accent-color: #3b82f6;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --success-color: #10b981;
+        --info-color: #3b82f6;
+        --light-color: #f8fafc;
+        --dark-color: #0f172a;
+        --gray-color: #94a3b8;
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.3);
+        --border-radius: 12px;
+        --border-radius-sm: 8px;
+        --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 2rem;
+        max-width: 1800px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        min-height: 80vh;
+        background-color: #f5f7fa;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: var(--border-radius);
+        padding: 1.5rem 2rem;
+        box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+        color: white;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        flex: 1;
+        min-width: 250px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .page-title::before {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M10.5 3a7.5 7.5 0 0 1 7.5 7.5h-3.15a.75.75 0 0 0-.75.75v.75h6a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-.75.75h-6v.75a.75.75 0 0 0 .75.75H18A7.5 7.5 0 1 1 10.5 3Z' /%3E%3Cpath d='M5.25 10.5a.75.75 0 0 0-.75.75v.75h6a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-.75.75h-6v.75a.75.75 0 0 0 .75.75H6a7.5 7.5 0 1 1 7.5-7.5h-3.15a.75.75 0 0 0-.75.75v.75h-6v-.75a.75.75 0 0 0-.75-.75H5.25Z' /%3E%3C/svg%3E");
+            mask-repeat: no-repeat;
+            mask-position: center;
+        }
+
+    .dashboard-filters {
+        display: flex;
+        gap: 1.25rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 200px;
+    }
+
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: white;
+            opacity: 0.9;
+        }
+
+    .form-control {
+        padding: 0.625rem 0.875rem;
+        background-color: rgba(30, 41, 59, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: var(--border-radius-sm);
+        font-size: 0.9375rem;
+        height: 42px;
+        transition: var(--transition);
+        color: white;
+        font-family: inherit;
+    }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+    select option {
+        background-color: #1e293b;
+        color: white;
+    }
+
+    .btn {
+        padding: 0.625rem 1.25rem;
+        background-color: white;
+        color: var(--primary-color);
+        border: none;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-size: 0.9375rem;
+        height: 42px;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        letter-spacing: 0.25px;
+    }
+
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background-color: rgba(255, 255, 255, 0.5);
+            color: rgba(29, 78, 216, 0.5);
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+    .btn-primary {
+        background-color: white;
+        color: var(--primary-color);
+    }
+
+    .spinner-border {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        vertical-align: text-bottom;
+        border: 0.2em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border 0.75s linear infinite;
+    }
+
+    @@keyframes spinner-border {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .progress-container {
+        width: 100%;
+        height: 10px;
+        background-color: rgba(226, 232, 240, 0.3);
+        border-radius: 5px;
+        margin-top: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.5s ease;
+    }
+
+    /* Red progress bars (unsolved/late tickets) */
+    .kpi-card.unsolved .progress-container,
+    .kpi-card.late .progress-container {
+        background-color: rgba(239, 68, 68, 0.15);
+    }
+
+    .kpi-card.unsolved .progress-bar,
+    .kpi-card.late .progress-bar {
+        background-color: #ef4444;
+    }
+
+    .kpi-card.unsolved .progress-text,
+    .kpi-card.late .progress-text {
+        color: #000000; /* Black text on red background */
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+    }
+
+    /* Green progress bars (solved/on-time tickets) */
+    .kpi-card.solved .progress-container,
+    .kpi-card.on-time .progress-container {
+        background-color: rgba(16, 185, 129, 0.15);
+    }
+
+    .kpi-card.solved .progress-bar,
+    .kpi-card.on-time .progress-bar {
+        background-color: #10b981;
+    }
+
+    .kpi-card.solved .progress-text,
+    .kpi-card.on-time .progress-text {
+        color: #ffffff; /* White text on green background */
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 1;
+    }
+    /* Rest of your existing CSS remains the same */
+    .kpi-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.75rem;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: var(--transition);
+        border-top: 4px solid var(--primary-color);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .kpi-card.solved {
+            border-top-color: var(--success-color);
+        }
+
+        .kpi-card.unsolved {
+            border-top-color: var(--danger-color);
+        }
+
+        .kpi-card.on-time {
+            border-top-color: var(--success-color);
+        }
+
+        .kpi-card.late {
+            border-top-color: var(--danger-color);
+        }
+
+        .kpi-card h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--gray-color);
+            margin: 0 0 1rem 0;
+        }
+
+    .kpi-value {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+        color: var(--dark-color);
+        line-height: 1.2;
+    }
+
+    .table-progress-container {
+        width: 100%;
+        height: 8px;
+        background-color: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .table-progress-bar {
+        height: 100%;
+        transition: width 0.5s ease;
+    }
+
+    /* Top Tickets Section */
+    .top-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .top-tickets-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border-top: 4px solid var(--primary-color);
+    }
+
+        .top-tickets-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .top-tickets-card.fast {
+            border-top-color: var(--success-color);
+        }
+
+        .top-tickets-card.slow {
+            border-top-color: var(--danger-color);
+        }
+
+        .top-tickets-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: var(--dark-color);
+        }
+
+    .tickets-list {
+        margin-top: 0.5rem;
+    }
+
+    .ticket-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+        align-items: center;
+    }
+
+        .ticket-item:last-child {
+            border-bottom: none;
+        }
+
+    .ticket-id {
+        font-weight: 600;
+        color: var(--dark-color);
+        background-color: #f8fafc;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-family: 'Roboto Mono', monospace;
+    }
+
+    .ticket-time {
+        color: var(--gray-color);
+        font-weight: 500;
+    }
+
+    .ticket-category {
+        font-size: 0.75rem;
+        color: white;
+        background-color: var(--primary-color);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    /* Charts Section */
+    .line-charts-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .line-chart-container {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+    }
+
+        .line-chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .line-chart-container h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+    .charts-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .chart-container h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+    .chart-wrapper {
+        position: relative;
+        flex-grow: 1;
+        min-height: 250px;
+    }
+
+    /* Data Tables */
+    .data-tables {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+    }
+
+        .table-container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .table-container h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+    .table-wrapper {
+        overflow-x: auto;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .kpi-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+        min-width: 400px;
+    }
+
+        .kpi-table th, .kpi-table td {
+            padding: 0.875rem;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .kpi-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: var(--dark-color);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .kpi-table td {
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+    /* No Data State */
+    .no-data-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60vh;
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+    }
+
+    .no-data-content {
+        text-align: center;
+        padding: 2rem;
+        max-width: 400px;
+    }
+
+    .no-data-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+
+    .no-data-content h3 {
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+        font-size: 1.25rem;
+    }
+
+    .no-data-content p {
+        color: var(--gray-color);
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .no-data {
+        text-align: center;
+        color: var(--gray-color);
+        font-style: italic;
+        padding: 1.5rem;
+        font-size: 0.9375rem;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 1200px) {
+        .kpi-cards {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        }
+
+        .line-charts-section {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .dashboard-container {
+            padding: 1.5rem;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        .dashboard-filters {
+            width: 100%;
+        }
+
+        .top-section,
+        .data-tables {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .kpi-cards {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .filter-group {
+            min-width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .dashboard-container {
+            padding: 1rem;
+            gap: 1.5rem;
+        }
+
+        .kpi-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .top-tickets-card,
+        .chart-container,
+        .table-container {
+            padding: 1.25rem;
+        }
+    }
+</style>
+@code {
+    // Ticket data properties
+    private List<Ticket> Tickets { get; set; } = new();
+    private int NumberOfTickets { get; set; }
+    private int NumberOfSolvedTickets { get; set; }
+    private int NumberOfUnSolvedTickets { get; set; }
+    private IEnumerable<dynamic> TicketsPerCategory { get; set; } = Enumerable.Empty<dynamic>();
+    private IEnumerable<dynamic> TicketsPerLocation { get; set; } = Enumerable.Empty<dynamic>();
+    private IEnumerable<dynamic> TicketsPerType { get; set; } = Enumerable.Empty<dynamic>();
+    private int TotalDueMinutes { get; set; }
+    private double TotalResolutionDays { get; set; }
+    private List<Ticket> FastestTickets { get; set; } = new();
+    private List<Ticket> SlowestTickets { get; set; } = new();
+    private int OnTimeTicketsCount { get; set; }
+    private int LateTicketsCount { get; set; }
+    private double TotalTimeDifference { get; set; }
+
+    // Daily metrics properties
+    private List<DailyTicketMetric> DailyMetrics { get; set; } = new();
+    private List<AgentDailyMetric> AgentMetrics { get; set; } = new();
+    private List<DailyResolutionMetric> ResolutionMetrics { get; set; } = new();
+
+    private IEnumerable<AppUser> Agents { get; set; } = new List<AppUser>();
+    private int SelectedAgentId { get; set; } = 0;
+    private int SelectedMonth { get; set; } = 0;
+    private bool IsLoading { get; set; } = false;
+    private bool HasData => NumberOfTickets > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            Agents = await IUser.GetAllAgentsAsync();
+            await LoadData();
+            await LoadDailyMetrics();
+            CalculateTimelinessMetrics();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Initialization error: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && HasData)
+        {
+            try
+            {
+                await LoadChartJS();
+                await RenderCharts();
+                await RenderLineCharts();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Chart rendering error: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task ApplyFilters()
+    {
+        try
+        {
+            IsLoading = true;
+            StateHasChanged(); // Update UI to show loading state
+
+            await LoadData(SelectedAgentId, SelectedMonth);
+            await LoadDailyMetrics(SelectedAgentId, SelectedMonth);
+            CalculateTimelinessMetrics();
+
+            if (HasData)
+            {
+                await RenderCharts();
+                await RenderLineCharts();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error applying filters: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ResetFilters()
+    {
+        SelectedAgentId = 0;
+        SelectedMonth = 0;
+        await ApplyFilters();
+    }
+
+    private async Task LoadData(int agentid = 0, int currentmonth = 0)
+    {
+        try
+        {
+            Tickets = await ITicket.GetNumberOfClosedAvailableTickets() ?? new List<Ticket>();
+
+            // Apply filters based on the parameters
+            if (agentid == 0 && currentmonth != 0)
+            {
+                Tickets = Tickets.Where(t => t.OpenDate.Month == currentmonth).ToList();
+            }
+            else if (agentid != 0 && currentmonth == 0)
+            {
+                Tickets = Tickets.Where(t => t.AgentID == agentid).ToList();
+            }
+            else if (agentid != 0 && currentmonth != 0)
+            {
+                Tickets = Tickets.Where(t => t.AgentID == agentid && t.OpenDate.Month == currentmonth).ToList();
+            }
+
+            NumberOfTickets = Tickets.Count;
+            if (NumberOfTickets == 0) return;
+
+            NumberOfSolvedTickets = Tickets.Count(t => t.IsSolved == true);
+            NumberOfUnSolvedTickets = Tickets.Count(t => t.IsSolved == false);
+
+            // Calculate totals
+            TotalDueMinutes = (int)Tickets.Sum(t => t.Due_Minutes);
+            TotalResolutionDays = Tickets
+                .Where(t => t.Assign_Date.HasValue && t.CloseDate.HasValue)
+                .Sum(t => (t.CloseDate.Value - t.Assign_Date.Value).TotalDays);
+
+            // Calculate top tickets
+            var resolvedTickets = Tickets
+                .Where(t => t.IsSolved == true && t.Assign_Date.HasValue && t.CloseDate.HasValue)
+                .ToList();
+
+            FastestTickets = resolvedTickets
+                .OrderBy(t => (t.CloseDate.Value - t.Assign_Date.Value).TotalDays)
+                .Take(5)
+                .ToList();
+
+            SlowestTickets = resolvedTickets
+                .OrderByDescending(t => (t.CloseDate.Value - t.Assign_Date.Value).TotalDays)
+                .Take(5)
+                .ToList();
+
+            // Group data for charts
+            TicketsPerCategory = Tickets
+                .Where(t => t.category != null)
+                .GroupBy(t => t.category.CategoryName)
+                .Select(g => new
+                {
+                    Category = g.Key?.ToString() ?? "Uncategorized",
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+
+            TicketsPerLocation = Tickets
+                .Where(t => t.location != null)
+                .GroupBy(t => t.location.LocationName)
+                .Select(g => new
+                {
+                    Location = g.Key.ToString() ?? "Unknown",
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+
+            TicketsPerType = Tickets
+                .Where(t => t.Priority != null)
+                .GroupBy(t => t.Priority)
+                .Select(g => new
+                {
+                    Type = g.Key.ToString() ?? "Unknown",
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading ticket data: {ex.Message}");
+            Tickets = new List<Ticket>();
+            NumberOfTickets = 0;
+        }
+    }
+
+    private void CalculateTimelinessMetrics()
+    {
+        if (NumberOfTickets == 0) return;
+
+        var resolvedTickets = Tickets
+            .Where(t => t.IsSolved == true && t.Assign_Date.HasValue && t.CloseDate.HasValue && t.Due_Minutes.HasValue)
+            .ToList();
+
+        OnTimeTicketsCount = resolvedTickets.Count(t =>
+            (t.CloseDate.Value - t.Assign_Date.Value).TotalMinutes <= t.Due_Minutes);
+
+        LateTicketsCount = resolvedTickets.Count(t =>
+            (t.CloseDate.Value - t.Assign_Date.Value).TotalMinutes > t.Due_Minutes);
+
+        TotalTimeDifference = resolvedTickets
+            .Sum(t => (int)(t.CloseDate.Value - t.Assign_Date.Value).TotalMinutes - t.Due_Minutes.Value);
+    }
+
+    private async Task LoadDailyMetrics(int agentid = 0, int currentmonth = 0)
+    {
+        try
+        {
+            // Get all metrics
+            DailyMetrics = await ITicket.GetDailyTicketMetrics() ?? new List<DailyTicketMetric>();
+            AgentMetrics = await ITicket.GetAgentDailyMetrics() ?? new List<AgentDailyMetric>();
+            ResolutionMetrics = await ITicket.GetDailyResolutionMetrics() ?? new List<DailyResolutionMetric>();
+
+            // Apply filtering based on parameters
+            if (agentid != 0 || currentmonth != 0)
+            {
+                if (currentmonth != 0)
+                {
+                    DailyMetrics = DailyMetrics.Where(d => d.Date.Month == currentmonth).ToList();
+                    AgentMetrics = AgentMetrics.Where(a => a.Date.Month == currentmonth).ToList();
+                    ResolutionMetrics = ResolutionMetrics.Where(r => r.Date.Month == currentmonth).ToList();
+                }
+
+                if (agentid != 0)
+                {
+                    var user = await IUser.GetUserByIdAsync(agentid);
+                    AgentMetrics = AgentMetrics.Where(a => a.AgentName == user.LoginName).ToList();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading daily metrics: {ex.Message}");
+            DailyMetrics = new List<DailyTicketMetric>();
+            AgentMetrics = new List<AgentDailyMetric>();
+            ResolutionMetrics = new List<DailyResolutionMetric>();
+        }
+    }
+
+    private async Task LoadChartJS()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("loadChartJS");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading Chart.js: {ex.Message}");
+        }
+    }
+
+    private async Task RenderCharts()
+    {
+        try
+        {
+            // Destroy existing charts first
+            await DestroyAllCharts();
+
+            // Only create charts if we have data
+            if (TicketsPerCategory.Any())
+            {
+                await JSRuntime.InvokeVoidAsync(
+                    "createBarChart",
+                    "categoryChart",
+                    TicketsPerCategory.Select(x => x.Category.ToString()).ToArray(),
+                    TicketsPerCategory.Select(x => x.Count).ToArray(),
+                    "Tickets by Category",
+                    TicketsPerCategory.Select(x => GetRandomColor()).ToArray()
+                );
+            }
+
+            if (TicketsPerLocation.Any())
+            {
+                await JSRuntime.InvokeVoidAsync(
+                    "createBarChart",
+                    "locationChart",
+                    TicketsPerLocation.Select(x => x.Location.ToString()).ToArray(),
+                    TicketsPerLocation.Select(x => x.Count).ToArray(),
+                    "Tickets by Location",
+                    TicketsPerLocation.Select(x => GetRandomColor()).ToArray()
+                );
+            }
+
+            if (TicketsPerType.Any())
+            {
+                await JSRuntime.InvokeVoidAsync(
+                    "createBarChart",
+                    "typeChart",
+                    TicketsPerType.Select(x => x.Type.ToString()).ToArray(),
+                    TicketsPerType.Select(x => x.Count).ToArray(),
+                    "Tickets by Type",
+                    TicketsPerType.Select(x => GetRandomColor()).ToArray()
+                );
+            }
+
+            if (NumberOfTickets > 0)
+            {
+                await JSRuntime.InvokeVoidAsync(
+                    "createPieChart",
+                    "statusChart",
+                    new[] { "Solved", "Unsolved" },
+                    new[] { NumberOfSolvedTickets, NumberOfUnSolvedTickets },
+                    new[] { "#4CAF50", "#F44336" }
+                );
+
+                if (NumberOfSolvedTickets > 0)
+                {
+                    await JSRuntime.InvokeVoidAsync(
+                        "createTimelinessChart",
+                        "timelinessChart",
+                        OnTimeTicketsCount,
+                        LateTicketsCount
+                    );
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rendering charts: {ex.Message}");
+        }
+    }
+
+    private async Task RenderLineCharts()
+    {
+        try
+        {
+            // Check if we have data before rendering
+            if (!DailyMetrics.Any() || !AgentMetrics.Any() || !ResolutionMetrics.Any())
+            {
+                Console.WriteLine("Warning: No metrics data available for line charts");
+                return;
+            }
+
+            // 1. Daily Volume Chart
+            var dailyLabels = DailyMetrics
+                .OrderBy(x => x.Date)
+                .Select(x => x.Date.ToString("MMM dd"))
+                .ToArray();
+
+            var dailyVolumeData = new[]
+            {
+                new
+                {
+                    label = "Total Tickets",
+                    data = DailyMetrics.OrderBy(x => x.Date).Select(x => x.TotalTickets).ToArray(),
+                    borderColor = "rgb(75, 192, 192)",
+                    backgroundColor = "rgba(75, 192, 192, 0.2)",
+                    tension = 0.1,
+                    fill = true
+                },
+                new
+                {
+                    label = "Agent Tickets",
+                    data = DailyMetrics.OrderBy(x => x.Date).Select(x => x.AgentTickets).ToArray(),
+                    borderColor = "rgb(54, 162, 235)",
+                    backgroundColor = "rgba(54, 162, 235, 0.2)",
+                    tension = 0.1,
+                    fill = true
+                }
+            };
+
+            await JSRuntime.InvokeVoidAsync(
+                "createLineChart",
+                "dailyVolumeChart",
+                dailyLabels,
+                dailyVolumeData
+            );
+
+            // 2. Agent Activity Chart
+            var agentGroups = AgentMetrics
+                .GroupBy(x => x.AgentName)
+                .OrderByDescending(g => g.Sum(x => x.TicketCount))
+                .ToList();
+
+            var agentDates = AgentMetrics
+                .Select(x => x.Date)
+                .Distinct()
+                .OrderBy(x => x)
+                .Select(x => x.ToString("MMM dd"))
+                .ToArray();
+
+            var agentDatasets = new List<object>();
+            var colors = new string[] { "#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1" };
+            var colorIndex = 0;
+
+            foreach (var agentGroup in agentGroups.Take(5))
+            {
+                var agentData = new int[agentDates.Length];
+                var agentTickets = agentGroup.ToList();
+
+                for (var i = 0; i < agentDates.Length; i++)
+                {
+                    var date = AgentMetrics
+                        .Select(x => x.Date)
+                        .Distinct()
+                        .OrderBy(x => x)
+                        .ElementAt(i);
+
+                    agentData[i] = agentTickets
+                        .FirstOrDefault(x => x.Date == date)?
+                        .TicketCount ?? 0;
+                }
+
+                agentDatasets.Add(new
+                {
+                    label = agentGroup.Key,
+                    data = agentData,
+                    borderColor = colors[colorIndex % colors.Length],
+                    backgroundColor = colors[colorIndex % colors.Length] + "20",
+                    tension = 0.1,
+                    fill = true
+                });
+                colorIndex++;
+            }
+
+            await JSRuntime.InvokeVoidAsync(
+                "createLineChart",
+                "agentActivityChart",
+                agentDates,
+                agentDatasets
+            );
+
+            // 3. Resolution Rate Chart
+            var resolutionLabels = ResolutionMetrics
+                .OrderBy(x => x.Date)
+                .Select(x => x.Date.ToString("MMM dd"))
+                .ToArray();
+
+            var resolutionData = new[]
+            {
+                new
+                {
+                    label = "Solved Tickets",
+                    data = ResolutionMetrics.OrderBy(x => x.Date).Select(x => x.SolvedTickets).ToArray(),
+                    borderColor = "rgb(75, 192, 192)",
+                    backgroundColor = "rgba(75, 192, 192, 0.2)",
+                    tension = 0.1,
+                    fill = true
+                },
+                new
+                {
+                    label = "Total Tickets",
+                    data = ResolutionMetrics.OrderBy(x => x.Date).Select(x => x.TotalTickets).ToArray(),
+                    borderColor = "rgb(153, 102, 255)",
+                    backgroundColor = "rgba(153, 102, 255, 0.2)",
+                    tension = 0.1,
+                    fill = true
+                }
+            };
+
+            await JSRuntime.InvokeVoidAsync(
+                "createLineChart",
+                "resolutionRateChart",
+                resolutionLabels,
+                resolutionData
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rendering line charts: {ex.Message}");
+        }
+    }
+
+    private async Task DestroyAllCharts()
+    {
+        try
+        {
+            var chartIds = new[] {
+                "categoryChart", "locationChart", "statusChart", "timelinessChart", "typeChart",
+                "dailyVolumeChart", "agentActivityChart", "resolutionRateChart"
+            };
+
+            foreach (var chartId in chartIds)
+            {
+                await JSRuntime.InvokeVoidAsync("destroyChart", chartId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error destroying charts: {ex.Message}");
+        }
+    }
+
+    // Helper methods
+    private string GetResolutionDays(Ticket ticket)
+    {
+        if (!ticket.Assign_Date.HasValue || !ticket.CloseDate.HasValue)
+            return "0 min";
+
+        double totalMinutes = (ticket.CloseDate.Value - ticket.Assign_Date.Value).TotalMinutes;
+        return FormatDuration(totalMinutes);
+    }
+
+    private string FormatDuration(double totalMinutes)
+    {
+        if (totalMinutes < 60)
+        {
+            return $"{Math.Round(totalMinutes, 1)} min";
+        }
+        else if (totalMinutes < 1440) // 24 hours
+        {
+            return $"{Math.Round(totalMinutes / 60, 1)} hours";
+        }
+        else
+        {
+            return $"{Math.Round(totalMinutes / 1440, 1)} days";
+        }
+    }
+
+    private string FormatDurationFromDays(double days)
+    {
+        double totalMinutes = days * 1440;
+        return FormatDuration(totalMinutes);
+    }
+
+    private string GetRandomColor()
+    {
+        var random = new Random();
+        return $"rgba({random.Next(0, 255)}, {random.Next(0, 255)}, {random.Next(0, 255)}, 0.7)";
+    }
+
+    private string GetPercentage(int value, int total)
+    {
+        return total == 0 ? "0" : ((value * 100) / total).ToString("0");
+    }
+
+    private double GetAverageResolutionTimeValue()
+    {
+        return NumberOfSolvedTickets == 0 ? 0 : TotalResolutionDays / NumberOfSolvedTickets;
+    }
+
+    private double GetAverageTimeDifferenceValue()
+    {
+        var resolvedCount = Tickets.Count(t => t.IsSolved == true && t.Due_Minutes.HasValue);
+        return resolvedCount == 0 ? 0 : TotalTimeDifference / resolvedCount;
+    }
+
+    private string GetProgressBarStyle(int value, int total, string color)
+    {
+        if (total == 0) return "width:0%;";
+        var percentage = (value * 100) / total;
+        return $"width:{percentage}%; background-color:{GetColorCode(color)};";
+    }
+
+    private string GetColorCode(string colorType)
+    {
+        return colorType switch
+        {
+            "green" => "#4CAF50",
+            "red" => "#F44336",
+            "yellow" => "#FFC107",
+            _ => "#3498db"
+        };
+    }
+
+    private string GetColorForPercentage(int percentage)
+    {
+        return percentage switch
+        {
+            >= 70 => "#4CAF50",  // Green for high percentages
+            >= 40 => "#FFC107",  // Yellow for medium
+            _ => "#F44336"       // Red for low
+        };
+    }
+
+    private int GetPercentageValue(int value, int total)
+    {
+        return total == 0 ? 0 : (value * 100) / total;
+    }
+}
+
+
+
+<script suppress-error="BL9992">
+    // Store chart instances
+    const chartInstances = {};
+
+    // Load Chart.js dynamically with better error handling
+    function loadChartJS() {
+        return new Promise((resolve, reject) => {
+            if (typeof Chart !== 'undefined') {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            script.onload = () => {
+                if (typeof Chart === 'undefined') {
+                    reject(new Error('Chart.js failed to load'));
+                } else {
+                    resolve();
+                }
+            };
+            script.onerror = () => reject(new Error('Failed to load Chart.js'));
+            document.head.appendChild(script);
+        });
+    }
+
+    // Updated createBarChart function with guaranteed zero baseline
+    function createBarChart(canvasId, labels, data, label, backgroundColor) {
+        if (!data || data.length === 0) {
+            data = Array(labels.length).fill(0);
+        }
+
+        const ctx = document.getElementById(canvasId)?.getContext('2d');
+        if (!ctx) return false;
+
+        if (chartInstances[canvasId]) {
+            chartInstances[canvasId].destroy();
+        }
+
+        chartInstances[canvasId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderColor: backgroundColor.map(color => color.replace('0.7', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        min: 0,
+                        suggestedMax: Math.max(...data) * 1.1,
+                        ticks: {
+                            precision: 0,
+                            callback: function(value) {
+                                if (value % 1 === 0) return value;
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            drawBorder: true
+                        }
+                    },
+                    x: {
+                        offset: true,
+                        beginAtZero: true,
+                        min: 0,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: labels.length > 0,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return true;
+    }
+
+    // Pie Chart configuration
+    function createPieChart(canvasId, labels, data, backgroundColor) {
+        const ctx = document.getElementById(canvasId)?.getContext('2d');
+        if (!ctx) return false;
+
+        if (chartInstances[canvasId]) {
+            chartInstances[canvasId].destroy();
+        }
+
+        chartInstances[canvasId] = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return true;
+    }
+
+    // Timeliness Pie Chart
+    function createTimelinessChart(canvasId, onTimeCount, lateCount) {
+        const ctx = document.getElementById(canvasId)?.getContext('2d');
+        if (!ctx) return false;
+
+        if (chartInstances[canvasId]) {
+            chartInstances[canvasId].destroy();
+        }
+
+        chartInstances[canvasId] = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['On-Time', 'Late'],
+                datasets: [{
+                    data: [onTimeCount, lateCount],
+                    backgroundColor: ['#4CAF50', '#F44336'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return true;
+    }
+
+    // Line Chart with zero-based axes
+    function createLineChart(canvasId, labels, datasets) {
+        datasets = datasets.map(dataset => {
+            if (!dataset.data || dataset.data.length === 0) {
+                return {
+                    ...dataset,
+                    data: Array(labels.length).fill(0)
+                };
+            }
+            return dataset;
+        });
+
+        const ctx = document.getElementById(canvasId)?.getContext('2d');
+        if (!ctx) return false;
+
+        if (chartInstances[canvasId]) {
+            chartInstances[canvasId].destroy();
+        }
+
+        chartInstances[canvasId] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        min: 0,
+                        title: {
+                            display: true,
+                            text: 'Number of Tickets'
+                        },
+                        ticks: {
+                            precision: 0,
+                            callback: function(value) {
+                                if (value % 1 === 0) {
+                                    return value;
+                                }
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            drawBorder: true
+                        }
+                    },
+                    x: {
+                        offset: true,
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        },
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.y}`;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0.1
+                    },
+                    point: {
+                        radius: 3,
+                        hoverRadius: 5
+                    }
+                }
+            }
+        });
+        return true;
+    }
+
+    // Destroy chart instance
+    function destroyChart(canvasId) {
+        if (chartInstances[canvasId]) {
+            chartInstances[canvasId].destroy();
+            delete chartInstances[canvasId];
+        }
+        return true;
+    }
+
+    // Helper function to generate random colors
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color + '80';
+    }
+</script>

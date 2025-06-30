@@ -201,12 +201,31 @@ namespace AlexSupport.Data
                 entity.Property(e => e.Issue)
                     .HasMaxLength(850)
                     .IsUnicode(false)
-                    .HasColumnName("Issue");
+                    .HasColumnName("Issue");  
+                entity.Property(e => e.TypeName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("Type");
                 entity.HasOne(e => e.category)
                     .WithMany(d => d.DailyTask)
                     .HasForeignKey(e => e.CategoryID)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_DailyTask_Category");
+                entity.HasOne(e => e.Agent)
+                    .WithMany(d => d.DailyTasks)
+                    .HasForeignKey(e => e.AgentId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_DailyTask_AppUser"); 
+                entity.HasOne(e => e.Location)
+                    .WithMany(d => d.Tasks)
+                    .HasForeignKey(e => e.LocationId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_DailyTask_Location");  
+                entity.HasOne(e => e.User)
+                    .WithMany(d => d.UserDailyTasks)
+                    .HasForeignKey(e => e.UID)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_DailyTask_CreatedUser");
                 // Delete notifications when user is deleted
 
             }); modelBuilder.Entity<SystemNotification>(entity =>

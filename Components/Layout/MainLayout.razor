@@ -10,17 +10,29 @@
     <script type="text/javascript" src="app.js" defer></script>
 </head>
 <body>
+    <style>
+        .logo img {
+            transition: transform 0.3s ease-in-out;
+        }
 
+        .logo:hover img {
+            transform: rotate(-35deg);
+        }
+    </style>
     <nav id="sidebar">
         <ul class="start-0">
             <li>
-                <span class="logo">Alex Support</span>
-                <button onclick=toggleSidebar() id="toggle-btn">
+                <a href="home" class="logo d-flex align-items-center gap-1">
+                    <img src="Images/WhiteLogo.png" alt="Logo" style="width: 48px; height: 48px;">
+                    <span style="color: white; font-weight: bold; font-size: 22px;">lex Support</span>
+                </a>
+
+                <button onclick="toggleSidebar()" id="toggle-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m313-480 155 156q11 11 11.5 27.5T468-268q-11 11-28 11t-28-11L228-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l184-184q11-11 27.5-11.5T468-692q11 11 11 28t-11 28L313-480Zm264 0 155 156q11 11 11.5 27.5T732-268q-11 11-28 11t-28-11L492-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l184-184q11-11 27.5-11.5T732-692q11 11 11 28t-11 28L577-480Z" /></svg>
                 </button>
-            </li>
+           </li>
             <li class="active">
-                <a href="index.html">
+                <a href="/home">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M240-200h120v-200q0-17 11.5-28.5T400-440h160q17 0 28.5 11.5T600-400v200h120v-360L480-740 240-560v360Zm-80 0v-360q0-19 8.5-36t23.5-28l240-180q21-16 48-16t48 16l240 180q15 11 23.5 28t8.5 36v360q0 33-23.5 56.5T720-120H560q-17 0-28.5-11.5T520-160v-200h-80v200q0 17-11.5 28.5T400-120H240q-33 0-56.5-23.5T160-200Zm320-270Z" /></svg>
                     <span>Home</span>
                 </a>
@@ -61,6 +73,14 @@
                     </div>
                 </ul>
             </li>
+            <AuthorizeView Roles="Admin,Agent">
+
+                <li>
+                    <a href="PerformanceKPIs">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-120v-80l80-80v160h-80Zm160 0v-240l80-80v320h-80Zm160 0v-320l80 81v239h-80Zm160 0v-239l80-80v319h-80Zm160 0v-400l80-80v480h-80ZM120-327v-113l280-280 160 160 280-280v113L560-447 400-607 120-327Z" /></svg>                    <span>Performance KPIs</span>
+                    </a>
+                </li>
+            </AuthorizeView>
 
             <li>
                 <a href="SystemUsers">
@@ -73,7 +93,7 @@
                     <span>Profile</span>
                 </a>
             </li>
-        
+
             <li class="">
                 <a href="About">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" /></svg>                    <span>About</span>
@@ -118,3 +138,22 @@
 
 
 
+<script>
+                            document.addEventListener('DOMContentLoaded', function () {
+        const sidebarLinks = document.querySelectorAll('#sidebar a');
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function () {
+                // Remove 'active' class from all list items
+                document.querySelectorAll('#sidebar li').forEach(li => li.classList.remove('active'));
+
+                // Add 'active' class to the clicked link's parent <li>
+                const parentLi = this.closest('li');
+                if (parentLi) {
+                    parentLi.classList.add('active');
+                }
+            });
+        });
+    });
+
+</script>

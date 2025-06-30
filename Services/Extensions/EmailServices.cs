@@ -2,7 +2,7 @@
 {
     using System.Net;
     using System.Net.Mail;
-    using AlexSupport.Services.Models;
+    using global::AlexSupport.Services.Models;
     using Microsoft.Extensions.Options;
 
     public class EmailServices

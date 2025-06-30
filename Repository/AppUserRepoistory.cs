@@ -115,11 +115,11 @@ namespace AlexSupport.Repository
                 return new AppUser();
             }
         }
-        public async Task<bool> IsEmailExists(string email)
+        public async Task<bool> IsEmailExists(string email, int id = 0)
         {
             try
             {
-                return await alexSupportDB.AppUser.AnyAsync(u => u.Email.Trim().ToLower() == email.Trim().ToLower());
+                return await alexSupportDB.AppUser.AnyAsync(u => u.Email.Trim().ToLower() == email.Trim().ToLower() && u.UID != id);
             }
             catch (Exception ex)
             {
@@ -127,11 +127,23 @@ namespace AlexSupport.Repository
                 return false;
             }
         }
-        public async Task<bool> IsFingerprintExists(string fingerprint)
+        public async Task<bool> IsLoginNameExists(string loginname, int id = 0)
         {
             try
             {
-                return await alexSupportDB.AppUser.AnyAsync(u => u.Fingerprint.ToString().Trim().ToLower() == fingerprint.Trim().ToLower());
+                return await alexSupportDB.AppUser.AnyAsync(u => u.LoginName.Trim().ToLower() == loginname.Trim().ToLower() && u.UID != id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error checking login name existence: " + ex.Message, ex);
+                return false;
+            }
+        }
+        public async Task<bool> IsFingerprintExists(string fingerprint, int id = 0)
+        {
+            try
+            {
+                return await alexSupportDB.AppUser.AnyAsync(u => u.Fingerprint.ToString().Trim().ToLower() == fingerprint.Trim().ToLower() && u.UID != id);
             }
             catch (Exception ex)
             {
@@ -140,12 +152,12 @@ namespace AlexSupport.Repository
 
             }
         }
-        public async Task<bool> IsPhoneNumberExists(string phone)
+        public async Task<bool> IsPhoneNumberExists(string phone , int id = 0)
         {
 
             try
             {
-                return await alexSupportDB.AppUser.AnyAsync(u => u.MobilePhone.Trim().ToLower() == phone.Trim().ToLower());
+                return await alexSupportDB.AppUser.AnyAsync(u => u.MobilePhone.Trim().ToLower() == phone.Trim().ToLower() && u.UID != id);
             }
 
             catch (Exception ex)

@@ -2,150 +2,317 @@
 @using System.ComponentModel.DataAnnotations
 @inject IDailyTaskRepository _ITask
 @inject IJSRuntime JS
-@rendermode InteractiveServer
 @inject ICategoryRepository _ICategory
 @inject ILocationRepository _ILocation
 @inject IAppUserRepoistory _IAppUser
 @inject ITicketRepository _ITicket
+@rendermode InteractiveServer
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 @attribute [Authorize(Roles = "Admin,Agent")]
 
 <CreateNewdailyTaskComponent Title="Create New Daily Task"
                              ticket="newtask"
                              Category="categories"
+                             Agents="agents"
+                             Locations="locations"
                              OnModalConfirmation="ConfirmCreateTask_Click" />
 
-<BsModal Title="Are you sure tou want to inactive this daily task ?"
-         ButtonBootstrapStyle="btn btn-primary"
-         ButtonText="Confirm delete"
+<BsModal Title="Are you sure you want to inactive this daily task?"
+         ButtonBootstrapStyle="btn-danger"
+         ButtonText="Confirm"
          OnModalConfirmation="DeleteTicket" />
 
-<AssignFormModal Title="Assign Daily Task"
-                 ticket="ticket"
-                 Locations="locations"
-                 Agents="agents"
-                 type="DailyTask"
-                 OnModalConfirmation="ConfirmAssign_Click" />
 
-<h3 class="page-title">Daily Tasks</h3>
+<div class="container-fluid px-4 py-3">
+    <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+        <div class="card-header bg-primary-gradient py-4">
+            <div class="row align-items-center g-3">
+                <!-- Title Column - Full width on mobile, then takes less space on larger screens -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <h2 class="text-white mb-0">
+                        <i class="bi bi-list-task me-2"></i>Daily Tasks
+                    </h2>
+                </div>
 
-<div class="tickets-container">
-    <!-- Filter and Search Bar -->
-    <div class="tickets-controls">
-        <div class="search-box">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Search tickets..." @bind="searchQuery" @bind:event="oninput" />
-        </div>
-        <select class="form-select" @bind="priorityFilter">
-            <option value="">All Priorities</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Urgent">Urgent</option>
-        </select>
-        <div class="filter-controls">
-            <AuthorizeView Roles="Admin">
-                <Authorized>
-                    <button class="btn btn-primary" @onclick="AddNewTicket">
-                        <i class="bi bi-plus-lg"></i> New Task
-                    </button>
-                </Authorized>
-                <NotAuthorized>
-                    <button class="btn btn-primary disabled" disabled>
-                        <i class="bi bi-plus-lg"></i> New Task
-                    </button>
-                </NotAuthorized>
-            </AuthorizeView>
-        </div>
-    </div>
+                <!-- Controls Column - Full width on mobile, then takes remaining space -->
+                <div class="col-12 col-md-6 col-lg-8">
+                    <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch">
+                        <!-- Search + Export Group - Will stack on mobile -->
+                        <div class="d-flex flex-grow-1 flex-column flex-sm-row gap-2">
+                            <!-- Search Box -->
+                            <div class="flex-grow-1">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control border-start-0 shadow-none"
+                                           placeholder="Search tasks..."
+                                           @bind="searchQuery"
+                                           @oninput="HandleSearchInput" />
+                                    @if (!string.IsNullOrEmpty(searchQuery))
+                                    {
+                                        <button class="btn btn-danger" type="button" @onclick="ClearSearch">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
 
-    <!-- Tickets Grid/List -->
-    <div class="tickets-grid">
-        @if (tasks.Any())
-        {
-            @foreach (var task in filteredtasks)
-            {
-                <div class="ticket-card @task.Priority.ToLower()">
-                    <div class="ticket-header">
-                        <div class="header-left">
-                            <span class="ticket-id">#@task.DTID</span>
-                            <span class="ticket-status @task.Priority.ToLower()">@task.Priority.ToLower()</span>
+                            <!-- Export Button - Moves to own row on smallest screens -->
+                            <div class="d-flex flex-shrink-0">
+                                <button class="btn btn-success h-100" @onclick="ExportToExcel">
+                                    <i class="bi bi-file-earmark-excel me-1"></i>
+                                    <span class="d-none d-sm-inline">Export</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="header-actions">
-                            <AuthorizeView Roles="Admin">
-                                <Authorized>
-                                    <button class="btn-action" @onclick="() => EditTicket(task.DTID)" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                        <span class="action-text">Edit</span>
-                                    </button>
-                                </Authorized>
-                                <NotAuthorized>
-                                    <button class="btn-action disabled" disabled title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                        <span class="action-text">Edit</span>
-                                    </button>
-                                </NotAuthorized>
-                            </AuthorizeView>
 
-                            <AuthorizeView Roles="Admin">
-                                <Authorized>
-                                    <button class="btn-action" @onclick="() => AssignTicket(task.DTID)" title="Assign">
-                                        <i class="bi bi-person-plus"></i>
-                                        <span class="action-text">Assign</span>
-                                    </button>
-                                </Authorized>
-                                <NotAuthorized>
-                                    <button class="btn-action disabled" disabled title="Assign">
-                                        <i class="bi bi-person-plus"></i>
-                                        <span class="action-text">Assign</span>
-                                    </button>
-                                </NotAuthorized>
-                            </AuthorizeView>
-
-                            <AuthorizeView Roles="Admin">
-                                <Authorized>
-                                    <button class="btn-action" @onclick="() => RemoveTicket(task.DTID)" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                        <span class="action-text">Delete</span>
-                                    </button>
-                                </Authorized>
-                                <NotAuthorized>
-                                    <button class="btn-action disabled" disabled title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                        <span class="action-text">Delete</span>
-                                    </button>
-                                </NotAuthorized>
-                            </AuthorizeView>
+                        <!-- Priority Filter - Full width on mobile, auto width on larger -->
+                        <div class="col-12 col-sm-auto flex-shrink-0">
+                            <select class="form-select h-100" @bind="priorityFilter">
+                                <option value="">All</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
                         </div>
-                    </div>
-                    <h4 class="ticket-title">@task.Subject</h4>
-                    <p class="ticket-description">@task.Issue</p>
-                    <div class="ticket-footer">
-                        <span class="ticket-date">
-                            <i class="bi bi-calendar"></i> @task.Due_Minutes
-                        </span>
-                        <span class="ticket-assignee">
-                            <i class="bi bi-person"></i> @task.category?.CategoryName
-                        </span>
+
+                        <!-- Add New Button - Only visible for Admin -->
+                        <AuthorizeView Roles="Admin">
+                            <div class="col-12 col-sm-auto flex-shrink-0">
+                                <button class="btn btn-light rounded-pill w-100" @onclick="AddNewTicket">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    <span class="d-none d-sm-inline">New Task</span>
+                                </button>
+                            </div>
+                        </AuthorizeView>
                     </div>
                 </div>
-            }
-        }
-        else
-        {
-            <div class="no-tickets">
-                <i class="bi bi-inbox"></i>
-                <p>No tickets found matching your criteria</p>
             </div>
-        }
+        </div>
+        <div class="card-body p-4">
+            @if (filteredtasks.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    @foreach (var task in filteredtasks)
+                    {
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm transition-all hover-shadow">
+                                <div class="card-header d-flex justify-content-between align-items-center p-3 bg-light">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge @GetPriorityClass(task.Priority)">@task.Priority</span>
+                                        <span class="text-muted small">#@task.DTID</span>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                type="button"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <AuthorizeView Roles="Admin">
+                                                <Authorized>
+                                                    <li>
+                                                        <button class="dropdown-item" @onclick="() => EditTicket(task.DTID)">
+                                                            <i class="bi bi-pencil me-2"></i>Edit
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item" @onclick="() => AssignTicket(task.DTID)">
+                                                            <i class="bi bi-person-plus me-2"></i>Assign
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item text-danger" @onclick="() => RemoveTicket(task.DTID)">
+                                                            <i class="bi bi-trash me-2"></i>Delete
+                                                        </button>
+                                                    </li>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <li>
+                                                        <button class="dropdown-item disabled" disabled>
+                                                            <i class="bi bi-pencil me-2"></i>Edit
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item disabled" disabled>
+                                                            <i class="bi bi-person-plus me-2"></i>Assign
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item disabled text-danger" disabled>
+                                                            <i class="bi bi-trash me-2"></i>Delete
+                                                        </button>
+                                                    </li>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">@task.Subject</h5>
+                                    <p class="card-text text-muted">@task.Issue</p>
+
+                                    <div class="mt-auto pt-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
+                                                <i class="bi bi-tag text-primary"></i>
+                                            </div>
+                                            <small>@task.category?.CategoryName</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
+                                                <i class="bi bi-clock text-primary"></i>
+                                            </div>
+                                            <small>@task.Due_Minutes Minutes</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
+                                                <i class="bi bi-clock text-primary"></i>
+                                            </div>
+                                            <small>@task.TypeName</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
+                                                <i class="bi bi-clock text-primary"></i>
+                                            </div>
+                                            <small>Agent: @task.Agent.LoginName</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-list-task text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">
+                        @(string.IsNullOrEmpty(searchQuery)
+                            ? "No Daily Tasks Found"
+                            : "No matching tasks found")
+                    </h4>
+                    <p class="text-muted">
+                        @(string.IsNullOrEmpty(searchQuery)
+                            ? "Start by creating your first daily task"
+                            : "Try a different search term")
+                    </p>
+                    <AuthorizeView Roles="Admin">
+                        <Authorized>
+                            <button class="btn btn-primary rounded-pill px-4" @onclick="AddNewTicket">
+                                <i class="bi bi-plus-circle me-2"></i>Create Task
+                            </button>
+                        </Authorized>
+                        <NotAuthorized>
+                            <button class="btn btn-secondary rounded-pill px-4 disabled" disabled>
+                                <i class="bi bi-plus-circle me-2"></i>Create Task
+                            </button>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            }
+        </div>
     </div>
 </div>
+
+<style>
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    }
+
+    .transition-all {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-2px);
+    }
+
+    .z-index-1050 {
+        z-index: 1050;
+    }
+
+    .rounded-3 {
+        border-radius: 0.75rem !important;
+    }
+
+    .rounded-pill {
+        border-radius: 50rem !important;
+    }
+
+    .disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    /* Priority badges */
+    .badge-priority-low {
+        background-color: #198754;
+        color: white;
+    }
+
+    .badge-priority-medium {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .badge-priority-high {
+        background-color: #fd7e14;
+        color: white;
+    }
+
+    .badge-priority-urgent {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    /* Search input enhancements */
+    .input-group-text {
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
+        .form-control:focus + .input-group-text {
+            color: #0d6efd;
+        }
+
+    /* Animation for search results */
+    .col {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 @code {
     private List<Ticket> tickets = new();
     private Ticket? selectedTicket;
     private Ticket? ticket = new Ticket();
     private IEnumerable<Location>? locations = new List<Location>();
     private int updatedid { get; set; } = 0;
-
     private bool showModal = false;
     private string searchQuery = "";
     private string statusFilter = "";
@@ -153,35 +320,62 @@
     private IEnumerable<DailyTasks> tasks = new List<DailyTasks>();
     private int AssignId { get; set; } = 0;
     private int deletedid { get; set; } = 0;
-
     private DailyTasks newtask { get; set; } = new DailyTasks();
     private IEnumerable<Category>? categories = new List<Category>();
     private IEnumerable<AppUser>? agents = new List<AppUser>();
+    private Timer? debounceTimer;
 
     private IEnumerable<DailyTasks> filteredtasks => tasks
-    .Where(t => string.IsNullOrEmpty(searchQuery) ||
-                t.Subject.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                t.Issue.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                t.category.CategoryName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                t.Priority.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
-    )
+        .Where(t => string.IsNullOrEmpty(searchQuery) ||
+                    t.Subject.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.Issue.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.category.CategoryName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.TypeName.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.CreatedDate.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.LastUpdatedDate.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.Priority.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+        )
+        .Where(t => string.IsNullOrEmpty(priorityFilter) || t.Priority == priorityFilter)
+        .OrderByDescending(t => t.DTID)
+        .ToList();
 
-    .Where(t => string.IsNullOrEmpty(priorityFilter) || t.Priority == priorityFilter)
-    .OrderByDescending(t => t.DTID)
-    .ToList();
+    private string GetPriorityClass(string priority) => priority switch
+    {
+        "Low" => "badge-priority-low",
+        "Medium" => "badge-priority-medium",
+        "High" => "badge-priority-high",
+        "Urgent" => "badge-priority-urgent",
+        _ => "bg-secondary"
+    };
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
+    }
 
+    private void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+
+        // Debounce the search to avoid too many rapid updates
+        debounceTimer?.Dispose();
+        debounceTimer = new Timer(_ =>
+        {
+            InvokeAsync(StateHasChanged);
+        }, null, 300, Timeout.Infinite);
+    }
+
+    private void ClearSearch()
+    {
+        searchQuery = "";
+        priorityFilter = "";
     }
 
     private async Task EditTicket(int dtid)
     {
         newtask = await _ITask.GetDailyTaskAsync(dtid);
-
+        updatedid = dtid;
         await JS.InvokeVoidAsync("ShowAddTaskFormModal");
-        deletedid = dtid;
     }
 
     private async Task AssignTicket(int dtid)
@@ -198,16 +392,13 @@
             AssignId = dtid;
             await JS.InvokeVoidAsync("ShowAssignTicketFormModal");
         }
-
     }
+
     private async Task RemoveTicket(int dtid)
     {
         await JS.InvokeVoidAsync("ShowConfirmationModal");
         deletedid = dtid;
-
     }
-
-
 
     private async Task DeleteTicket()
     {
@@ -219,7 +410,7 @@
             if (flag)
                 await JS.ToastrSuccess("Task Inactivated Successfully");
             else
-                await JS.ToastrError($"Failed to Inactive Task Please try again !");
+                await JS.ToastrError("Failed to Inactive Task. Please try again!");
 
             await LoadData();
         }
@@ -228,26 +419,25 @@
     private async Task AddNewTicket()
     {
         newtask = new DailyTasks();
-
+        updatedid = 0;
         await JS.InvokeVoidAsync("ShowAddTaskFormModal");
     }
 
     private async Task ConfirmCreateTask_Click(DailyTasks ticket)
     {
-        await JS.InvokeVoidAsync("HideAddTaskFormModal"); // Hide modal
+        await JS.InvokeVoidAsync("HideAddTaskFormModal");
 
         if (updatedid == 0)
         {
             var temp = await _ITask.CreateDailyTaskAsync(ticket);
             if (temp.IsActive == true)
             {
-                ticket = new DailyTasks();
-                JS?.ToastrSuccess("Task Create Successfully");
+                newtask = new DailyTasks();
+                JS?.ToastrSuccess("Task Created Successfully");
             }
             else
             {
-                JS?.ToastrError("Error Encountered while Assigning");
-
+                JS?.ToastrError("Error Encountered while Creating Task");
             }
         }
         else
@@ -255,23 +445,20 @@
             var temp = await _ITask.UpdateDailyTaskAsync(ticket);
             if (temp)
             {
-                ticket = new DailyTasks();
+                newtask = new DailyTasks();
                 JS?.ToastrSuccess("Task Updated Successfully");
             }
             else
             {
-                JS?.ToastrError("Error Encountered while Assigning");
-
+                JS?.ToastrError("Error Encountered while Updating Task");
             }
-
         }
         await LoadData();
-
     }
+
     private async Task ConfirmAssign_Click(Ticket ticket)
     {
-
-        await JS.InvokeVoidAsync("HideAssignTicketFormModal"); // Hide modal
+        await JS.InvokeVoidAsync("HideAssignTicketFormModal");
 
         if (AssignId != 0)
         {
@@ -281,21 +468,96 @@
             if (result)
             {
                 JS?.ToastrSuccess("Ticket Assigned Successfully");
-
             }
             else
+            {
                 JS?.ToastrError("Error Encountered while Assigning");
+            }
 
             await LoadData();
         }
         AssignId = 0;
     }
+
     private async Task LoadData()
     {
         tasks = await _ITask.GetAllDailyTasksAsync();
         categories = await _ICategory.AllCategoriesAsync();
         locations = await _ILocation.AllLocationsAsync();
         agents = await _IAppUser.GetAllAgentsAsync();
-
     }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
+    }
+}
+
+
+@code {
+    private async Task ExportToExcel()
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Daily Tasks");
+
+        // Add headers
+        worksheet.Cell(1, 1).Value = "TICKET ID";
+        worksheet.Cell(1, 2).Value = "Subject";
+        worksheet.Cell(1, 3).Value = "Priotiy";
+        worksheet.Cell(1, 4).Value = "Category";
+        worksheet.Cell(1, 5).Value = "Issue";
+        worksheet.Cell(1, 6).Value = "Due Minutes";
+
+
+
+        // Add data
+        int row = 2;
+        foreach (var task in filteredtasks)
+        {
+            worksheet.Cell(row, 1).Value = task.DTID;
+            worksheet.Cell(row, 2).Value = task.Subject;
+            worksheet.Cell(row, 3).Value = task.Priority;
+            worksheet.Cell(row, 4).Value = task.category.CategoryName ?? "No Cateogry";
+            worksheet.Cell(row, 5).Value = task.Issue;
+            worksheet.Cell(row, 6).Value = task.Due_Minutes;
+            row++;
+        }
+
+        // Create a new workbook and worksheet
+
+        // Set the header row style
+        var headerRow = worksheet.Range(1, 1, 1, worksheet.LastColumnUsed().ColumnNumber());
+        headerRow.SetAutoFilter(true);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Font.FontColor = XLColor.Black;
+        headerRow.Style.Fill.BackgroundColor = XLColor.OrangeColorWheel;
+        headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Apply borders to the entire worksheet
+
+        worksheet.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
+        worksheet.RangeUsed().Style.Border.InsideBorder = XLBorderStyleValues.Thick;
+
+        // Set the font and alignment for all cells
+        worksheet.Style.Font.FontName = "Arial";
+        worksheet.Style.Font.FontSize = 10;
+        headerRow.Style.Font.FontSize = 10;
+
+        worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+        worksheet.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Auto-adjust column width and row height
+        worksheet.Columns().AdjustToContents();
+        worksheet.Rows().AdjustToContents();
+
+        // Save the file to a memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        var fileBytes = stream.ToArray();
+        var fileName = $"Daily Tasks {DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        // Trigger download in Blazor
+        await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(fileBytes));
+    }
+
 }

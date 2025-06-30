@@ -1,0 +1,29 @@
+﻿@* Components/ExportButton.razor *@
+@inject ExcelService ExcelService
+@inject NavigationManager NavigationManager
+
+<button @onclick="ExportToExcel" class="btn btn-primary">
+    <i class="fas fa-file-excel"></i> Export to Excel
+</button>
+
+@code {
+    [Parameter]
+    public IEnumerable<object> Data { get; set; }
+
+    [Parameter]
+    public string FileName { get; set; } = "Export";
+
+    private async Task ExportToExcel()
+    {
+        if (Data == null || !Data.Any())
+        {
+            // Handle empty data case
+            return;
+        }
+
+        var excelBytes = ExcelService.GenerateExcel(Data);
+        var fileName = $"{FileName}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+        NavigationManager.NavigateTo($"data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{Convert.ToBase64String(excelBytes)}", forceLoad: true);
+    }
+}

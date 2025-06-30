@@ -6,174 +6,295 @@
 @attribute [Authorize(Roles = "Admin,Agent")]
 
 <PageTitle>User Management</PageTitle>
+<BsModal OnModalConfirmation="Activation"
+         IconClass="@(IsActive ? "fas fa-user-slash" : "fas fa-user-check")"
+         IconColorClass="@(IsActive ? "text-warning" : "text-success")"
+         ButtonBootstrapStyle="@(IsActive ? "btn-warning" : "btn-success")"
+         Title="@(IsActive ? "Deactivate User" : "Activate User")">
+    <ChildContent>
+        This action cannot be undone until you confirm it. Are you sure you want to @(IsActive ? "deactivate" : "activate") this user?
+    </ChildContent>
+</BsModal>
 
-<BsModal Title="@title"
-         ButtonText="@buttontext"
-         ButtonBootstrapStyle="@buttonstyle"
-         OnModalConfirmation="Activation" />
-
-
-
-<div class="users-page">
-    <AuthorizeView Roles="Admin">
-
-        <div class="page-header">
-            <h2>System Users Management</h2>
-            <div class="actions">
-                <button class="btn btn-primary" @onclick="NavigateToAddNewUser">
-                    <i class="fas fa-plus me-2"></i> Add New User
-                </button>
-            </div>
+@if (isLoading)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white bg-opacity-75 z-index-1050">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
-    </AuthorizeView>
-
-    <div class="user-filters mb-4">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="form-control" placeholder="Search users..."
-                           @bind="searchTerm" @bind:event="oninput" />
+        <p class="mt-3 text-muted">Loading users...</p>
+    </div>
+}
+else
+{
+    <div class="container-fluid px-4 py-3">
+        <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+            <div class="card-header bg-primary-gradient py-4">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <h2 class="text-white mb-3 mb-md-0">
+                            <i class="bi bi-people me-2"></i>System Users
+                        </h2>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-8">
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            <div class="flex-grow-1">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control border-start-0 shadow-none"
+                                           placeholder="Search users..."
+                                           @bind="searchTerm"
+                                           @oninput="HandleSearchInput" />
+                                    @if (!string.IsNullOrEmpty(searchTerm))
+                                    {
+                                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <div class="flex-shrink-0">
+                                    <select class="form-select form-select-lg" @bind="statusFilter">
+                                        <option value="">All Users</option>
+                                        <option value="true">Active</option>
+                                        <option value="false">Inactive</option>
+                                    </select>
+                                </div>
+                                <AuthorizeView Roles="Admin">
+                                    <div class="d-flex justify-content-end">
+                                        <a href="/SignUp" class="btn btn-light btn-lg rounded-pill">
+                                            <i class="bi bi-plus-circle me-2"></i>Add User
+                                        </a>
+                                    </div>
+                                </AuthorizeView>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="filter-controls">
-                    <label>Status:</label>
-                    <select class="form-select" @bind="statusFilter">
-                        <option value="">All Users</option>
-                        <option value="true">Active Only</option>
-                        <option value="false">Inactive Only</option>
-                    </select>
-                </div>
+
+            <div class="card-body p-4">
+                @if (FilteredUsers.Any())
+                {
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+                        @foreach (var user in PagedUsers)
+                        {
+                            <div class="col">
+                                <div class="card h-100 border-0 shadow-sm transition-all hover-shadow @(!user.IsActive ? "bg-light" : "")">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
+                                                <i class="bi bi-person-badge text-primary fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="card-title mb-0">@user.Fname @user.Lname</h5>
+                                                <small class="text-muted">@user.LoginName</small>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <span class="badge @(user.IsActive ? "bg-success" : "bg-secondary")">
+                                                @(user.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </div>
+
+                                        <ul class="list-unstyled small text-muted mb-3">
+                                            <li class="mb-1">
+                                                <i class="bi bi-envelope me-2"></i> @user.Email
+                                            </li>
+                                            <li class="mb-1">
+                                                <i class="bi bi-briefcase me-2"></i> @user.JobTitle
+                                            </li>
+                                            <li class="mb-1">
+                                                <i class="bi bi-building me-2"></i> @(user.Department?.DepartmentName ?? "No Department")
+                                            </li>
+                                            <li class="mb-1">
+                                                <i class="bi bi-fingerprint me-2"></i> @(user.Fingerprint)
+                                            </li>
+                                        </ul>
+
+                                        <div class="mt-auto pt-3">
+                                            <AuthorizeView Roles="Admin">
+                                                <Authorized>
+                                                    <div class="d-flex gap-2">
+                                                        <button class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1"
+                                                                @onclick="() => EditUser(user.UID)">
+                                                            <i class="bi bi-pencil-square me-1"></i>Edit
+                                                        </button>
+
+                                                        @if (user.IsActive)
+                                                        {
+                                                            <button class="btn btn-outline-danger btn-sm rounded-pill flex-grow-1"
+                                                                    @onclick="() => InActiveUserShowModal(user.UID)">
+                                                                <i class="bi bi-person-x me-1"></i>Deactivate
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button class="btn btn-outline-success btn-sm rounded-pill flex-grow-1"
+                                                                    @onclick="() => ActiveUserShowModal(user.UID)">
+                                                                <i class="bi bi-person-check me-1"></i>Activate
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <div class="d-flex gap-2">
+                                                        <button class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 disabled" disabled>
+                                                            <i class="bi bi-pencil-square me-1"></i>Edit
+                                                        </button>
+                                                        <button class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 disabled" disabled>
+                                                            <i class="bi bi-person-x me-1"></i>Deactivate
+                                                        </button>
+                                                    </div>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PrevPage">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                </li>
+                                @for (int i = 1; i <= totalPages; i++)
+                                {
+                                    <li class="page-item @(i == currentPage ? "active" : "")">
+                                        <button class="page-link" @onclick="() => GoToPage(i)">@i</button>
+                                    </li>
+                                }
+                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                    <button class="page-link" @onclick="NextPage">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="text-muted mb-3">
+                            @(string.IsNullOrEmpty(searchTerm)
+                                ? "No Users Found"
+                                : "No matching users found")
+                        </h4>
+                        <p class="text-muted">
+                            @(string.IsNullOrEmpty(searchTerm)
+                                ? "Start by adding your first user"
+                                : "Try a different search term")
+                        </p>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized>
+                                <a href="/SignUp" class="btn btn-primary rounded-pill px-4">
+                                    <i class="bi bi-plus-circle me-2"></i>Add User
+                                </a>
+                            </Authorized>
+                            <NotAuthorized>
+                                <button class="btn btn-secondary rounded-pill px-4 disabled" disabled>
+                                    <i class="bi bi-plus-circle me-2"></i>Add User
+                                </button>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                }
             </div>
         </div>
     </div>
+}
 
-    @if (isLoading)
-    {
-        <div class="loading-container">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p>Loading users...</p>
-        </div>
+<style>
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
     }
-    else if (allUsers.Any())
-    {
-        <div class="user-cards">
-            @foreach (var user in filteredUsers)
-            {
-                <div class="user-card @(user.IsActive ? "" : "inactive")">
-                    <div class="status-badge @(user.IsActive ? "active" : "inactive")">
-                        @(user.IsActive ? "Active" : "Inactive")
-                    </div>
 
-                    <div class="user-info">
-                        <h5>@user.Fname @user.Lname</h5>
-                        <div class="user-login">@user.LoginName</div>
-
-                        <div class="user-meta">
-                            <div><i class="fas fa-envelope"></i> @user.Email</div>
-                            <div><i class="fas fa-briefcase"></i> @user.JobTitle</div>
-                            <div><i class="fas fa-building"></i> @(user.Department?.DepartmentName ?? "No Department")</div>
-                            <div><i class="fas fa-fingerprint"></i> @user.Fingerprint</div>
-                        </div>
-                    </div>
-                    <AuthorizeView Roles="Admin">
-                        <Authorized>
-                            <div class="user-actions">
-                                <button class="btn btn-sm btn-outline-primary"
-                                        @onclick="() => EditUser(user.UID)"
-                                        title="Edit user">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-
-                                @if (user.IsActive)
-                                {
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            @onclick="() => InActiveUserShowModal(user.UID)"
-                                            title="Deactivate user">
-                                        <i class="fas fa-user-slash"></i> Deactivate
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-outline-success"
-                                            @onclick="() => ActiveUserShowModal(user.UID)"
-                                            title="Activate user">
-                                        <i class="fas fa-user-check"></i> Activate
-                                    </button>
-                                }
-                            </div>
-                        </Authorized>
-                        <NotAuthorized>
-                            <div class="user-actions">
-                                <button class="btn btn-sm btn-outline-primary" disabled title="Edit user">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-
-                                @if (user.IsActive)
-                                {
-                                    <button class="btn btn-sm btn-outline-danger" disabled title="Deactivate user">
-                                        <i class="fas fa-user-slash"></i> Deactivate
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-outline-success" disabled title="Activate user">
-                                        <i class="fas fa-user-check"></i> Activate
-                                    </button>
-                                }
-                            </div>
-                        </NotAuthorized>
-                    </AuthorizeView>
-
-                </div>
-            }
-        </div>
-
-        <div class="pagination-controls">
-            <button class="btn btn-outline-secondary" @onclick="PrevPage" disabled="@(currentPage == 1)">
-                <i class="fas fa-chevron-left me-1"></i> Previous
-            </button>
-            <span>Page @currentPage of @totalPages</span>
-            <button class="btn btn-outline-secondary" @onclick="NextPage" disabled="@(currentPage == totalPages)">
-                Next <i class="fas fa-chevron-right ms-1"></i>
-            </button>
-        </div>
+    .transition-all {
+        transition: all 0.2s ease-in-out;
     }
-    else
-    {
-        <div class="no-users">
-            <i class="fas fa-users-slash"></i>
-            <p>No users found matching your criteria</p>
-            @if (!string.IsNullOrEmpty(searchTerm))
-            {
-                <button class="btn btn-sm btn-link" @onclick="ClearFilters">
-                    Clear filters
-                </button>
-            }
-        </div>
+
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+        transform: translateY(-2px);
     }
-</div>
 
+    .z-index-1050 {
+        z-index: 1050;
+    }
 
+    .rounded-3 {
+        border-radius: 0.75rem !important;
+    }
+
+    .rounded-pill {
+        border-radius: 50rem !important;
+    }
+
+    .disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    /* Search input enhancements */
+    .input-group-text {
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
+        .form-control:focus + .input-group-text {
+            color: #0d6efd;
+        }
+
+    /* Animation for search results */
+    .col {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .page-link {
+        color: #0d6efd;
+    }
+</style>
 
 @code {
     private IEnumerable<AppUser> allUsers = new List<AppUser>();
-    private bool isLoading = true;
-    private string searchTerm = "";
-    private string statusFilter = "";
-    private int currentPage = 1;
-    private int pageSize = 12;
-    private int InActivatedUserId { get; set; } = 0;
-    private int ActivatedUserId { get; set; } = 0;
-    private string title { get; set; } = string.Empty;
-    private string buttonstyle { get; set; } = string.Empty;
-    private string buttontext { get; set; } = string.Empty;
+    private bool IsActive { get; set; } = true; // or false depending on user status
 
-    // Computed properties
-    private IEnumerable<AppUser> filteredUsers => allUsers
+    private IEnumerable<AppUser> FilteredUsers => allUsers
         .Where(u =>
             string.IsNullOrEmpty(searchTerm) ||
             (u.Fname?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
@@ -181,28 +302,32 @@
             (u.LoginName?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
             (u.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
             (u.JobTitle?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-            (u.Department?.DepartmentName?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-            (u.Phone?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-            (u.MobilePhone?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-            (u.Fingerprint.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            (u.Department?.DepartmentName?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
         )
         .Where(u =>
             string.IsNullOrEmpty(statusFilter) ||
             u.IsActive == bool.Parse(statusFilter)
         )
         .OrderBy(u => u.Lname)
-        .ThenBy(u => u.Fname)
-        .ToList();
+        .ThenBy(u => u.Fname);
 
-
-    private IEnumerable
-    <AppUser>
-        pagedUsers => filteredUsers
+    private IEnumerable<AppUser> PagedUsers => FilteredUsers
         .Skip((currentPage - 1) * pageSize)
-        .Take(pageSize)
-        .ToList();
+        .Take(pageSize);
 
-    private int totalPages => (int)Math.Ceiling((double)filteredUsers.Count() / pageSize);
+    private int totalPages => (int)Math.Ceiling((double)FilteredUsers.Count() / pageSize);
+
+    private bool isLoading = true;
+    private string searchTerm = "";
+    private string statusFilter = "";
+    private int currentPage = 1;
+    private int pageSize = 25;
+    private int InActivatedUserId = 0;
+    private int ActivatedUserId = 0;
+    private string title = "";
+    private string buttonstyle = "";
+    private string buttontext = "";
+    private Timer? debounceTimer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -211,19 +336,29 @@
 
     private async Task LoadUsers()
     {
-        try
+        isLoading = true;
+        allUsers = await _IAppUser.GetAllUsersAsync();
+        isLoading = false;
+    }
+
+    private void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1;
+
+        // Debounce the search to avoid too many rapid updates
+        debounceTimer?.Dispose();
+        debounceTimer = new Timer(_ =>
         {
-            isLoading = true;
-            allUsers = await _IAppUser.GetAllUsersAsync();
-        }
-        catch (Exception ex)
-        {
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
+            InvokeAsync(StateHasChanged);
+        }, null, 300, Timeout.Infinite);
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = "";
+        statusFilter = "";
+        currentPage = 1;
     }
 
     private void EditUser(int userId)
@@ -231,58 +366,49 @@
         Navigation.NavigateTo($"/users/edit/{userId}");
     }
 
-
-
     private void NextPage()
     {
-        currentPage++;
-        StateHasChanged(); // Just trigger UI update since filteredUsers is computed
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+        }
     }
 
     private void PrevPage()
     {
-        currentPage--;
-        StateHasChanged(); // Just trigger UI update since filteredUsers is computed
+        if (currentPage > 1)
+        {
+            currentPage--;
+        }
     }
 
-    private void ClearFilters()
+    private void GoToPage(int page)
     {
-        searchTerm = string.Empty;
-        statusFilter = string.Empty;
-        currentPage = 1;
-        StateHasChanged(); // Just trigger UI update since filteredUsers is computed
+        currentPage = page;
     }
 
-    private void NavigateToAddNewUser()
+    private async Task InActiveUserShowModal(int userId)
     {
-        Navigation.NavigateTo("/SignUp");
-    }
-
-    private async Task InActiveUserShowModal(int dtid)
-    {
-        title = "Are You Sure You Want Deactivate This User";
+        title = "Are You Sure You Want To Deactivate This User?";
         buttonstyle = "btn-danger";
         buttontext = "Deactivate";
+        InActivatedUserId = userId;
+        ActivatedUserId = 0;
+        IsActive = true;
         await JS.InvokeVoidAsync("ShowConfirmationModal");
-        InActivatedUserId = dtid;
-
     }
 
-
-
-
-
-    private async Task ActiveUserShowModal(int dtid)
+    private async Task ActiveUserShowModal(int userId)
     {
-        title = "Are You Sure You Want Activate This User";
+        title = "Are You Sure You Want To Activate This User?";
         buttonstyle = "btn-success";
         buttontext = "Activate";
+        ActivatedUserId = userId;
+        InActivatedUserId = 0;
+        IsActive = false;
+
         await JS.InvokeVoidAsync("ShowConfirmationModal");
-        ActivatedUserId = dtid;
-
     }
-
-
 
     private async Task Activation()
     {
@@ -294,19 +420,113 @@
             if (flag)
                 await JS.ToastrSuccess("User Activated Successfully");
             else
-                await JS.ToastrError($"Failed to active User Please try again !");
-
+                await JS.ToastrError("Failed to activate user. Please try again!");
         }
         else if (InActivatedUserId != 0)
         {
             bool flag = await _IAppUser.InActiveUserAsync(InActivatedUserId);
             if (flag)
-                await JS.ToastrSuccess("User Inactivated Successfully");
+                await JS.ToastrSuccess("User Deactivated Successfully");
             else
-                await JS.ToastrError($"Failed to Inactive User Please try again !");
-
+                await JS.ToastrError("Failed to deactivate user. Please try again!");
         }
-        await LoadUsers();
 
+        await LoadUsers();
+    }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
     }
 }
+
+
+
+
+
+
+@code {
+    private async Task ExportToExcel()
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("SystemUsers");
+
+        // Add headers
+        worksheet.Cell(1, 1).Value = "USER ID";
+        worksheet.Cell(1, 2).Value = "First Name";
+        worksheet.Cell(1, 3).Value = "Last Name";
+        worksheet.Cell(1, 4).Value = "Full Name";
+        worksheet.Cell(1, 5).Value = "Email";
+        worksheet.Cell(1, 6).Value = "Login Name";
+        worksheet.Cell(1, 7).Value = "Fingerprint";
+        worksheet.Cell(1, 8).Value = "Phone Number";
+        worksheet.Cell(1, 9).Value = "Department";
+        worksheet.Cell(1, 10).Value = "Job Title";
+        worksheet.Cell(1, 11).Value = "Email Verified";
+        worksheet.Cell(1, 12).Value = "Activation";
+        worksheet.Cell(1, 13).Value = "Role";
+        worksheet.Cell(1, 14).Value = "Sign Up Date";
+
+
+        // Add data
+        int row = 2;
+        foreach (var user in FilteredUsers)
+        {
+            worksheet.Cell(row, 1).Value = user.UID;
+            worksheet.Cell(row, 2).Value = user.Fname;
+            worksheet.Cell(row, 3).Value = user.Lname;
+            worksheet.Cell(row, 4).Value = user.Fname + " " + user.Lname;
+            worksheet.Cell(row, 5).Value = user.Email;
+            worksheet.Cell(row, 6).Value = user.LoginName;
+            worksheet.Cell(row, 7).Value = user.Fingerprint;
+            worksheet.Cell(row, 8).Value = user.Phone;
+            worksheet.Cell(row, 9).Value = user.Department.DepartmentName;
+            worksheet.Cell(row, 10).Value = user.JobTitle;
+            worksheet.Cell(row, 11).Value = user.EmailVerified;
+            worksheet.Cell(row, 12).Value = user.IsActive ? "Active" : "Inactive";
+            worksheet.Cell(row, 13).Value = user.Role;
+            worksheet.Cell(row, 14).Value = user.Create_Date;
+            row++;
+        }
+
+        // Create a new workbook and worksheet
+
+        // Set the header row style
+        var headerRow = worksheet.Range(1, 1, 1, worksheet.LastColumnUsed().ColumnNumber());
+        headerRow.SetAutoFilter(true);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Font.FontColor = XLColor.Black;
+        headerRow.Style.Fill.BackgroundColor = XLColor.OrangeColorWheel;
+        headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Apply borders to the entire worksheet
+
+        worksheet.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
+        worksheet.RangeUsed().Style.Border.InsideBorder = XLBorderStyleValues.Thick;
+
+        // Set the font and alignment for all cells
+        worksheet.Style.Font.FontName = "Arial";
+        worksheet.Style.Font.FontSize = 10;
+        headerRow.Style.Font.FontSize = 10;
+
+        worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+        worksheet.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Auto-adjust column width and row height
+        worksheet.Columns().AdjustToContents();
+        worksheet.Rows().AdjustToContents();
+
+        // Save the file to a memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        var fileBytes = stream.ToArray();
+        var fileName = $"SystemUsers{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        // Trigger download in Blazor
+        await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(fileBytes));
+    }
+
+}
+<button class="btn btn-success mx-1" @onclick="ExportToExcel">
+    <i class="bi bi-file-earmark-excel"></i> Export to Excel
+</button>

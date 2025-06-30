@@ -101,6 +101,8 @@ namespace AlexSupport.ViewModels
         public virtual ICollection<SystemNotification> ReceivedNotifications { get; set; }
         public virtual ICollection<ChatMessage> ChatMessages { get; set; }
         public virtual ICollection<SystemLogs> SystemLogs { get; set; }
+        public virtual ICollection<DailyTasks> DailyTasks { get; set; }
+        public virtual ICollection<DailyTasks> UserDailyTasks { get; set; }
 
 
     }

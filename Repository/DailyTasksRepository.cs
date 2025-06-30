@@ -12,11 +12,13 @@ namespace AlexSupport.Repository
         private readonly AlexSupportDB alexsupportdb;
         private readonly ILogger<DailyTasksRepository> _logger;
         private readonly ILogService LogService;
-        public DailyTasksRepository(AlexSupportDB alexsupportdb, ILogger<DailyTasksRepository> _logger , ILogService logService )
+        private readonly INotificationService notificationService;
+        public DailyTasksRepository(AlexSupportDB alexsupportdb, ILogger<DailyTasksRepository> _logger, ILogService logService, INotificationService notificationService)
         {
             this.alexsupportdb = alexsupportdb;
             this._logger = _logger;
             this.LogService = logService;
+            this.notificationService = notificationService;
 
         }
         public async Task<DailyTasks> CreateDailyTaskAsync(DailyTasks dailytask)
@@ -27,6 +29,8 @@ namespace AlexSupport.Repository
                 {
 
                     dailytask.IsActive = true;
+                    dailytask.CreatedDate = DateTime.Now;
+                    dailytask.LastUpdatedDate = DateTime.Now;
                     await alexsupportdb.DailyTasks.AddAsync(dailytask);
                     await alexsupportdb.SaveChangesAsync();
                     await LogService.CreateSystemLogAsync($"Create A New Daily Task With Id: {dailytask.DTID} In The System", "DAILY TASK");
@@ -48,6 +52,7 @@ namespace AlexSupport.Repository
                 return await alexsupportdb.DailyTasks
                     .Where(u => u.IsActive == true)
                     .Include(c => c.category)
+                    .Include(c => c.Agent)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -115,10 +120,12 @@ namespace AlexSupport.Repository
                     UpdatedDailyTask.Issue = dailytask.Issue;
                     UpdatedDailyTask.CategoryID = dailytask.CategoryID;
                     UpdatedDailyTask.Due_Minutes = dailytask.Due_Minutes;
+                    UpdatedDailyTask.TypeName = dailytask.TypeName;
+                    UpdatedDailyTask.AgentId = dailytask.AgentId;
+                    UpdatedDailyTask.LastUpdatedDate = dailytask.LastUpdatedDate;
                     alexsupportdb.DailyTasks.Update(UpdatedDailyTask);
                     await alexsupportdb.SaveChangesAsync();
                     await LogService.CreateSystemLogAsync($"Update A Daily Task With Id: {UpdatedDailyTask.DTID} In The System", "DAILY TASK");
-
                     return true;
                 }
                 return false;
@@ -126,6 +133,38 @@ namespace AlexSupport.Repository
             catch (Exception ex)
             {
                 _logger.LogError("Error in Update Daily Task: " + ex.Message, ex);
+                return false;
+            }
+        }
+        public async Task<bool> AssignDailyTask(DailyTasks dailytask)
+        {
+            var task = await alexsupportdb.DailyTasks.FirstOrDefaultAsync(u => u.DTID == dailytask.DTID);
+            if (task != null)
+            {
+                Ticket ticket = new Ticket
+                {
+                    Subject = task.Subject,
+                    Priority = task.Priority,
+                    Issue = task.Issue,
+                    CategoryID = task.CategoryID,
+                    Due_Minutes = task.Due_Minutes,
+                    OpenDate = DateTime.Now,
+                    AgentID = dailytask.AgentId,
+                    Status = "Assigned",
+                    Assign_Date = DateTime.Now,
+                    UID = dailytask.UID ?? 0,
+                    LID = dailytask.LocationId ?? 0,
+                };
+                await alexsupportdb.Ticket.AddAsync(ticket);
+                await alexsupportdb.SaveChangesAsync();
+                await LogService.CreateSystemLogAsync($"Assign A Daily Task With Id: {dailytask.DTID} For {task.Agent.LoginName}", "DAILY TASK");
+                await notificationService.SendToUserAsync(task.AgentId.ToString(), $"Hello Eng:{task.Agent.Fname} {task.Agent.Lname} Mr.{task.User.Fname} {task.User.Lname} assign a new daily task for you");
+
+
+                return true;
+            }
+            else
+            {
                 return false;
             }
         }

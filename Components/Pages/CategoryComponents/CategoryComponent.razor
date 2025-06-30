@@ -7,9 +7,13 @@
 <PageTitle>Category Types</PageTitle>
 
 <BsModal OnModalConfirmation="ConfirmDelete_Click"
+         IconClass="fas fa-trash-alt"
+         IconColorClass="text-danger"
          ButtonBootstrapStyle="btn-danger"
-         ButtonText="Delete"
-         Title="Are you sure you want to delete this Category Type?">
+         Title="Inactive Category">
+    <ChildContent>
+        This action cannot be undone until you confirm it. Are you sure you want to inactive this category?
+    </ChildContent>
 </BsModal>
 
 @if (isProcessing)
@@ -27,26 +31,47 @@ else
         <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
             <div class="card-header bg-primary-gradient py-4">
                 <div class="row align-items-center">
-                    <div class="col-12 col-md-8">
-                        <h2 class="text-white mb-0">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <h2 class="text-white mb-3 mb-md-0">
                             <i class="bi bi-tags me-2"></i>Category Types
                         </h2>
                     </div>
-                    <AuthorizeView Roles="Admin">
-                        <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
-                            <a href="Categories/Create" class="btn btn-light btn-lg rounded-pill">
-                                <i class="bi bi-plus-circle me-2"></i>Add New Type
-                            </a>
+                    <div class="col-12 col-md-6 col-lg-8">
+                        <div class="d-flex flex-column flex-md-row gap-3">
+                            <div class="flex-grow-1">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control border-start-0 shadow-none"
+                                           placeholder="Search categories..."
+                                           @bind="searchTerm"
+                                           @oninput="HandleSearchInput" />
+                                    @if (!string.IsNullOrEmpty(searchTerm))
+                                    {
+                                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <AuthorizeView Roles="Admin">
+                                <div class="d-flex justify-content-end">
+                                    <a href="Categories/Create" class="btn btn-light btn-lg rounded-pill w-100 w-md-auto">
+                                        <i class="bi bi-plus-circle me-2"></i>Add New
+                                    </a>
+                                </div>
+                            </AuthorizeView>
                         </div>
-                    </AuthorizeView>
+                    </div>
                 </div>
             </div>
-
             <div class="card-body p-4">
-                @if (Types.Any())
+                @if (FilteredTypes.Any())
                 {
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
-                        @foreach (var obj in Types)
+                        @foreach (var obj in FilteredTypes)
                         {
                             <div class="col">
                                 <div class="card h-100 border-0 shadow-sm transition-all hover-shadow">
@@ -95,10 +120,18 @@ else
                 {
                     <div class="text-center py-5">
                         <div class="mb-4">
-                            <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
+                            <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
                         </div>
-                        <h4 class="text-muted mb-3">No Category Types Found</h4>
-                        <p class="text-muted">Start by adding your first category type</p>
+                        <h4 class="text-muted mb-3">
+                            @(string.IsNullOrEmpty(searchTerm)
+                                ? "No Category Types Found"
+                                : "No matching categories found")
+                        </h4>
+                        <p class="text-muted">
+                            @(string.IsNullOrEmpty(searchTerm)
+                                ? "Start by adding your first category type"
+                                : "Try a different search term")
+                        </p>
                         <AuthorizeView Roles="Admin">
                             <Authorized>
                                 <a href="Categories/Create" class="btn btn-primary rounded-pill px-4">
@@ -152,11 +185,48 @@ else
         opacity: 0.65;
         cursor: not-allowed;
     }
+
+    /* Search input enhancements */
+    .input-group-text {
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
+        .form-control:focus + .input-group-text {
+            color: #0d6efd;
+        }
+
+    /* Animation for search results */
+    .col {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
+<button class="btn btn-success mx-1" @onclick="ExportToExcel">
+    <i class="bi bi-file-earmark-excel"></i> Export to Excel
+</button>
 @code {
     private bool isProcessing { get; set; } = false;
     private IEnumerable<Category> Types { get; set; } = new List<Category>();
+    private IEnumerable<Category> FilteredTypes { get; set; } = new List<Category>();
     private int AssignId { get; set; }
+    private string searchTerm = string.Empty;
+    private Timer? debounceTimer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -168,7 +238,46 @@ else
     private async Task LoadTypes()
     {
         Types = await _ICategory.AllCategoriesAsync();
+        FilteredTypes = Types;
     }
+
+    private void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+
+        // Debounce the search to avoid too many rapid updates
+        debounceTimer?.Dispose();
+        debounceTimer = new Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                FilterCategories();
+                StateHasChanged();
+            });
+        }, null, 300, Timeout.Infinite);
+    }
+
+    private void FilterCategories()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            FilteredTypes = Types;
+        }
+        else
+        {
+            var term = searchTerm.ToLower();
+            FilteredTypes = Types.Where(c =>
+                c.CategoryName.ToLower().Contains(term))
+                .ToList();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        FilteredTypes = Types;
+    }
+
     private async Task HandleDelete(int id)
     {
         AssignId = id;
@@ -193,4 +302,74 @@ else
         AssignId = 0;
         isProcessing = false;
     }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
+    }
+}
+
+
+
+@code {
+    private async Task ExportToExcel()
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Categories");
+
+        // Add headers
+        worksheet.Cell(1, 1).Value = "CategoryId";
+        worksheet.Cell(1, 2).Value = "Name";
+        worksheet.Cell(1, 3).Value = "Created Date";
+        worksheet.Cell(1, 4).Value = "IsActive";
+
+
+        // Add data
+        int row = 2;
+        foreach (var category in FilteredTypes)
+        {
+            worksheet.Cell(row, 1).Value = category.CID;
+            worksheet.Cell(row, 2).Value = category.CategoryName;
+            worksheet.Cell(row, 3).Value = category.CreatedDate;
+            worksheet.Cell(row, 4).Value = category.isActive == true ? "Active" : "Inactive";
+            row++;
+        }
+
+        // Create a new workbook and worksheet
+
+        // Set the header row style
+        var headerRow = worksheet.Range(1, 1, 1, worksheet.LastColumnUsed().ColumnNumber());
+        headerRow.SetAutoFilter(true);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Font.FontColor = XLColor.Black;
+        headerRow.Style.Fill.BackgroundColor = XLColor.OrangeColorWheel;
+        headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Apply borders to the entire worksheet
+
+        worksheet.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
+        worksheet.RangeUsed().Style.Border.InsideBorder = XLBorderStyleValues.Thick;
+
+        // Set the font and alignment for all cells
+        worksheet.Style.Font.FontName = "Arial";
+        worksheet.Style.Font.FontSize = 10;
+        headerRow.Style.Font.FontSize = 10;
+
+        worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+        worksheet.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Auto-adjust column width and row height
+        worksheet.Columns().AdjustToContents();
+        worksheet.Rows().AdjustToContents();
+
+        // Save the file to a memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        var fileBytes = stream.ToArray();
+        var fileName = $"Categories{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        // Trigger download in Blazor
+        await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(fileBytes));
+    }
+
 }

@@ -112,7 +112,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 builder.Services.AddScoped<INotificationService, NotificationService>(); 
 builder.Services.AddScoped<IChatMessageRepoisitory, ChatMessageRepository>(); 
 builder.Services.AddScoped<ITicketChatService, TicketChatService>(); 
-builder.Services.AddScoped<ISystemLogsRepository, SystemLogsRepository>(); 
+builder.Services.AddScoped<ISystemLogsRepository, SystemLogsRepository>();
+builder.Services.AddScoped<ExcelService>();
+builder.Services.AddHostedService<ScheduledBackgroundService>();
 builder.Services.AddScoped(provider =>
 {
     var navigationManager = provider.GetRequiredService<NavigationManager>();

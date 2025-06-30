@@ -11,145 +11,282 @@
 <AssignFormModal Title="@(!string.IsNullOrWhiteSpace(TicketStatus) ? "Re-Assign Ticket" : "Assign Ticket")"
                  OnModalConfirmation="ConfirmAssign_Click"
                  Agents="agents" />
-<div class="tickets-container">
-    @if (tickets == null)
-    {
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    }
-    else if (!tickets.Any())
-    {
-        <div class="alert alert-info">
-            No tickets found
-        </div>
-    }
-    else
-    {
-        @foreach (var ticket in tickets)
-        {
-            <div class="ticket-card card mb-3 w-100">
-                <div class="card-header d-flex justify-content-between align-items-center p-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="badge @GetStatusClass(ticket.Status)">@ticket.Status</span>
-                        <div>
-                            <h6 class="mb-0">Ticket #@ticket.TID</h6>
-                            <small class="text-muted">@ticket?.category?.CategoryName • @ticket.OpenDate.ToString("MMM dd, yyyy")</small>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
 
-                        <button class="btn btn-sm btn-outline-secondary"
-                                onclick="toggleCollapse(this)">
-                            ▼ Details
-                        </button>
-                    </div>
+<div class="container-fluid px-4 py-3">
+    <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+        <div class="card-header bg-primary-gradient py-3 py-md-4">
+            <div class="row align-items-center g-2 g-md-3">
+                <!-- Title Column -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <h2 class="text-white mb-0">
+                        <i class="bi bi-ticket-detailed me-2"></i>
+                        @(string.IsNullOrEmpty(TicketStatus) ? "All Tickets" : $"{TicketStatus} Tickets")
+                    </h2>
                 </div>
 
-                <div class="card-body p-3 collapse-body" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-2">
-                                <span class="text-muted">Priority:</span>
-                                <span class="badge @GetPriorityClass(ticket.Priority) ms-2">@ticket.Priority</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="text-muted">Assigned To:</span>
-                                @if (ticket.Agent != null)
-                                {
-                                    <span class="badge btn-action-active ms-2">@ticket.Agent.Fname @ticket.Agent.Lname</span>
-                                }
-                                else
-                                {
-                                    <span class="badge btn-action-inactive ms-2">Not Assigned Yet !</span>
-                                }
-
-                            </div>
-                            @if (ticket.Status == "Assigned")
-                            {
-                                <div class="mb-2">
-                                    <span class="text-muted">Assign Date:</span>
-                                    <span>@ticket.Assign_Date.ToString()</span>
+                <!-- Controls Column -->
+                <div class="col-12 col-md-6 col-lg-8">
+                    <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch">
+                        <!-- Search + Export Group -->
+                        <div class="d-flex flex-grow-1 flex-column flex-sm-row gap-2">
+                            <!-- Search Box -->
+                            <div class="flex-grow-1">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control border-start-0 shadow-none"
+                                           placeholder="Search tickets..."
+                                           @bind="searchTerm"
+                                           @oninput="HandleSearchInput" />
+                                    @if (!string.IsNullOrEmpty(searchTerm))
+                                    {
+                                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    }
                                 </div>
-                            }
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-2">
-                                <span class="text-muted">Created By:</span>
-                                <span>@ticket.User.Fname @ticket.User.Lname</span>
                             </div>
-                            <div class="mb-2">
-                                <span class="text-muted">Subject:</span>
-                                <span>@ticket.Subject</span>
+                            <!-- Export Button -->
+                            <div class="d-flex flex-shrink-0">
+                                <button class="btn btn-success h-100" @onclick="ExportToExcel">
+                                    <i class="bi bi-file-earmark-excel me-1"></i>
+                                    <span class="d-none d-sm-inline">Export</span>
+                                </button>
                             </div>
-                            @if (ticket.Status == "Assigned")
-                            {
-                                <div class="mb-2">
-                                    <span class="text-muted">Expected Time:</span>
-                                    <span>@ticket.Due_Minutes Minutes</span>
-                                </div>
-                            }
-
-
                         </div>
-                    </div>
 
-                    <div class="mt-3 p-2 bg-light rounded">
-                        <h6 class="text-muted">Issue Description:</h6>
-                        <p class="mb-0">@ticket.Issue</p>
+                        
+
+                
+
                     </div>
-                    @if (TicketStatus == "Closed")
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            @if (tickets == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (!FilteredTickets.Any())
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-ticket-detailed text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">
+                        @(string.IsNullOrEmpty(searchTerm)
+                            ? "No Tickets Found"
+                            : "No matching tickets found")
+                    </h4>
+                    <p class="text-muted">
+                        @(string.IsNullOrEmpty(searchTerm)
+                            ? "There are currently no tickets in this category"
+                            : "Try a different search term")
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="tickets-container">
+                    @foreach (var ticket in FilteredTickets)
                     {
-                        @if (ticket.IsSolved == true)
-                        {
-                            <div class="mt-3 p-2 bg-light rounded">
-                                <h6 class="text-muted">Issue Solution:</h6>
-                                <p class="mb-0">@ticket.Solution</p>
+                        <div class="ticket-card card mb-3 w-100 shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center p-3 bg-light">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="badge @GetStatusClass(ticket.Status)">@ticket.Status</span>
+                                    <div>
+                                        <h6 class="mb-0">Ticket #@ticket.TID</h6>
+                                        <small class="text-muted">@ticket?.category?.CategoryName • @ticket.OpenDate.ToString("MMM dd, yyyy")</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            onclick="toggleCollapse(this)">
+                                        ▼ Details
+                                    </button>
+                                </div>
                             </div>
-                        }
-                        else
-                        {
-                            <div class="mt-3 p-2 bg-light rounded">
-                                <h6 class="text-muted">Issue Solution:</h6>
-                                <p class="mb-0">ticked was unsolved by our team 💤💤</p>
+
+                            <div class="card-body p-3 collapse-body" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <span class="text-muted">Priority:</span>
+                                            <span class="badge @GetPriorityClass(ticket.Priority) ms-2">@ticket.Priority</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span class="text-muted">Assigned To:</span>
+                                            @if (ticket.Agent != null)
+                                            {
+                                                <span class="badge btn-action-active ms-2">@ticket.Agent.Fname @ticket.Agent.Lname</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge btn-action-inactive ms-2">Not Assigned Yet !</span>
+                                            }
+                                        </div>
+                                        @if (ticket.Status == "Assigned")
+                                        {
+                                            <div class="mb-2">
+                                                <span class="text-muted">Assign Date:</span>
+                                                <span>@ticket.Assign_Date.ToString()</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <span class="text-muted">Created By:</span>
+                                            <span>@ticket.User.Fname @ticket.User.Lname</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span class="text-muted">Subject:</span>
+                                            <span>@ticket.Subject</span>
+                                        </div>
+                                        @if (ticket.Status == "Assigned")
+                                        {
+                                            <div class="mb-2">
+                                                <span class="text-muted">Expected Time:</span>
+                                                <span>@ticket.Due_Minutes Minutes</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 p-2 bg-light rounded">
+                                    <h6 class="text-muted">Issue Description:</h6>
+                                    <p class="mb-0">@ticket.Issue</p>
+                                </div>
+                                @if (TicketStatus == "Closed")
+                                {
+                                    @if (ticket.IsSolved == true)
+                                    {
+                                        <div class="mt-3 p-2 bg-light rounded">
+                                            <h6 class="text-muted">Issue Solution:</h6>
+                                            <p class="mb-0">@ticket.Solution</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="mt-3 p-2 bg-light rounded">
+                                            <h6 class="text-muted">Issue Solution:</h6>
+                                            <p class="mb-0">Ticket was unsolved by our team</p>
+                                        </div>
+                                    }
+                                }
+
+                                <div class="card-footer p-3 d-flex justify-content-end gap-2">
+                                    <a href="tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">Details</a>
+                                    <AuthorizeView Roles="Admin">
+                                        <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">
+                                            @if (ticket.Status == "Assigned")
+                                            {
+                                                <span>Re-Assign</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Assign</span>
+                                            }
+                                        </button>
+                                    </AuthorizeView>
+                                </div>
                             </div>
-                        }
-
-                    }
-
-                   
-
-                        <div class="card-footer p-3 d-flex justify-content-end gap-2">
-                            <a href="tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">Details</a>
-                             <AuthorizeView Roles="Admin">
-                            <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">
-                                @if (ticket.Status == "Assigned")
-                                {
-                                    <span>Re-Assign</span>
-                                }
-                                else
-                                {
-                                    <span>Assign</span>
-                                }
-
-
-
-                            </button>
-                        </AuthorizeView>
-
                         </div>
-
+                    }
                 </div>
-            </div>
-        }
-    }
+            }
+        </div>
+    </div>
 </div>
+
+<style>
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    }
+
+    .ticket-card {
+        transition: all 0.2s ease;
+        border-radius: 0.5rem;
+    }
+
+        .ticket-card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+    .badge-status-open {
+        background-color: #0dcaf0;
+        color: white;
+    }
+
+    .badge-status-Assigned {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .badge-status-Esclated {
+        background-color: #fd7e14;
+        color: white;
+    }
+
+    .badge-priority-high {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .badge-priority-medium {
+        background-color: #fd7e14;
+        color: white;
+    }
+
+    .badge-priority-low {
+        background-color: #198754;
+        color: white;
+    }
+
+    .btn-action-active {
+        background-color: #198754;
+        color: white;
+    }
+
+    .btn-action-inactive {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    /* Search input enhancements */
+    .input-group-text {
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
+        .form-control:focus + .input-group-text {
+            color: #0d6efd;
+        }
+
+    .dropdown-menu {
+        min-width: 10rem;
+    }
+</style>
 
 @code {
     private IEnumerable<Ticket>? tickets = new List<Ticket>();
+    private IEnumerable<Ticket>? FilteredTickets = new List<Ticket>();
     private IEnumerable<AppUser>? agents = new List<AppUser>();
+    private string searchTerm = string.Empty;
+    private Timer? debounceTimer;
+
     [Parameter]
     public string TicketStatus { get; set; } = "";
 
@@ -157,6 +294,7 @@
     {
         await LoadTickets();
     }
+
     private async Task LoadTickets()
     {
         if (TicketStatus == "Assigned")
@@ -167,15 +305,60 @@
         else if (TicketStatus == "Closed")
         {
             tickets = await _ITicket.GetAllClosedTicketsAsync();
-
         }
         else
         {
             tickets = await _ITicket.GetAllOpendTicketsAsync();
-
         }
+        FilteredTickets = tickets;
         agents = await _IAppUser.GetAllAgentsAsync();
     }
+
+    private void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+
+        // Debounce the search to avoid too many rapid updates
+        debounceTimer?.Dispose();
+        debounceTimer = new Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                FilterTickets();
+                StateHasChanged();
+            });
+        }, null, 300, Timeout.Infinite);
+    }
+
+    private void FilterTickets()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            FilteredTickets = tickets;
+        }
+        else
+        {
+            var term = searchTerm.ToLower();
+            FilteredTickets = tickets.Where(t =>
+                t.TID.ToString().Contains(term) ||
+                t.Subject.ToLower().Contains(term) ||
+                t.Issue.ToLower().Contains(term) ||
+                (t.Solution != null && t.Solution.ToLower().Contains(term)) ||
+                t.User.Fname.ToLower().Contains(term) ||
+                t.User.Lname.ToLower().Contains(term) ||
+                (t.Agent != null && t.Agent.Fname.ToLower().Contains(term)) ||
+                (t.Agent != null && t.Agent.Lname.ToLower().Contains(term)) ||
+                t.category.CategoryName.ToLower().Contains(term))
+                .ToList();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        FilteredTickets = tickets;
+    }
+
     private string GetStatusClass(string status) => status switch
     {
         "Open" => "badge-status-open",
@@ -191,16 +374,17 @@
         "Medium" => "badge-priority-low",
         _ => "bg-secondary"
     };
+
     private int AssignId { get; set; }
     private async Task HandleAssign(int id)
     {
         AssignId = id;
-        await JS.InvokeVoidAsync("ShowAssignTicketFormModal"); // Show modal
+        await JS.InvokeVoidAsync("ShowAssignTicketFormModal");
     }
 
     private async Task ConfirmAssign_Click(Ticket ticket)
     {
-        await JS.InvokeVoidAsync("HideAssignTicketFormModal"); // Hide modal
+        await JS.InvokeVoidAsync("HideAssignTicketFormModal");
 
         if (AssignId != 0)
         {
@@ -209,13 +393,129 @@
             if (result)
             {
                 JS?.ToastrSuccess("Ticket Assigned Successfully");
-
             }
             else
+            {
                 JS?.ToastrError("Error Encountered while Assigning");
-
+            }
             await LoadTickets();
         }
         AssignId = 0;
     }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
+    }
+}
+
+
+
+
+
+@code {
+    private async Task ExportToExcel()
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add(TicketStatus + " Tickets");
+
+        // Add headers
+        worksheet.Cell(1, 1).Value = "TICKET ID";
+        worksheet.Cell(1, 2).Value = "Subject";
+        worksheet.Cell(1, 3).Value = "Priotiy";
+        worksheet.Cell(1, 4).Value = "Category";
+        worksheet.Cell(1, 5).Value = "Issue";
+        worksheet.Cell(1, 6).Value = "Open Date";
+        worksheet.Cell(1, 7).Value = "Status";
+        worksheet.Cell(1, 8).Value = "User Full Name";
+        worksheet.Cell(1, 9).Value = "User Email";
+        worksheet.Cell(1, 10).Value = "Location";
+        if (TicketStatus == "Assigned" || TicketStatus == "Closed")
+        {
+            worksheet.Cell(1, 11).Value = "Assign Date";
+            worksheet.Cell(1, 12).Value = "Due Minutes";
+            worksheet.Cell(1, 13).Value = "Desk Agent";
+            if (TicketStatus == "Closed")
+            {
+                worksheet.Cell(1, 14).Value = "Close Date";
+                worksheet.Cell(1, 15).Value = "Is Solved";
+                worksheet.Cell(1, 16).Value = "Solution";
+                worksheet.Cell(1, 17).Value = "Comment";
+                worksheet.Cell(1, 18).Value = "User Rate";
+                worksheet.Cell(1, 19).Value = "Ticket Rate";
+
+            }
+
+        }
+
+
+        // Add data
+        int row = 2;
+        foreach (var ticket in FilteredTickets)
+        {
+            worksheet.Cell(row, 1).Value = ticket.TID;
+            worksheet.Cell(row, 2).Value = ticket.Subject;
+            worksheet.Cell(row, 3).Value = ticket.Priority;
+            worksheet.Cell(row, 4).Value = ticket.category.CategoryName ?? "No Cateogry";
+            worksheet.Cell(row, 5).Value = ticket.Issue;
+            worksheet.Cell(row, 6).Value = ticket.OpenDate;
+            worksheet.Cell(row, 7).Value = ticket.Status;
+            worksheet.Cell(row, 8).Value = ticket.User.Fname + " " + ticket.User.Lname;
+            worksheet.Cell(row, 9).Value = ticket.User.Email;
+            worksheet.Cell(row, 10).Value = ticket.location.LocationName;
+            if (TicketStatus == "Assigned" || TicketStatus == "Closed")
+            {
+                worksheet.Cell(row, 11).Value = ticket.Assign_Date == null ? "No Assign Date" : ticket.CloseDate;
+                worksheet.Cell(row, 12).Value = ticket.Due_Minutes == null ? "No Expected Time" : ticket.Due_Minutes;
+                worksheet.Cell(row, 13).Value = ticket.AgentID == null ? "No Agent Yet" : ticket.Agent.Fname + " " + ticket.Agent.Lname;
+                if (TicketStatus == "Closed")
+                {
+                    worksheet.Cell(row, 14).Value = ticket.CloseDate;
+                    worksheet.Cell(row, 15).Value = ticket.IsSolved == true ? "Solved" : "UnSolved";
+                    worksheet.Cell(row, 16).Value = ticket.IsSolved == true ? (ticket.Solution != null ? ticket.Solution : "No Solution Ticket Unsolved") : "No Solution Ticket Unsolved";
+                    worksheet.Cell(row, 17).Value = ticket.Comments == null ? "No Comment" : ticket.Comments;
+                    worksheet.Cell(row, 18).Value = ticket.UserRate == null ? "No User Rate Yet" : ticket.UserRate + " Star From 5 Stars";
+                    worksheet.Cell(row, 19).Value = ticket.TicketRate;
+                }
+            }
+            row++;
+        }
+
+        // Create a new workbook and worksheet
+
+        // Set the header row style
+        var headerRow = worksheet.Range(1, 1, 1, worksheet.LastColumnUsed().ColumnNumber());
+        headerRow.SetAutoFilter(true);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Font.FontColor = XLColor.Black;
+        headerRow.Style.Fill.BackgroundColor = XLColor.OrangeColorWheel;
+        headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        headerRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Apply borders to the entire worksheet
+
+        worksheet.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
+        worksheet.RangeUsed().Style.Border.InsideBorder = XLBorderStyleValues.Thick;
+
+        // Set the font and alignment for all cells
+        worksheet.Style.Font.FontName = "Arial";
+        worksheet.Style.Font.FontSize = 10;
+        headerRow.Style.Font.FontSize = 10;
+
+        worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+        worksheet.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        // Auto-adjust column width and row height
+        worksheet.Columns().AdjustToContents();
+        worksheet.Rows().AdjustToContents();
+
+        // Save the file to a memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        var fileBytes = stream.ToArray();
+        var fileName = $"{TicketStatus} Tickets{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        // Trigger download in Blazor
+        await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(fileBytes));
+    }
+
 }

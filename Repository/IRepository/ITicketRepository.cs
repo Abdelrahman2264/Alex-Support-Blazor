@@ -1,4 +1,5 @@
-﻿using AlexSupport.ViewModels;
+﻿using AlexSupport.Services.Models;
+using AlexSupport.ViewModels;
 
 namespace AlexSupport.Repository.IRepository
 {
@@ -15,10 +16,15 @@ namespace AlexSupport.Repository.IRepository
         public Task<IEnumerable<Ticket>> GetAllClosedTicketsAsync();
 
         public Task<IEnumerable<Ticket>> GetAllTicketsAsync();
-    
-
-
-
-
+        public Task<List<Ticket>> GetNumberOfClosedAvailableTickets();
+        Task<List<DailyTicketMetric>> GetDailyTicketMetrics();
+        Task<List<AgentDailyMetric>> GetAgentDailyMetrics();
+        Task<List<DailyResolutionMetric>> GetDailyResolutionMetrics();
     }
+
+
+
+
+
+
 }
