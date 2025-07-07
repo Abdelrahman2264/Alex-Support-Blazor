@@ -67,7 +67,7 @@
                         <div class="col-md-6">
                             <!-- Days to Repeat -->
                             <div class="form-floating mb-3">
-                                <InputNumber @bind-Value="ticket.TypeName"
+                                <InputNumber @bind-Value="ticket.RecurrenceDays"
                                              class="form-control"
                                              id="repeatInput"
                                              placeholder=" "
@@ -75,7 +75,7 @@
                                 <label for="repeatInput" class="text-muted">
                                     <i class="fas fa-sync-alt me-2"></i>Repeat Every (Days)
                                 </label>
-                                <ValidationMessage For="@(() => ticket.TypeName)" class="text-danger small animated fadeIn" />
+                                <ValidationMessage For="@(() => ticket.RecurrenceDays)" class="text-danger small animated fadeIn" />
                             </div>
 
                             <!-- Priority -->

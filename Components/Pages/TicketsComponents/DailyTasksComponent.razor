@@ -24,87 +24,458 @@
          OnModalConfirmation="DeleteTicket" />
 
 
-<div class="container-fluid px-4 py-3">
-    <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
-        <div class="card-header bg-primary-gradient py-4">
-            <div class="row align-items-center g-3">
-                <!-- Title Column - Full width on mobile, then takes less space on larger screens -->
-                <div class="col-12 col-md-6 col-lg-4">
-                    <h2 class="text-white mb-0">
-                        <i class="bi bi-list-task me-2"></i>Daily Tasks
-                    </h2>
-                </div>
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #eef2ff;
+        --success-color: #10b981;
+        --success-light: #ecfdf5;
+        --danger-color: #ef4444;
+        --danger-light: #fef2f2;
+        --warning-color: #f59e0b;
+        --warning-light: #fffbeb;
+        --info-color: #3b82f6;
+        --info-light: #eff6ff;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-700: #374151;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition-base: all 0.2s ease-in-out;
+    }
 
-                <!-- Controls Column - Full width on mobile, then takes remaining space -->
-                <div class="col-12 col-md-6 col-lg-8">
-                    <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch">
-                        <!-- Search + Export Group - Will stack on mobile -->
-                        <div class="d-flex flex-grow-1 flex-column flex-sm-row gap-2">
-                            <!-- Search Box -->
-                            <div class="flex-grow-1">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text"
-                                           class="form-control border-start-0 shadow-none"
-                                           placeholder="Search tasks..."
-                                           @bind="searchQuery"
-                                           @oninput="HandleSearchInput" />
-                                    @if (!string.IsNullOrEmpty(searchQuery))
-                                    {
-                                        <button class="btn btn-danger" type="button" @onclick="ClearSearch">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    }
-                                </div>
-                            </div>
+    /* Header Styles */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, white 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+    }
 
-                            <!-- Export Button - Moves to own row on smallest screens -->
-                            <div class="d-flex flex-shrink-0">
-                                <button class="btn btn-success h-100" @onclick="ExportToExcel">
-                                    <i class="bi bi-file-earmark-excel me-1"></i>
-                                    <span class="d-none d-sm-inline">Export</span>
-                                </button>
-                            </div>
-                        </div>
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
 
-                        <!-- Priority Filter - Full width on mobile, auto width on larger -->
-                        <div class="col-12 col-sm-auto flex-shrink-0">
-                            <select class="form-select h-100" @bind="priorityFilter">
-                                <option value="">All</option>
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
-                            </select>
-                        </div>
+    .page-icon {
+        font-size: 2rem;
+        color: white;
+        margin-right: 1rem;
+    }
 
-                        <!-- Add New Button - Only visible for Admin -->
-                        <AuthorizeView Roles="Admin">
-                            <div class="col-12 col-sm-auto flex-shrink-0">
-                                <button class="btn btn-light rounded-pill w-100" @onclick="AddNewTicket">
-                                    <i class="bi bi-plus-circle me-1"></i>
-                                    <span class="d-none d-sm-inline">New Task</span>
-                                </button>
-                            </div>
-                        </AuthorizeView>
-                    </div>
+    /* Search and Actions */
+    .search-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .search-input {
+        border-radius: 50px;
+        padding: 0.625rem 1.5rem 0.625rem 3rem;
+        border: 1px solid var(--gray-200);
+        font-size: 0.9375rem;
+        transition: var(--transition-base);
+        width: 100%;
+    }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-300);
+    }
+
+    .clear-search {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--gray-400);
+        cursor: pointer;
+    }
+
+    /* Task Card Styles */
+    .task-card {
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-base);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+    .task-card-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .task-card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+    }
+
+    .task-card-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        background-color: var(--gray-100);
+    }
+
+    /* Priority Badges */
+    .badge-priority {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 500;
+    }
+
+    .badge-priority-low {
+        background-color: var(--success-light);
+        color: var(--success-color);
+    }
+
+    .badge-priority-medium {
+        background-color: var(--warning-light);
+        color: var(--warning-color);
+    }
+
+    .badge-priority-high {
+        background-color: #f97316;
+        color: white;
+    }
+
+    .badge-priority-urgent {
+        background-color: var(--danger-light);
+        color: var(--danger-color);
+    }
+
+    /* Info Items */
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primary-light);
+        border-radius: 8px;
+        margin-right: 0.75rem;
+        color: var(--primary-color);
+    }
+
+    /* Dropdown Menu */
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    .dropdown-menu {
+        border: none;
+        box-shadow: var(--shadow-lg);
+        border-radius: 8px;
+        padding: 0.5rem 0;
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition-base);
+    }
+
+        .dropdown-item:hover {
+            background-color: var(--gray-100);
+        }
+
+    .dropdown-item-danger {
+        color: var(--danger-color);
+    }
+
+        .dropdown-item-danger:hover {
+            background-color: var(--danger-light);
+        }
+
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--gray-200);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .page-item {
+        list-style: none;
+    }
+
+    .page-link {
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--gray-200);
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: var(--transition-base);
+    }
+
+        .page-link:hover {
+            background-color: var(--primary-light);
+        }
+
+    .page-item.active .page-link {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .page-item.disabled .page-link {
+        color: var(--gray-300);
+        pointer-events: none;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .page-header
+
+    {
+        padding: 1.25rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .search-container {
+        max-width: 100%;
+    }
+
+    .task-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .task-card-body
+
+    {
+        padding: 1rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-icon {
+        margin-bottom: 0.5rem;
+        margin-right: 0;
+    }
+
+    }
+
+    /* Animation for cards */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .task-card {
+        animation: fadeIn 0.3s ease-out forwards;
+        opacity: 0;
+    }
+
+        .task-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .task-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .task-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .task-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .task-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .task-card:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+</style>
+
+<div class="container-fluid px-3 px-md-4 py-3">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-list-task page-icon"></i>
+                <div>
+                    <h1 class="page-title">Periodical Tasks</h1>
+                    <p class="text-muted mb-0 d-none d-md-block">Manage and track recurring tasks</p>
                 </div>
             </div>
+
+            <div class="d-flex header-actions align-items-center gap-3">
+                <!-- Search Input -->
+                <div class="search-container">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text"
+                           class="form-control search-input"
+                           placeholder="Search tasks..."
+                           @bind="searchQuery"
+                           @oninput="HandleSearchInput" />
+                    @if (!string.IsNullOrEmpty(searchQuery))
+                    {
+                        <button class="clear-search"
+                                type="button"
+                                @onclick="ClearSearch">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    }
+                </div>
+
+                <!-- Priority Filter -->
+                <select class="form-select" @bind="priorityFilter" style="max-width: 150px;">
+                    <option value="">All</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Urgent">Urgent</option>
+                </select>
+
+                <!-- Export Button -->
+                <button class="btn btn-primary d-flex align-items-center gap-2"
+                        @onclick="ExportToExcel">
+                    <i class="bi bi-file-earmark-excel"></i>
+                    <span class="d-none d-md-inline">Export</span>
+                </button>
+
+                <!-- Add New Button -->
+                <AuthorizeView Roles="Admin">
+                    <button class="btn btn-success d-flex align-items-center gap-2"
+                            @onclick="AddNewTicket">
+                        <i class="bi bi-plus-circle"></i>
+                        <span class="d-none d-md-inline">New Task</span>
+                    </button>
+                </AuthorizeView>
+            </div>
         </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
         <div class="card-body p-4">
-            @if (filteredtasks.Any())
+            @if (filteredtasks == null)
             {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (!filteredtasks.Any())
+            {
+                <div class="empty-state">
+                    <i class="bi bi-list-task empty-state-icon"></i>
+                    <h4 class="text-muted mb-3">
+                        @(string.IsNullOrEmpty(searchQuery) ? "No Periodical Tasks Found" : "No matching tasks found")
+                    </h4>
+                    <p class="text-muted mb-4">
+                        @(string.IsNullOrEmpty(searchQuery)
+                                            ? "Create your first periodical task to get started"
+                                            : "Try adjusting your search criteria")
+                </p>
+                <AuthorizeView Roles="Admin">
+                    <button class="btn btn-primary" @onclick="AddNewTicket">
+                        <i class="bi bi-plus-circle me-2"></i>Create Task
+                    </button>
+                </AuthorizeView>
+            </div>
+                        }
+            else
+            {
+                <!-- Tasks Grid -->
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    @foreach (var task in filteredtasks)
+                    @foreach (var task in CurrentPageTasks)
                     {
                         <div class="col">
-                            <div class="card h-100 border-0 shadow-sm transition-all hover-shadow">
-                                <div class="card-header d-flex justify-content-between align-items-center p-3 bg-light">
+                            <div class="task-card">
+                                <div class="task-card-header">
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="badge @GetPriorityClass(task.Priority)">@task.Priority</span>
-                                        <span class="text-muted small">#@task.DTID</span>
+                                        <span class="badge badge-priority @GetPriorityClass(task.Priority)">@task.Priority</span>
+                                        <small class="text-muted">#@task.DTID</small>
                                     </div>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
@@ -122,12 +493,7 @@
                                                         </button>
                                                     </li>
                                                     <li>
-                                                        <button class="dropdown-item" @onclick="() => AssignTicket(task.DTID)">
-                                                            <i class="bi bi-person-plus me-2"></i>Assign
-                                                        </button>
-                                                    </li>
-                                                    <li>
-                                                        <button class="dropdown-item text-danger" @onclick="() => RemoveTicket(task.DTID)">
+                                                        <button class="dropdown-item dropdown-item-danger" @onclick="() => RemoveTicket(task.DTID)">
                                                             <i class="bi bi-trash me-2"></i>Delete
                                                         </button>
                                                     </li>
@@ -139,12 +505,7 @@
                                                         </button>
                                                     </li>
                                                     <li>
-                                                        <button class="dropdown-item disabled" disabled>
-                                                            <i class="bi bi-person-plus me-2"></i>Assign
-                                                        </button>
-                                                    </li>
-                                                    <li>
-                                                        <button class="dropdown-item disabled text-danger" disabled>
+                                                        <button class="dropdown-item disabled dropdown-item-danger" disabled>
                                                             <i class="bi bi-trash me-2"></i>Delete
                                                         </button>
                                                     </li>
@@ -153,160 +514,122 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title">@task.Subject</h5>
-                                    <p class="card-text text-muted">@task.Issue</p>
+                                <div class="task-card-body">
+                                    <h5 class="card-title mb-3">@task.Subject</h5>
+                                    <p class="card-text text-muted mb-4">@task.Issue</p>
 
-                                    <div class="mt-auto pt-3">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                                <i class="bi bi-tag text-primary"></i>
+                                    <div class="task-details">
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="bi bi-tag"></i>
                                             </div>
-                                            <small>@task.category?.CategoryName</small>
+                                            <small>@task.Category?.CategoryName</small>
                                         </div>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                                <i class="bi bi-clock text-primary"></i>
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="bi bi-clock"></i>
                                             </div>
-                                            <small>@task.Due_Minutes Minutes</small>
+                                            <small>Duration: @task.Due_Minutes minutes</small>
                                         </div>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                                <i class="bi bi-clock text-primary"></i>
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="bi bi-arrow-repeat"></i>
                                             </div>
-                                            <small>@task.TypeName</small>
+                                            <small>Recurrence: @task.RecurrenceDays days</small>
                                         </div>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                                <i class="bi bi-clock text-primary"></i>
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="bi bi-person"></i>
                                             </div>
-                                            <small>Agent: @task.Agent.LoginName</small>
+                                            <small>Agent: @task.Agent?.LoginName</small>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="task-card-footer d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i> Last Assigned:
+                                        @task.LastUpdatedDate.ToString("MMM dd, yyyy")
+                                    </small>
+                                   
                                 </div>
                             </div>
                         </div>
                     }
                 </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <div class="mb-4">
-                        <i class="bi bi-list-task text-muted" style="font-size: 3rem;"></i>
+
+                <!-- Pagination -->
+                @if (totalPages > 1)
+                {
+                    <div class="pagination-container mt-4">
+                        <ul class="pagination">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(1)" aria-label="First">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </button>
+                            </li>
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)" aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                            </li>
+
+                            @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <button class="page-link" @onclick="() => ChangePage(i)">@i</button>
+                                </li>
+                            }
+
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)" aria-label="Next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(totalPages)" aria-label="Last">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </button>
+                            </li>
+                        </ul>
                     </div>
-                    <h4 class="text-muted mb-3">
-                        @(string.IsNullOrEmpty(searchQuery)
-                            ? "No Daily Tasks Found"
-                            : "No matching tasks found")
-                    </h4>
-                    <p class="text-muted">
-                        @(string.IsNullOrEmpty(searchQuery)
-                            ? "Start by creating your first daily task"
-                            : "Try a different search term")
-                    </p>
-                    <AuthorizeView Roles="Admin">
-                        <Authorized>
-                            <button class="btn btn-primary rounded-pill px-4" @onclick="AddNewTicket">
-                                <i class="bi bi-plus-circle me-2"></i>Create Task
-                            </button>
-                        </Authorized>
-                        <NotAuthorized>
-                            <button class="btn btn-secondary rounded-pill px-4 disabled" disabled>
-                                <i class="bi bi-plus-circle me-2"></i>Create Task
-                            </button>
-                        </NotAuthorized>
-                    </AuthorizeView>
-                </div>
+                }
             }
         </div>
     </div>
 </div>
 
-<style>
-    .bg-primary-gradient {
-        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+@code {
+    // Pagination variables
+    private int currentPage = 1;
+    private const int pageSize = 20; // Number of tasks per page
+    private int totalPages = 1;
+
+    // Computed property for current page tasks
+    private IEnumerable<DailyTasks> CurrentPageTasks =>
+        filteredtasks.Skip((currentPage - 1) * pageSize).Take(pageSize);
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        CalculateTotalPages();
     }
 
-    .transition-all {
-        transition: all 0.2s ease-in-out;
-    }
-
-    .hover-shadow:hover {
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
-        transform: translateY(-2px);
-    }
-
-    .z-index-1050 {
-        z-index: 1050;
-    }
-
-    .rounded-3 {
-        border-radius: 0.75rem !important;
-    }
-
-    .rounded-pill {
-        border-radius: 50rem !important;
-    }
-
-    .disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
-    }
-
-    /* Priority badges */
-    .badge-priority-low {
-        background-color: #198754;
-        color: white;
-    }
-
-    .badge-priority-medium {
-        background-color: #ffc107;
-        color: black;
-    }
-
-    .badge-priority-high {
-        background-color: #fd7e14;
-        color: white;
-    }
-
-    .badge-priority-urgent {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    /* Search input enhancements */
-    .input-group-text {
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        box-shadow: none;
-        border-color: #dee2e6;
-    }
-
-        .form-control:focus + .input-group-text {
-            color: #0d6efd;
-        }
-
-    /* Animation for search results */
-    .col {
-        animation: fadeIn 0.3s ease-out;
-    }
-
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
+    private void CalculateTotalPages()
+    {
+        totalPages = (int)Math.Ceiling((double)filteredtasks.Count() / pageSize);
+        if (currentPage > totalPages && totalPages > 0)
+        {
+            currentPage = totalPages;
         }
     }
-</style>
 
+    private void ChangePage(int page)
+    {
+        currentPage = page;
+        StateHasChanged();
+    }
+
+}
 @code {
     private List<Ticket> tickets = new();
     private Ticket? selectedTicket;
@@ -329,8 +652,8 @@
         .Where(t => string.IsNullOrEmpty(searchQuery) ||
                     t.Subject.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
                     t.Issue.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    t.category.CategoryName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    t.TypeName.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.Category.CategoryName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.RecurrenceDays.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
                     t.CreatedDate.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
                     t.LastUpdatedDate.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
                     t.Priority.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
@@ -350,6 +673,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(TimeSpan.FromSeconds(0.1));
+
         await LoadData();
     }
 
@@ -378,21 +703,7 @@
         await JS.InvokeVoidAsync("ShowAddTaskFormModal");
     }
 
-    private async Task AssignTicket(int dtid)
-    {
-        var temp = await _ITask.GetDailyTaskAsync(dtid);
-        if (temp != null)
-        {
-            ticket.Subject = temp.Subject;
-            ticket.Issue = temp.Issue;
-            ticket.Due_Minutes = temp.Due_Minutes;
-            ticket.CategoryID = temp.CategoryID;
-            ticket.Priority = temp.Priority;
-            ticket.UID = 11;
-            AssignId = dtid;
-            await JS.InvokeVoidAsync("ShowAssignTicketFormModal");
-        }
-    }
+
 
     private async Task RemoveTicket(int dtid)
     {
@@ -456,28 +767,6 @@
         await LoadData();
     }
 
-    private async Task ConfirmAssign_Click(Ticket ticket)
-    {
-        await JS.InvokeVoidAsync("HideAssignTicketFormModal");
-
-        if (AssignId != 0)
-        {
-            var tempticket = await _ITicket.CreateTicketAsync(ticket);
-            var temp = await _ITicket.GetTicketByIdAsync(tempticket.TID);
-            var result = await _ITicket.AssignTicketAsync(tempticket, temp.TID);
-            if (result)
-            {
-                JS?.ToastrSuccess("Ticket Assigned Successfully");
-            }
-            else
-            {
-                JS?.ToastrError("Error Encountered while Assigning");
-            }
-
-            await LoadData();
-        }
-        AssignId = 0;
-    }
 
     private async Task LoadData()
     {
@@ -517,7 +806,7 @@
             worksheet.Cell(row, 1).Value = task.DTID;
             worksheet.Cell(row, 2).Value = task.Subject;
             worksheet.Cell(row, 3).Value = task.Priority;
-            worksheet.Cell(row, 4).Value = task.category.CategoryName ?? "No Cateogry";
+            worksheet.Cell(row, 4).Value = task?.Category?.CategoryName ?? "No Cateogry";
             worksheet.Cell(row, 5).Value = task.Issue;
             worksheet.Cell(row, 6).Value = task.Due_Minutes;
             row++;

@@ -24,7 +24,7 @@ namespace AlexSupport.Repository
             {
                 if (Location != null)
                 {
-                    Location.isActive = true;
+                    Location.IsActive = true;
                     Location.CreatedDate = DateTime.Now;
                     await alexSupportDB.Locations.AddAsync(Location);
                     await alexSupportDB.SaveChangesAsync();
@@ -52,7 +52,7 @@ namespace AlexSupport.Repository
                 var Location = await alexSupportDB.Locations.FirstOrDefaultAsync(c => c.LID == Id);
                 if (Location != null)
                 {
-                    Location.isActive = false;
+                    Location.IsActive = false;
                     await alexSupportDB.SaveChangesAsync();
                     await LogService.CreateSystemLogAsync($"In Active A Location With Id {Location.LID} In The System", "LOCATION");
 
@@ -115,7 +115,7 @@ namespace AlexSupport.Repository
                 if (UpdatedLocation != null)
                 {
                     UpdatedLocation.LocationName = Location.LocationName;
-                    UpdatedLocation.isActive = true;
+                    UpdatedLocation.IsActive = true;
                     alexSupportDB.Locations.Update(UpdatedLocation);
                     await alexSupportDB.SaveChangesAsync();
                     await LogService.CreateSystemLogAsync($"Update A Location With Id {UpdatedLocation.LID} In The System", "LOCATION");
@@ -144,7 +144,7 @@ namespace AlexSupport.Repository
 
                 if (id != 0)
                 {
-                    var site = await alexSupportDB.Locations.FirstOrDefaultAsync(u =>  u.isActive == true && u.LID != id && u.LocationName.ToLower() == name.ToLower());
+                    var site = await alexSupportDB.Locations.FirstOrDefaultAsync(u =>  u.IsActive == true && u.LID != id && u.LocationName.ToLower() == name.ToLower());
                     if (site != null)
                     {
                         return true;
@@ -153,7 +153,7 @@ namespace AlexSupport.Repository
                 }
                 else
                 {
-                    var site = await alexSupportDB.Locations.FirstOrDefaultAsync(u => u.LocationName.ToLower() == name.ToLower() && u.isActive == true);
+                    var site = await alexSupportDB.Locations.FirstOrDefaultAsync(u => u.LocationName.ToLower() == name.ToLower() && u.IsActive == true);
                     if (site != null)
                     {
                         return true;

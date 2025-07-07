@@ -183,14 +183,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Mobile menu toggle
-const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-const mainNav = document.getElementById('main-nav');
+//// Mobile menu toggle
+//const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+//const mainNav = document.getElementById('main-nav');
 
-mobileMenuBtn.addEventListener('click', function () {
-    this.classList.toggle('active');
-    mainNav.classList.toggle('active');
-});
+//mobileMenuBtn.addEventListener('click', function () {
+//    this.classList.toggle('active');
+//    mainNav.classList.toggle('active');
+//});
 
 // Show login form
 
@@ -279,3 +279,13 @@ function downloadFile(fileName, base64Data) {
     document.body.removeChild(link);
 }
 
+// Add these functions to your site.js file
+function addBackdrop() {
+    document.getElementById('dropdownBackdrop').classList.remove('d-none');
+}
+
+function removeBackdrop() {
+    document.getElementById('dropdownBackdrop').classList.add('d-none');
+}
+
+// Example export function (implement as needed)

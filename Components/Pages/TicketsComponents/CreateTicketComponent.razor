@@ -1,4 +1,4 @@
-﻿@page "/tickets/createticket"
+﻿@page "/createticket"
 @using Microsoft.AspNetCore.Components.Forms
 @inject ITicketRepository _ITicket
 @inject ILocationRepository _ILocation
@@ -8,15 +8,603 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,User")]
 
-<h3 class="page-title">Create New Ticket</h3>
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #eef2ff;
+        --primary-dark: #3a56d4;
+        --success-color: #10b981;
+        --success-light: #ecfdf5;
+        --danger-color: #ef4444;
+        --danger-light: #fef2f2;
+        --warning-color: #f59e0b;
+        --warning-light: #fffbeb;
+        --info-color: #3b82f6;
+        --info-light: #eff6ff;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --border-radius-sm: 8px;
+        --border-radius-md: 12px;
+        --border-radius-lg: 16px;
+    }
+
+    /* Base Styles */
+    body {
+        background-color: var(--gray-50);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        line-height: 1.5;
+        color: var(--gray-800);
+    }
+
+    /* Form Container */
+    .ticket-form-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        background: white;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-100);
+        position: relative;
+        letter-spacing: -0.025em;
+    }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 64px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+            border-radius: 3px;
+        }
+
+    /* Form Grid Layout */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.75rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+        position: relative;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* Form Inputs */
+    .input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .input-icon {
+        font-size: 1.25rem;
+        color: var(--primary-color);
+        min-width: 24px;
+        transition: var(--transition-base);
+    }
+
+    .input-wrapper {
+        flex-grow: 1;
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        font-size: 0.9375rem;
+        transition: var(--transition-base);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1.25rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--border-radius-sm);
+        font-size: 1rem;
+        transition: var(--transition-slow);
+        background-color: white;
+        color: var(--gray-800);
+        box-shadow: var(--shadow-sm);
+    }
+
+        .form-control::placeholder {
+            color: var(--gray-400);
+            opacity: 1;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .form-control:hover {
+            border-color: var(--gray-300);
+        }
+
+        /* Select Dropdown */
+        .form-control[type="select"] {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%236b7280' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 14px 10px;
+            padding-right: 2.5rem;
+        }
+
+        /* Textarea */
+        .form-control[type="textarea"] {
+            min-height: 160px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+    /* File Upload */
+    .file-upload-container {
+        position: relative;
+        border: 2px dashed var(--gray-200);
+        border-radius: var(--border-radius-sm);
+        padding: 2.5rem 2rem;
+        text-align: center;
+        transition: var(--transition-slow);
+        cursor: pointer;
+        background-color: var(--gray-50);
+        overflow: hidden;
+    }
+
+        .file-upload-container:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .file-upload-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+            opacity: 0;
+            transition: var(--transition-base);
+        }
+
+        .file-upload-container:hover::before {
+            opacity: 1;
+        }
+
+    .file-upload-input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--gray-600);
+    }
+
+    .upload-icon {
+        font-size: 2.25rem;
+        color: var(--primary-color);
+        transition: var(--transition-base);
+    }
+
+    .file-upload-container:hover .upload-icon {
+        transform: scale(1.1);
+    }
+
+    .file-size-info {
+        color: var(--gray-400);
+        font-size: 0.875rem;
+    }
+
+    .upload-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.75rem;
+        background-color: var(--gray-100);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .progress-bar {
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+        width: 0%;
+        border-radius: 3px;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Image Preview */
+    .image-preview {
+        margin-top: 1.5rem;
+    }
+
+    .preview-container {
+        position: relative;
+        max-width: 500px;
+        border-radius: var(--border-radius-sm);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition-slow);
+    }
+
+        .preview-container:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .preview-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+    .btn-remove-image {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: var(--danger-color);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition-slow);
+        box-shadow: var(--shadow-sm);
+    }
+
+        .btn-remove-image:hover {
+            background-color: #c82333;
+            transform: scale(1.1);
+        }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.25rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-100);
+    }
+
+    .btn {
+        padding: 0.875rem 1.75rem;
+        border-radius: var(--border-radius-sm);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: var(--transition-slow);
+        cursor: pointer;
+        font-size: 0.9375rem;
+        border: none;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-cancel {
+        background-color: white;
+        border: 1px solid var(--gray-200);
+        color: var(--gray-700);
+    }
+
+        .btn-cancel:hover {
+            background-color: var(--gray-50);
+            border-color: var(--gray-300);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-dark), var(--info-color));
+            opacity: 0;
+            transition: var(--transition-base);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+            .btn-submit:hover::before {
+                opacity: 1;
+            }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: var(--shadow-sm) !important;
+        }
+
+        .btn-submit span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-submit i {
+            position: relative;
+            z-index: 1;
+        }
+
+    /* Loading Spinner */
+    .spinner-border {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Validation */
+    .validation-summary {
+        color: var(--danger-color);
+        background-color: var(--danger-light);
+        padding: 1.25rem;
+        border-radius: var(--border-radius-sm);
+        margin-bottom: 2rem;
+        list-style-type: none;
+        border-left: 4px solid var(--danger-color);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .validation-message {
+        color: var(--danger-color);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+        font-weight: 500;
+    }
+
+    /* Floating Labels Effect */
+    .input-wrapper:focus-within .form-label {
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 1024px) {
+        .ticket-form-container {
+            padding: 2rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .ticket-form-container {
+            padding: 1.75rem;
+            margin: 1rem auto;
+            border-radius: var(--border-radius-md);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 1rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .ticket-form-container {
+            padding: 1.5rem;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            margin: 0;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            padding-bottom: 0.75rem;
+        }
+
+        .input-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .input-icon {
+            margin-bottom: 0.25rem;
+        }
+
+        .file-upload-container {
+            padding: 2rem 1.5rem;
+        }
+    }
+
+    /* Animation for form elements */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-group {
+        animation: fadeIn 0.4s ease-out forwards;
+        opacity: 0;
+    }
+
+        .form-group:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .form-group:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .form-group:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .form-group:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .form-group:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .form-group:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+    .form-actions {
+        animation-delay: 0.7s;
+    }
+
+    @@media (max-width: 576px) {
+        .ticket-form-container {
+            padding: 1rem;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            border: none;
+            background: var(--gray-50);
+        }
+
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            background: white;
+            padding: 1.25rem;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 0;
+        }
+
+        .input-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .input-wrapper {
+            width: 100%;
+        }
+
+        .form-label {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+        }
+
+        .file-upload-container {
+            padding: 1.5rem 1rem;
+        }
+
+        .form-actions {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1rem;
+            margin: 0 -1rem -1rem;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
 <div class="ticket-form-container">
-    <EditForm Model="@ticket" OnValidSubmit="HandleSubmit" FormName="CreateTicket">
+    <h3 class="page-title">Create New Ticket</h3>
+
+    <EditForm Model="ticket" OnValidSubmit="HandleSubmit" FormName="CreateTicket">
         <DataAnnotationsValidator />
         <ValidationSummary class="validation-summary" />
 
         <div class="form-grid">
             <!-- Subject Field -->
-            <div class="form-group input-with-icon">
+            <div class="form-group">
                 <div class="input-container">
                     <i class="bi bi-card-heading input-icon"></i>
                     <div class="input-wrapper">
@@ -28,13 +616,13 @@
             </div>
 
             <!-- Category Field -->
-            <div class="form-group input-with-icon">
+            <div class="form-group">
                 <div class="input-container">
                     <i class="bi bi-tag input-icon"></i>
                     <div class="input-wrapper">
                         <label for="category" class="form-label">Category</label>
                         <InputSelect @bind-Value="ticket.CategoryID" class="form-control" id="category">
-                            <option value="">Select Category</option>
+                            <option value="0">Select Category</option>
                             @foreach (var category in Categories)
                             {
                                 <option value="@category.CID">@category.CategoryName</option>
@@ -46,13 +634,13 @@
             </div>
 
             <!-- Location Field -->
-            <div class="form-group input-with-icon">
+            <div class="form-group">
                 <div class="input-container">
                     <i class="bi bi-geo-alt input-icon"></i>
                     <div class="input-wrapper">
                         <label for="location" class="form-label">Location</label>
                         <InputSelect @bind-Value="ticket.LID" class="form-control" id="location">
-                            <option value="">Select Location</option>
+                            <option value="0">Select Location</option>
                             @foreach (var location in Locations)
                             {
                                 <option value="@location.LID">@location.LocationName</option>
@@ -64,7 +652,7 @@
             </div>
 
             <!-- Priority Field -->
-            <div class="form-group input-with-icon">
+            <div class="form-group">
                 <div class="input-container">
                     <i class="bi bi-exclamation-triangle input-icon"></i>
                     <div class="input-wrapper">
@@ -82,12 +670,12 @@
             </div>
 
             <!-- Description Field -->
-            <div class="form-group input-with-icon full-width">
+            <div class="form-group full-width">
                 <div class="input-container">
                     <i class="bi bi-text-paragraph input-icon"></i>
                     <div class="input-wrapper">
                         <label for="description" class="form-label">Issue Description</label>
-                        <InputTextArea @bind-Value="ticket.Issue" class="form-control" id="description" rows="5" placeholder="Describe your issue in detail..." />
+                        <InputTextArea @bind-Value="ticket.Issue" class="form-control" id="description" rows="5" placeholder="Describe your issue in detail..."  style="max-height:300px"/>
                     </div>
                 </div>
                 <ValidationMessage For="@(() => ticket.Issue)" class="validation-message" />
@@ -97,26 +685,18 @@
             <div class="form-group full-width">
                 @if (string.IsNullOrEmpty(imagePreviewUrl))
                 {
-                    <div class="input-with-icon">
-                        <div class="input-container">
-                            <i class="bi bi-image input-icon"></i>
-                            <div class="input-wrapper">
-                                <label class="form-label">Attach Image (Optional)</label>
-                                <div class="file-upload-container">
-                                    <InputFile class="file-upload-input" OnChange="HandleImageUpload" accept=".png,.jpg,.jpeg,.gif" />
-                                    <div class="file-upload-label">
-                                        <i class="bi bi-cloud-arrow-up upload-icon"></i>
-                                        <span>Click to browse or drag files here</span>
-                                        <small class="file-size-info">Max file size: 5MB</small>
-                                    </div>
-                                    @if (isUploading)
-                                    {
-                                        <div class="upload-progress">
-                                            <div class="progress-bar" role="progressbar"></div>
-                                            <span>Uploading...</span>
-                                        </div>
-                                    }
+                    <div class="input-container">
+                        <i class="bi bi-image input-icon"></i>
+                        <div class="input-wrapper">
+                            <label class="form-label">Attach Image (Optional)</label>
+                            <div class="file-upload-container">
+                                <InputFile class="file-upload-input" OnChange="HandleImageUpload" accept=".png,.jpg,.jpeg,.gif" />
+                                <div class="file-upload-label">
+                                    <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                    <span>Click to browse or drag files here</span>
+                                    <small class="file-size-info">Max file size: 5MB</small>
                                 </div>
+                              
                             </div>
                         </div>
                     </div>
@@ -136,7 +716,7 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="form-actions full-width">
+        <div class="form-actions">
             <button type="button" class="btn btn-cancel" @onclick="Cancel">
                 <i class="bi bi-x-lg"></i> Cancel
             </button>
@@ -180,6 +760,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(TimeSpan.FromSeconds(0.1));
+
         await LoadData();
    
     }

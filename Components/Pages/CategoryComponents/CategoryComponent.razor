@@ -16,195 +16,339 @@
     </ChildContent>
 </BsModal>
 
-@if (isProcessing)
-{
-    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white bg-opacity-75 z-index-1050">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-3 text-muted">Processing...</p>
-    </div>
-}
-else
-{
-    <div class="container-fluid px-4 py-3">
-        <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
-            <div class="card-header bg-primary-gradient py-4">
-                <div class="row align-items-center">
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <h2 class="text-white mb-3 mb-md-0">
-                            <i class="bi bi-tags me-2"></i>Category Types
-                        </h2>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-8">
-                        <div class="d-flex flex-column flex-md-row gap-3">
-                            <div class="flex-grow-1">
-                                <div class="input-group input-group-lg">
-                                    <span class="input-group-text bg-white border-end-0">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text"
-                                           class="form-control border-start-0 shadow-none"
-                                           placeholder="Search categories..."
-                                           @bind="searchTerm"
-                                           @oninput="HandleSearchInput" />
-                                    @if (!string.IsNullOrEmpty(searchTerm))
-                                    {
-                                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-                            <AuthorizeView Roles="Admin">
-                                <div class="d-flex justify-content-end">
-                                    <a href="Categories/Create" class="btn btn-light btn-lg rounded-pill w-100 w-md-auto">
-                                        <i class="bi bi-plus-circle me-2"></i>Add New
-                                    </a>
-                                </div>
-                            </AuthorizeView>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-4">
-                @if (FilteredTypes.Any())
-                {
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
-                        @foreach (var obj in FilteredTypes)
-                        {
-                            <div class="col">
-                                <div class="card h-100 border-0 shadow-sm transition-all hover-shadow">
-                                    <div class="card-body d-flex flex-column">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="bg-primary bg-opacity-10 rounded p-2 me-3">
-                                                <i class="bi bi-tag text-primary fs-4"></i>
-                                            </div>
-                                            <h5 class="card-title mb-0 text-truncate">@obj.CategoryName</h5>
-                                        </div>
-
-                                        <div class="mt-auto pt-3">
-                                            <AuthorizeView Roles="Admin">
-                                                <Authorized>
-                                                    <div class="d-flex gap-2">
-                                                        <a href="@($"Categories/update/{obj.CID}")"
-                                                           class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1">
-                                                            <i class="bi bi-pencil-square me-1"></i>Edit
-                                                        </a>
-                                                        <button type="button"
-                                                                class="btn btn-outline-danger btn-sm rounded-pill flex-grow-1"
-                                                                @onclick="() => HandleDelete(obj.CID)">
-                                                            <i class="bi bi-trash3 me-1"></i>Delete
-                                                        </button>
-                                                    </div>
-                                                </Authorized>
-                                                <NotAuthorized>
-                                                    <div class="d-flex gap-2">
-                                                        <button class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 disabled" disabled>
-                                                            <i class="bi bi-pencil-square me-1"></i>Edit
-                                                        </button>
-                                                        <button class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 disabled" disabled>
-                                                            <i class="bi bi-trash3 me-1"></i>Delete
-                                                        </button>
-                                                    </div>
-                                                </NotAuthorized>
-                                            </AuthorizeView>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="text-center py-5">
-                        <div class="mb-4">
-                            <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
-                        </div>
-                        <h4 class="text-muted mb-3">
-                            @(string.IsNullOrEmpty(searchTerm)
-                                ? "No Category Types Found"
-                                : "No matching categories found")
-                        </h4>
-                        <p class="text-muted">
-                            @(string.IsNullOrEmpty(searchTerm)
-                                ? "Start by adding your first category type"
-                                : "Try a different search term")
-                        </p>
-                        <AuthorizeView Roles="Admin">
-                            <Authorized>
-                                <a href="Categories/Create" class="btn btn-primary rounded-pill px-4">
-                                    <i class="bi bi-plus-circle me-2"></i>Create Category
-                                </a>
-                            </Authorized>
-                            <NotAuthorized>
-                                <button class="btn btn-secondary rounded-pill px-4 disabled" disabled>
-                                    <i class="bi bi-plus-circle me-2"></i>Create Category
-                                </button>
-                            </NotAuthorized>
-                        </AuthorizeView>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-}
-
 <style>
-    .bg-primary-gradient {
-        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #eef2ff;
+        --success-color: #10b981;
+        --success-light: #ecfdf5;
+        --danger-color: #ef4444;
+        --danger-light: #fef2f2;
+        --warning-color: #f59e0b;
+        --warning-light: #fffbeb;
+        --info-color: #3b82f6;
+        --info-light: #eff6ff;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-700: #374151;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition-base: all 0.2s ease-in-out;
     }
 
-    .transition-all {
-        transition: all 0.2s ease-in-out;
+    /* Base Card Styles */
+    .department-card {
+        transition: var(--transition-base);
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+        box-shadow: var(--shadow-sm);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: white;
     }
 
-    .hover-shadow:hover {
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
-        transform: translateY(-2px);
-    }
-
-    .z-index-1050 {
-        z-index: 1050;
-    }
-
-    .card-title {
-        font-weight: 500;
-    }
-
-    .rounded-3 {
-        border-radius: 0.75rem !important;
-    }
-
-    .rounded-pill {
-        border-radius: 50rem !important;
-    }
-
-    .disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
-    }
-
-    /* Search input enhancements */
-    .input-group-text {
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        box-shadow: none;
-        border-color: #dee2e6;
-    }
-
-        .form-control:focus + .input-group-text {
-            color: #0d6efd;
+        .department-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
 
-    /* Animation for search results */
-    .col {
-        animation: fadeIn 0.3s ease-out;
+    .card-header {
+        border-bottom: none;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
     }
 
+    .card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+    }
+
+    .card-footer {
+        background: white;
+        border-top: 1px solid var(--gray-200);
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-active {
+        background-color: var(--success-light);
+        color: var(--success-color);
+    }
+
+    .badge-inactive {
+        background-color: var(--gray-100);
+        color: var(--gray-700);
+    }
+
+    /* Search and Actions */
+    .search-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .search-input {
+        border-radius: 50px;
+        padding: 0.625rem 1.5rem 0.625rem 3rem;
+        border: 1px solid var(--gray-200);
+        font-size: 0.9375rem;
+        transition: var(--transition-base);
+        width: 100%;
+    }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-300);
+    }
+
+    .clear-search {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--gray-400);
+        cursor: pointer;
+    }
+
+    /* Buttons */
+    .action-btn {
+        transition: var(--transition-base);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid transparent;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background-color: #3a56d4;
+            transform: translateY(-1px);
+        }
+
+    .btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: white;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-light);
+            color:blue;
+        }
+
+    .btn-outline-danger {
+        border-color: var(--danger-color);
+        color: var(--danger-color);
+    }
+
+        .btn-outline-danger:hover {
+            background-color: var(--danger-light);
+            color:red;
+        }
+
+    /* Loading Skeletons */
+    .skeleton {
+        background-color: var(--gray-100);
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            animation: shimmer 1.5s infinite;
+        }
+
+    .skeleton-text {
+        height: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .skeleton-btn {
+        width: 80px;
+        height: 38px;
+    }
+
+    @@keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    /* Empty State */
+    .empty-state-container {
+        grid-column: 1 / -1;
+    }
+
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--gray-200);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Header Styles */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, white 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .page-icon {
+        font-size: 2rem;
+        color: white;
+        margin-right: 1rem;
+    }
+
+    .header-actions-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .header-buttons {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    /* Responsive Grid */
+    .departments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 992px) {
+        .departments-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .header-actions {
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .header-buttons {
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .search-container {
+            max-width: 100%;
+        }
+
+        .page-header {
+            padding: 1.25rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .card-header, .card-body, .card-footer {
+            padding: 1.25rem;
+        }
+
+        .departments-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-btn span {
+            display: none;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-buttons {
+            justify-content: space-between;
+        }
+
+        .empty-state {
+            padding: 3rem 1.5rem;
+            min-height: 300px;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+        }
+    }
+
+    /* Animation for cards */
     @@keyframes fadeIn {
         from {
             opacity: 0;
@@ -216,10 +360,196 @@ else
             transform: translateY(0);
         }
     }
+
+    .department-card {
+        animation: fadeIn 0.3s ease-out forwards;
+        opacity: 0;
+    }
+
+        .department-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .department-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .department-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .department-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .department-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .department-card:nth-child(6) {
+            animation-delay: 0.6s;
+        }
 </style>
-<button class="btn btn-success mx-1" @onclick="ExportToExcel">
-    <i class="bi bi-file-earmark-excel"></i> Export to Excel
-</button>
+
+<div class="container-fluid px-3 px-md-4 py-3">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-tags page-icon"></i>
+                <div>
+                    <h1 class="page-title">categories Management</h1>
+                    <p class="text-black  mb-0 d-none d-md-block">Manage all organizational categories</p>
+                </div>
+            </div>
+
+            <div class="header-actions-container">
+                <!-- Search Input -->
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text"
+                           class="form-control search-input"
+                           placeholder="Search categories..."
+                           @bind="searchTerm"
+                           @oninput="HandleSearchInput" />
+                    @if (!string.IsNullOrWhiteSpace(searchTerm))
+                    {
+                        <button class="clear-search"
+                                type="button"
+                                @onclick="ClearSearch">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    }
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="header-buttons">
+                    <!-- Add New Department Button -->
+                    <a class="btn btn-primary d-flex align-items-center gap-2 action-btn" href="categories/create">
+                        <i class="fas fa-plus"></i>
+                        <span class="d-none d-md-inline">Add Category</span>
+                    </a>
+
+                    <!-- Export Button -->
+                    <button class="btn btn-outline-primary d-flex align-items-center gap-2 action-btn"
+                            @onclick="ExportToExcel"
+                            disabled="@isProcessing">
+                        <i class="fas fa-file-excel"></i>
+                        <span class="d-none d-md-inline">Export</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (isProcessing && !FilteredTypes.Any())
+    {
+        <div class="departments-grid">
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="department-card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="skeleton skeleton-text" style="width: 70%; height: 1.75rem;"></div>
+                            <div class="skeleton skeleton-text" style="width: 20%; height: 1.5rem;"></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="skeleton skeleton-text" style="width: 40%; margin-bottom: 1.5rem;"></div>
+                        <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                        <div class="skeleton skeleton-text" style="width: 50%; margin-top: 1.5rem;"></div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-end gap-2">
+                        <div class="skeleton skeleton-btn"></div>
+                        <div class="skeleton skeleton-btn"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Departments Grid -->
+        <div class="departments-grid">
+            @if (FilteredTypes.Any())
+            {
+                @foreach (var category in FilteredTypes)
+                {
+                    <div class="department-card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-semibold text-dark">
+                                    <i class="fas fa-tag me-2 text-primary"></i>
+                                    @category.CategoryName
+                                </h5>
+                                <span class="status-badge @(category.IsActive ? "badge-active" : "badge-inactive")">
+                                    <i class="fas @(category.IsActive ? "fa-check-circle" : "fa-times-circle") me-1"></i>
+                                    @(category.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="department-info mb-3">
+                                <div class="d-flex align-items-center text-muted mb-2">
+                                    <i class="fas fa-id-card me-2"></i>
+                                    <span>Category ID:</span>
+                                    <span class="ms-2 fw-medium text-dark">@category.CID</span>
+                                </div>
+
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    <span>Created:</span>
+                                    <span class="ms-2 fw-medium text-dark">@category.CreatedDate.ToString("dd MMM yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-end gap-2">
+                            <a class="btn btn-outline-primary action-btn" href="categories/update/@category.CID">
+                                <i class="fas fa-edit"></i>
+                                <span class="d-none d-lg-inline">Edit</span>
+                            </a>
+                            <button class="btn btn-outline-danger action-btn"
+                                    @onclick="() => HandleDelete(category.CID)">
+                                <i class="fas fa-trash-alt"></i>
+                                <span class="d-none d-lg-inline">Delete</span>
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state-container">
+                    <div class="empty-state">
+                        <i class="fas fa-tags empty-state-icon"></i>
+                        <h4 class="text-muted mb-3">
+                            @(!string.IsNullOrWhiteSpace(searchTerm) ? "No matching categories found" : "No categories available")
+                        </h4>
+                        <p class="text-muted mb-4">
+                            @(!string.IsNullOrWhiteSpace(searchTerm)
+                                                ? "Try adjusting your search criteria"
+                                                : "Add a new category to get started")
+                </p>
+                @if (!string.IsNullOrWhiteSpace(searchTerm))
+                        {
+                            <button class="btn btn-primary action-btn" @onclick="ClearSearch">
+                                <i class="fas fa-times me-2"></i>Clear search
+                            </button>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary action-btn" href="categories/create">
+                                <i class="fas fa-plus me-2"></i>Add category
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
 @code {
     private bool isProcessing { get; set; } = false;
     private IEnumerable<Category> Types { get; set; } = new List<Category>();
@@ -231,6 +561,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         isProcessing = true;
+        await Task.Delay(TimeSpan.FromSeconds(0.1));
         await LoadTypes();
         isProcessing = false;
     }
@@ -331,7 +662,7 @@ else
             worksheet.Cell(row, 1).Value = category.CID;
             worksheet.Cell(row, 2).Value = category.CategoryName;
             worksheet.Cell(row, 3).Value = category.CreatedDate;
-            worksheet.Cell(row, 4).Value = category.isActive == true ? "Active" : "Inactive";
+            worksheet.Cell(row, 4).Value = category.IsActive == true ? "Active" : "Inactive";
             row++;
         }
 

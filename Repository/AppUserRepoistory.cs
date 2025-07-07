@@ -65,7 +65,7 @@ namespace AlexSupport.Repository
                 var user = await alexSupportDB.AppUser
                     .FirstOrDefaultAsync(u =>
                         (u.LoginName.ToLower() == username || u.Email.ToLower() == username)
-                        && u.IsActive && u.EmailVerified == "Yes");
+                        && u.IsActive == true && u.EmailVerified == "Yes");
 
                 if (user != null)
                 {

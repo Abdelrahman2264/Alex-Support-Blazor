@@ -3,7 +3,6 @@
 @inject ICategoryRepository _ICategory
 @inject NavigationManager _navigationManager
 @inject IJSRuntime JS
-@using AlexSupport.ViewModels;
 @inject ILogService LogService
 @rendermode InteractiveServer
 @attribute [Authorize(Roles ="Admin")]
@@ -35,7 +34,7 @@ else
             <div class="card-body p-4">
                 <EditForm Model="Types" FormName="TypeUpsertForm" OnValidSubmit="UpsertType">
                     <DataAnnotationsValidator></DataAnnotationsValidator>
-                    
+
                     @if (isTypeExist)
                     {
                         <div class="alert alert-danger mb-4" role="alert">
@@ -74,34 +73,39 @@ else
 }
 
 <style>
+
+    :root {
+        --primary-color: blue;
+     
+    }
     .bg-primary-gradient {
-        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, white 100%);
     }
-    
+
     .z-index-1050 {
-        z-index: 1050;
+    z-index: 1050;
     }
-    
+
     .rounded-3 {
-        border-radius: 0.75rem !important;
+    border-radius: 0.75rem !important;
     }
-    
+
     .rounded-pill {
-        border-radius: 50rem !important;
+    border-radius: 50rem !important;
     }
-    
+
     .form-control {
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
-    
+
     .form-control:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
 </style>
 @code {
     [Parameter]
-    public int Id { get; set; }
+    public int Id { get; set; } = 0;
     [SupplyParameterFromForm]
     private Category Types { get; set; } = new Category();
     private bool isProcessing { get; set; } = false;
@@ -112,6 +116,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(TimeSpan.FromSeconds(0.1));
         await LoadType();
         isProcessing = false;
         StateHasChanged();
@@ -154,7 +159,7 @@ else
             flag = true;
         }
         isProcessing = false;
-        _navigationManager.NavigateTo("Types");
+        _navigationManager.NavigateTo("Categories");
         if (!flag)
         {
             JS?.ToastrError("Something Get Wrong Please Try Again !!");

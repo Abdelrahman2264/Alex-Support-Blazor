@@ -14,6 +14,9 @@ namespace AlexSupport.Repository.IRepository
         public Task<bool> AddSolutionToTicketAsync(Ticket ticket, int Id);
         public Task<IEnumerable<Ticket>> GetAllAssignedTickets();
         public Task<IEnumerable<Ticket>> GetAllClosedTicketsAsync();
+        public Task<IEnumerable<Ticket>> GetAllAssignedTicketsAsync();
+        public Task<IEnumerable<Ticket>> GetAllEscalatedTickets();
+
 
         public Task<IEnumerable<Ticket>> GetAllTicketsAsync();
         public Task<List<Ticket>> GetNumberOfClosedAvailableTickets();

@@ -60,6 +60,8 @@ namespace AlexSupport.Repository
                         await SendNotificationAsync(user.UID, admin.UID, message);
                     }
                     await Log.CreateLogAsync(ticket.TID, "Create a new ticket in the system");
+                    await Notification.SendTicketUpdateAsync(ticket.TID, "");
+
                     await alexSupportDB.SaveChangesAsync();
 
                     return ticket;
@@ -82,19 +84,97 @@ namespace AlexSupport.Repository
                 if (user.Role == "Admin")
                 {
                     return await alexSupportDB.Ticket.Where(t => t.Status != "Closed")
-                          .Include(u => u.category)
+                          .Include(u => u.Category)
                           .Include(u => u.User)
-                          .Include(u => u.location)
+                          .Include(u => u.Location)
                           .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
                           .ToListAsync();
                 }
                 else
                 {
                     return await alexSupportDB.Ticket.Where(t => t.Status != "Closed" && (t.UID == user.UID || t.AgentID == user.UID))
-                   .Include(u => u.category)
+                   .Include(u => u.Category)
                    .Include(u => u.User)
-                   .Include(u => u.location)
+                   .Include(u => u.Location)
                    .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
+                   .ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error in getting all open tickets: " + ex.Message, ex);
+                return Enumerable.Empty<Ticket>();
+            }
+        }
+
+        public async Task<IEnumerable<Ticket>> GetAllAssignedTicketsAsync()
+        {
+
+            try
+            {
+                var currentuserid = await Log.ReturnCurrentUserID();
+                var user = await users.GetUserByIdAsync(currentuserid);
+                if (user.Role == "Admin")
+                {
+                    return await alexSupportDB.Ticket.Where(t => t.Status == "Assigned")
+                          .Include(u => u.Category)
+                          .Include(u => u.User)
+                          .Include(u => u.Location)
+
+                          .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
+                          .ToListAsync();
+                }
+                else
+                {
+                    return await alexSupportDB.Ticket.Where(t => t.Status == "Assigned" && (t.UID == user.UID || t.AgentID == user.UID))
+                   .Include(u => u.Category)
+                   .Include(u => u.User)
+                   .Include(u => u.Location)
+                   .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
+                   .ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error in getting all open tickets: " + ex.Message, ex);
+                return Enumerable.Empty<Ticket>();
+            }
+        }
+        public async Task<IEnumerable<Ticket>> GetAllEscalatedTickets()
+        {
+
+            try
+            {
+                var currentuserid = await Log.ReturnCurrentUserID();
+                var user = await users.GetUserByIdAsync(currentuserid);
+                if (user.Role == "Admin")
+                {
+                    return await alexSupportDB.Ticket.Where(t => t.Status == "Escalated")
+                          .Include(u => u.Category)
+                          .Include(u => u.User)
+                          .Include(u => u.Location)
+                          .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
+                          .ToListAsync();
+                }
+                else
+                {
+                    return await alexSupportDB.Ticket.Where(t => t.Status == "Escalated" && (t.UID == user.UID || t.AgentID == user.UID))
+                   .Include(u => u.Category)
+                   .Include(u => u.User)
+                   .Include(u => u.Location)
+                   .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
                    .ToListAsync();
                 }
             }
@@ -114,19 +194,23 @@ namespace AlexSupport.Repository
                 if (user.Role == "Admin")
                 {
                     return await alexSupportDB.Ticket.Where(t => t.Status == "Closed")
-                          .Include(u => u.category)
+                          .Include(u => u.Category)
                           .Include(u => u.User)
-                          .Include(u => u.location)
+                          .Include(u => u.Location)
                           .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
                           .ToListAsync();
                 }
                 else
                 {
                     return await alexSupportDB.Ticket.Where(t => t.Status == "Closed" && (t.UID == user.UID || t.AgentID == user.UID))
-                   .Include(u => u.category)
+                   .Include(u => u.Category)
                    .Include(u => u.User)
-                   .Include(u => u.location)
+                   .Include(u => u.Location)
                    .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
                    .ToListAsync();
                 }
             }
@@ -141,10 +225,10 @@ namespace AlexSupport.Repository
             try
             {
                 return await alexSupportDB.Ticket
-                    .Include(u => u.category)
+                    .Include(u => u.Category)
                     .Include(u => u.User)
                     .ThenInclude(u => u.Department)
-                    .Include(u => u.location)
+                    .Include(u => u.Location)
                     .Include(u => u.Agent)
                     .FirstOrDefaultAsync(t => t.TID == id);
             }
@@ -172,7 +256,7 @@ namespace AlexSupport.Repository
                         existingTicket.AgentID = ticket.AgentID;
                         existingTicket.Status = "Assigned";
                         existingTicket.Due_Minutes = ticket.Due_Minutes;
-                        existingTicket.Assign_Date = DateTime.Now;
+                        existingTicket.AssignDate = DateTime.Now;
                         alexSupportDB.Update(existingTicket);
                         var adminid = await Log.ReturnCurrentUserID();
                         var admin = await users.GetUserByIdAsync(adminid);
@@ -187,7 +271,10 @@ namespace AlexSupport.Repository
                         var userMessage = $"Hello {user.Fname} {user.Lname}\n the ticket you created just assigned to Eng:{agent.Fname} {agent.Lname}";
                         await SendNotificationAsync(adminid, user.UID, userMessage);
                         await Log.CreateLogAsync(existingTicket.TID, "Assign an open ticket in the system");
+
                         await alexSupportDB.SaveChangesAsync();
+                        await Notification.SendTicketUpdateAsync(existingTicket.TID, "Assigned");
+
                         return true;
                     }
                     else
@@ -205,6 +292,11 @@ namespace AlexSupport.Repository
         }
         public async Task SendNotificationAsync(int fromUserId, int toUserId, string message)
         {
+            var currentuserid = await Log.ReturnCurrentUserID();
+            if (currentuserid == toUserId)
+            {
+                return;
+            }
             // Create and save the notification
             var note = new SystemNotification()
             {
@@ -233,19 +325,23 @@ namespace AlexSupport.Repository
                 if (user.Role == "Admin")
                 {
                     return await alexSupportDB.Ticket.Where(t => t.Status == "Assigned")
-                          .Include(u => u.category)
+                          .Include(u => u.Category)
                           .Include(u => u.User)
-                          .Include(u => u.location)
+                          .Include(u => u.Location)
                           .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
                           .ToListAsync();
                 }
                 else
                 {
                     return await alexSupportDB.Ticket.Where(t => t.Status == "Assigned" && (t.UID == user.UID || t.AgentID == user.UID))
-                   .Include(u => u.category)
+                   .Include(u => u.Category)
                    .Include(u => u.User)
-                   .Include(u => u.location)
+                   .Include(u => u.Location)
                    .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
                    .ToListAsync();
                 }
             }
@@ -270,9 +366,9 @@ namespace AlexSupport.Repository
                     if (existingTicket != null)
                     {
                         existingTicket.AgentID = null;
-                        existingTicket.Status = "Esclated";
+                        existingTicket.Status = "Escalated";
                         existingTicket.Due_Minutes = null;
-                        existingTicket.Assign_Date = null;
+                        existingTicket.AssignDate = null;
                         alexSupportDB.Update(existingTicket);
                         var CurrentUserRole = await Log.ReturnCurrentUserRole();
                         if (CurrentUserRole == "Admin")
@@ -323,6 +419,8 @@ namespace AlexSupport.Repository
                             }
                         }
                         await Log.CreateLogAsync(existingTicket.TID, "Escalate an open ticket in the system");
+                        await Notification.SendTicketUpdateAsync(existingTicket.TID, "Escalated");
+
                         await alexSupportDB.SaveChangesAsync();
                         return true;
                     }
@@ -410,6 +508,8 @@ namespace AlexSupport.Repository
                                 await SendNotificationAsync(user.UID, agent.UID, agentMessage);
                             }
                         }
+                        await Notification.SendTicketUpdateAsync(existingTicket.TID, "Closed");
+
                         await Log.CreateLogAsync(existingTicket.TID, "Close an open ticket in the system");
                         await alexSupportDB.SaveChangesAsync();
                         return true;
@@ -496,20 +596,23 @@ namespace AlexSupport.Repository
                 if (user.Role == "Admin")
                 {
                     tickets = await alexSupportDB.Ticket
-                       .Include(u => u.category)
+                       .Include(u => u.Category)
                        .Include(u => u.User)
-                       .Include(u => u.location)
+                       .Include(u => u.Location)
                        .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
                        .ToListAsync();
                 }
                 else
                 {
                     tickets = await alexSupportDB.Ticket
                        .Where(u => u.UID == user.UID || u.AgentID == user.UID)
-                       .Include(u => u.category)
+                       .Include(u => u.Category)
                        .Include(u => u.User)
-                       .Include(u => u.location)
+                       .Include(u => u.Location)
                        .Include(u => u.Agent)
+                       .OrderByDescending(t => t.OpenDate)
+
                        .ToListAsync();
                 }
                 if (tickets.Any())
@@ -539,13 +642,21 @@ namespace AlexSupport.Repository
                 if (currentuser.Role == "Admin")
                 {
                     return await alexSupportDB.Ticket
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
                         .Where(t => t.Status == "Closed" && !string.IsNullOrEmpty(t.Due_Minutes.ToString()))
+                        .OrderByDescending(t => t.OpenDate)
+
                         .ToListAsync();
                 }
                 else
                 {
                     return await alexSupportDB.Ticket
-                                     .Where(t => t.Status == "Closed" && t.Assign_Date != null && t.AgentID == currentuser.UID)
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
+                                     .Where(t => t.Status == "Closed" && t.AssignDate != null && t.AgentID == currentuser.UID)
+                       .OrderByDescending(t => t.OpenDate)
+
                                      .ToListAsync();
                 }
             }
@@ -567,6 +678,8 @@ namespace AlexSupport.Repository
                 if (currentuser.Role == "Admin")
                 {
                     return await alexSupportDB.Ticket
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
                         .GroupBy(t => t.OpenDate.Date)
                         .Select(g => new DailyTicketMetric
                         {
@@ -580,6 +693,8 @@ namespace AlexSupport.Repository
                 else
                 {
                     return await alexSupportDB.Ticket
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
                         .Where(u => u.AgentID == currentuser.UID)
                    .GroupBy(t => t.OpenDate.Date)
                    .Select(g => new DailyTicketMetric
@@ -611,6 +726,8 @@ namespace AlexSupport.Repository
                 if (currentuser.Role == "Admin")
                 {
                     return await alexSupportDB.Ticket
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
                         .Where(t => t.Agent != null && t.OpenDate != null)
                         .GroupBy(t => new { t.OpenDate.Date, t.Agent.LoginName })
                         .Select(g => new AgentDailyMetric
@@ -626,6 +743,8 @@ namespace AlexSupport.Repository
                 else
                 {
                     return await alexSupportDB.Ticket
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
                       .Where(t => t.Agent != null && t.OpenDate != null && t.AgentID == currentuser.UID)
                       .GroupBy(t => new { t.OpenDate.Date, t.Agent.LoginName })
                       .Select(g => new AgentDailyMetric
@@ -656,6 +775,8 @@ namespace AlexSupport.Repository
                 if (currentuser.Role == "Admin")
                 {
                     return await alexSupportDB.Ticket
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
                         .Where(t => t.CloseDate.HasValue) // Only include tickets with a CloseDate
                         .GroupBy(t => t.CloseDate.Value.Date)
                         .Select(g => new DailyResolutionMetric
@@ -670,6 +791,8 @@ namespace AlexSupport.Repository
                 else
                 {
                     return await alexSupportDB.Ticket
+                        .Include(u => u.Location)
+                        .Include(u => u.Category)
                         .Where(t => t.CloseDate.HasValue && t.AgentID == currentuser.UID) // Only include tickets with a CloseDate
                         .GroupBy(t => t.CloseDate.Value.Date)
                         .Select(g => new DailyResolutionMetric

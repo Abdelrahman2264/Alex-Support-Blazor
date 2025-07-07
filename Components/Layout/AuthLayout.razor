@@ -426,8 +426,16 @@
                     <li><a href="ContactUs"><i class="fas fa-envelope"></i> Contact Us</a></li>
                     <li><a href="FAQ"><i class="fa fa-question-circle" aria-hidden="true"></i> FAQ</a></li>
                     <div class="auth-buttons">
-                        <li><a href="/SignIn" class="btn sign-in"><i class="fas fa-sign-in-alt"></i> Sign In</a></li>
-                        <li><a href="/SignUp" class="btn sign-out"><i class="fas fa-sign-out-alt"></i> Sign Up</a></li>
+                        <AuthorizeView>
+                            <Authorized>
+                                <li><a href="/SignOut" class="btn sign-out"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+                                <li><a href="/Dashboard" class="btn sign-in"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                            </Authorized>
+                            <NotAuthorized>
+                                <li><a href="/SignIn" class="btn sign-in"><i class="fas fa-sign-in-alt"></i> Sign In</a></li>
+                                <li><a href="/SignUp" class="btn sign-out"><i class="fas fa-user-plus"></i> Sign Up</a></li>
+                            </NotAuthorized>
+                        </AuthorizeView>
                     </div>
                 </ul>
             </nav>

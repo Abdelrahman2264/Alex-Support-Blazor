@@ -5,58 +5,71 @@ using System.ComponentModel;
 namespace AlexSupport.ViewModels
 {
     [Table("DailyTasks", Schema = "dbo")]
-
     public class DailyTasks
     {
-
         [Key]
         [Column(TypeName = "INT")]
-        [DataType(DataType.Text)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [DisplayName("ID")]
+        [DisplayName("Task ID")]
         public int DTID { get; set; }
 
         [Column(TypeName = "NVARCHAR(50)")]
-        [Required(ErrorMessage = "Enter Subject")]
+        [Required(ErrorMessage = "Subject is required")]
         [Display(Name = "Subject")]
+        [StringLength(50, MinimumLength = 5, ErrorMessage = "Subject must be between 5 and 50 characters")]
         public string Subject { get; set; }
+
         [Column(TypeName = "NVARCHAR(50)")]
-        [Required(ErrorMessage = "Choose Priority")]
+        [Required(ErrorMessage = "Priority is required")]
         [Display(Name = "Priority")]
+        [RegularExpression(@"^(Low|Medium|High|Urgent)$",
+            ErrorMessage = "Priority must be Low, Medium, High, or Urgent")]
         public string Priority { get; set; }
 
         [Column(TypeName = "NVARCHAR(850)")]
-        [Required(ErrorMessage = "Enter Your Issue")]
+        [Required(ErrorMessage = "Issue description is required")]
         [Display(Name = "Issue")]
+        [StringLength(850, MinimumLength = 10, ErrorMessage = "Issue must be between 10 and 850 characters")]
         public string Issue { get; set; }
 
-        [Display(Name = "IsActive")]
-        public bool IsActive { get; set; }
-        [Required(ErrorMessage = "Enter Expected Time In Minitues")]
-        [Column(TypeName = "INT")]
-        [Display(Name = "Due Time")]
-        [Range(6, int.MaxValue, ErrorMessage = "Expected Time must be greater than 5 Minutes.")]
-        public int? Due_Minutes { get; set; }
+        [Required]
+        [Display(Name = "Active Status")]
+        [DefaultValue(true)]
+        public bool IsActive { get; set; } = true;
 
-        [ForeignKey(nameof(category))]
+        [Required(ErrorMessage = "Expected time is required")]
         [Column(TypeName = "INT")]
-        [Display(Name = "Issue Category")]
-        public int? CategoryID { get; set; }
-        public Category? category { get; set; }
+        [Display(Name = "Due Time (Minutes)")]
+        [Range(5, 1440, ErrorMessage = "Expected time must be between 5 and 1440 minutes (24 hours)")]
+        public int Due_Minutes { get; set; }  // Removed nullable as it's required
+
+        [ForeignKey(nameof(Category))]
+        [Column(TypeName = "INT")]
+        [Display(Name = "Category")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a valid category")]
+        public int CategoryID { get; set; }  // Removed nullable as it should be required
+        public Category? Category { get; set; }
 
         [Column(TypeName = "INT")]
-        [Display(Name = "LoopingDays")]
-        [Required(ErrorMessage = "Enter Number Of Days  For This Days Round For This Ticket")]
-        public int TypeName { get; set; }
+        [Display(Name = "Recurrence Days")]
+        [Required(ErrorMessage = "Recurrence days are required")]
+        [Range(1, 365, ErrorMessage = "Recurrence must be between 1 and 365 days")]
+        public int RecurrenceDays { get; set; }  // Renamed from TypeName for clarity
+
         [ForeignKey(nameof(Agent))]
         [Column(TypeName = "INT")]
-        [Display(Name = "Agent Id")]
+        [Display(Name = "Assigned Agent")]
         public int? AgentId { get; set; }
         public AppUser? Agent { get; set; }
 
         [Required]
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public DateTime LastUpdatedDate { get; set; } = DateTime.Now;
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Created Date")]
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;  // Using UTC
+
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Last Updated")]
+        public DateTime LastUpdatedDate { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(Location))]
         [Column(TypeName = "INT")]
@@ -64,16 +77,11 @@ namespace AlexSupport.ViewModels
         public int? LocationId { get; set; }
         public Location? Location { get; set; }
 
-
         [ForeignKey(nameof(User))]
         [Column(TypeName = "INT")]
-        [Display(Name = "Created User")]
-        public int? UID { get; set; }
+        [Display(Name = "Created By")]
+        [Required(ErrorMessage = "Creator user is required")]
+        public int UID { get; set; }  // Removed nullable as creator should be required
         public AppUser? User { get; set; }
-
-
-
-
-
     }
 }

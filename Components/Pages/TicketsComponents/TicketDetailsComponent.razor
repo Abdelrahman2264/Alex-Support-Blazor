@@ -44,39 +44,39 @@ else
 {
     <div class="ticket-container">
         <div class="ticket-header">
-            <h3>Ticket Details</h3>
+            <h3><i class="bi bi-ticket-detailed"></i> Ticket Details</h3>
             <a class="btn btn-back" href="tickets">
-                &larr; Back to Tickets
+                <i class="bi bi-arrow-left"></i> Back to Tickets
             </a>
         </div>
 
         <div class="ticket-grid">
             <!-- User Information Section -->
             <div class="user-info-section">
-                <h4>User Information</h4>
+                <h4><i class="bi bi-person-badge"></i> User Information</h4>
                 <div class="info-card">
                     <div class="info-row">
-                        <span class="info-label">Full Name:</span>
+                        <span class="info-label"><i class="bi bi-person"></i> Full Name:</span>
                         <span class="info-value">@(ticket.User?.Fname ?? "N/A") @(ticket.User?.Lname ?? "")</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Job Title:</span>
+                        <span class="info-label"><i class="bi bi-briefcase"></i> Job Title:</span>
                         <span class="info-value">@(ticket.User?.JobTitle ?? "N/A")</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Department:</span>
+                        <span class="info-label"><i class="bi bi-building"></i> Department:</span>
                         <span class="info-value">@(ticket.User?.Department?.DepartmentName ?? "N/A")</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Email:</span>
+                        <span class="info-label"><i class="bi bi-envelope"></i> Email:</span>
                         <span class="info-value">@(ticket.User?.Email ?? "N/A")</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Phone:</span>
+                        <span class="info-label"><i class="bi bi-telephone"></i> Phone:</span>
                         <span class="info-value">@(ticket.User?.Phone ?? "N/A")</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Fingerprint:</span>
+                        <span class="info-label"><i class="bi bi-fingerprint"></i> Fingerprint:</span>
                         <span class="info-value">@(ticket.User?.Fingerprint ?? 0)</span>
                     </div>
                 </div>
@@ -84,69 +84,72 @@ else
 
             <!-- Ticket Information Section -->
             <div class="ticket-info-section">
+                <h4><i class="bi bi-info-circle"></i> Ticket Information</h4>
                 <div class="ticket-id-status">
-                    <span class="ticket-id">Ticket @ticket.TID</span>
-                    <span class="badge status-@(ticket.Status?.ToLower())">@ticket.Status</span>
-                    <span class="badge priority-@(ticket.Priority?.ToLower() ?? "medium")">@ticket.Priority Priority</span>
+                    <span class="ticket-id"><i class="bi bi-tag"></i> Ticket @ticket.TID</span>
+                    <span class="badge status-@(ticket.Status?.ToLower())">
+                        <i class="bi @GetStatusIcon(ticket.Status)"></i> @ticket.Status
+                    </span>
+                    <span class="badge priority-@(ticket.Priority?.ToLower() ?? "medium")">
+                        <i class="bi @GetPriorityIcon(ticket.Priority)"></i> @ticket.Priority Priority
+                    </span>
                 </div>
 
                 <div class="info-card">
                     <div class="info-row">
-                        <span class="info-label">Subject:</span>
+                        <span class="info-label"><i class="bi bi-bookmark"></i> Subject:</span>
                         <span class="info-value">@ticket.Subject</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Category:</span>
-                        <span class="info-value">@(ticket.category?.CategoryName ?? "N/A")</span>
+                        <span class="info-label"><i class="bi bi-grid"></i> Category:</span>
+                        <span class="info-value">@(ticket.Category?.CategoryName ?? "N/A")</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Location:</span>
-                        <span class="info-value">@(ticket.location?.LocationName ?? "N/A")</span>
+                        <span class="info-label"><i class="bi bi-geo-alt"></i> Location:</span>
+                        <span class="info-value">@(ticket.Location?.LocationName ?? "N/A")</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Opened Date:</span>
+                        <span class="info-label"><i class="bi bi-calendar-event"></i> Opened Date:</span>
                         <span class="info-value">@(ticket.OpenDate.ToString("MMM dd, yyyy hh:mm tt"))</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Issue:</span>
+                        <span class="info-label"><i class="bi bi-exclamation-triangle"></i> Issue:</span>
                         <span class="info-value">@ticket.Issue</span>
                     </div>
-
-
                 </div>
             </div>
-            <!-- Add this inside your ticket-grid div, perhaps after the ticket-info-section -->
+
             <!-- Assignment Information Section -->
             @if (ticket.Status == "Assigned" || ticket.Status == "Escalated" || ticket.Status == "Closed")
             {
                 <div class="action-section assignment-info-section">
-                    <h4>Assignment Details</h4>
+                    <h4><i class="bi bi-people"></i> Assignment Details</h4>
                     <div class="info-card">
                         <div class="info-row">
-                            <span class="info-label">Assigned Date:</span>
-                            <span class="info-value">@(ticket.Assign_Date?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</span>
+                            <span class="info-label"><i class="bi bi-calendar-check"></i> Assigned Date:</span>
+                            <span class="info-value">@(ticket.AssignDate?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Assigned Agent:</span>
+                            <span class="info-label"><i class="bi bi-person-workspace"></i> Assigned Agent:</span>
                             <span class="info-value">@(ticket.Agent?.Fname ?? "N/A") @(ticket.Agent?.Lname ?? "")</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Agent Email:</span>
+                            <span class="info-label"><i class="bi bi-envelope"></i> Agent Email:</span>
                             <span class="info-value">@(ticket.Agent?.Email ?? "N/A")</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Agent Phone:</span>
+                            <span class="info-label"><i class="bi bi-phone"></i> Agent Phone:</span>
                             <span class="info-value">@(ticket.Agent?.MobilePhone ?? "N/A")</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Expected Completion:</span>
+                            <span class="info-label"><i class="bi bi-clock-history"></i> Expected Completion:</span>
                             @{
-                                var CompleteDate = AddMinutesToDate(ticket.Assign_Date ?? DateTime.Now, ticket.Due_Minutes ?? 0);
+                                var CompleteDate = AddMinutesToDate(ticket.AssignDate ?? DateTime.Now, ticket.Due_Minutes ?? 0);
                                 <span class="info-value">@CompleteDate</span>
                             }
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Time Spent:</span>
+                            <span class="info-label"><i class="bi bi-stopwatch"></i> Time Spent:</span>
                             <span class="info-value">@(CalculateTimeSpent(ticket))</span>
                         </div>
                     </div>
@@ -157,22 +160,23 @@ else
             @if (ticket.Status == "Closed")
             {
                 <div class="action-section closing-info-section">
-                    <h4>Closing Details</h4>
+                    <h4><i class="bi bi-archive"></i> Closing Details</h4>
                     <div class="info-card">
                         <div class="info-row">
-                            <span class="info-label">Closed Date:</span>
+                            <span class="info-label"><i class="bi bi-calendar-x"></i> Closed Date:</span>
                             <span class="info-value">@ticket.CloseDate?.ToString("MMM dd, yyyy hh:mm tt")</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Status:</span>
+                            <span class="info-label"><i class="bi bi-check-circle"></i> Status:</span>
                             <span class="info-value">
                                 <span class="badge @(ticket.IsSolved == true ? "status-solved" : "status-unsolved")">
+                                    <i class="bi @(ticket.IsSolved == true ? "bi-check-circle" : "bi-x-circle")"></i>
                                     @(ticket.IsSolved == true ? "Solved" : "Unsolved")
                                 </span>
                             </span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">User Rating:</span>
+                            <span class="info-label"><i class="bi bi-star"></i> User Rating:</span>
                             <span class="info-value">
                                 @if (ticket.UserRate.HasValue)
                                 {
@@ -193,15 +197,15 @@ else
                             </span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Speed Rating:</span>
+                            <span class="info-label"><i class="bi bi-speedometer2"></i> Speed Rating:</span>
                             <span class="info-value">
                                 @if (ticket.TicketRate.HasValue)
                                 {
                                     var percentage = ticket.TicketRate;
                                     <div class="animated-progress-container">
                                         <div class="animated-progress-bar"
-                                             style="width:@percentage%; background-color:@GetProgressColor(percentage);">
-                                            <span class="progress-text ">@percentage%</span>
+                                             style="width:@percentage%; background-color:@GetProgressColor(Convert.ToInt32(percentage));">
+                                            <span class="progress-text">@percentage%</span>
                                         </div>
                                     </div>
                                 }
@@ -212,18 +216,20 @@ else
                             </span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Solution:</span>
+                            <span class="info-label"><i class="bi bi-lightbulb"></i> Solution:</span>
                             <span class="info-value">@ticket.Solution</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Comments:</span>
+                            <span class="info-label"><i class="bi bi-chat-left-text"></i> Comments:</span>
                             <span class="info-value">@ticket.Comments</span>
                         </div>
                     </div>
                 </div>
             }
+
+            <!-- Image Section -->
             <div class="image-section">
-                <h4>Ticket Image</h4>
+                <h4><i class="bi bi-image"></i> Ticket Image</h4>
                 <div class="info-card">
                     @if (ticket?.ImageData != null)
                     {
@@ -233,42 +239,48 @@ else
                     }
                     else
                     {
-                        <div class="no-image">No image available</div>
+                        <div class="no-image"><i class="bi bi-image"></i> No image available</div>
                     }
                 </div>
             </div>
         </div>
-
 
         <!-- Ticket Actions -->
         <div class="ticket-actions">
             @if (ticket.Status != "Closed")
             {
                 <AuthorizeView Roles="Admin">
-                    <button class="btn btn-primary" @onclick="HandleAssign">@(ticket.Status == "Assigned" ? "Re-Assign" : "Assign")</button>
+                    <button class="btn btn-primary" @onclick="HandleAssign">
+                        <i class="bi bi-person-plus"></i> @(ticket.Status == "Assigned" ? "Re-Assign" : "Assign")
+                    </button>
                 </AuthorizeView>
                 @if (ticket.Status == "Assigned")
                 {
-                    <button class="btn btn-warning" @onclick="HandleEscalate">Escalate</button>
+                    <button class="btn btn-warning" @onclick="HandleEscalate">
+                        <i class="bi bi-arrow-up"></i> Escalate
+                    </button>
                 }
-                <button class="btn btn-secondary" @onclick="HandleClose">Close Ticket</button>
+                <button class="btn btn-secondary" @onclick="HandleClose">
+                    <i class="bi bi-x-circle"></i> Close Ticket
+                </button>
             }
             <AuthorizeView Roles="Admin,Agent">
-
                 @if (ticket.Status == "Closed" && ticket.IsSolved == true)
                 {
-                    <button class="btn btn-info" @onclick="HandleAddSolution">Add Solution</button>
+                    <button class="btn btn-info" @onclick="HandleAddSolution">
+                        <i class="bi bi-plus-circle"></i> Add Solution
+                    </button>
                 }
             </AuthorizeView>
-
         </div>
     </div>
-    @if (ticket.Status != "Closed")
-    {
+
+   
         <div class="chat-section">
-            <ChatComponent TicketId="@ticket.TID" />
+            <h4><i class="bi bi-chat-left-text"></i> Ticket Conversation</h4>
+            <ChatComponent TicketId="@ticket.TID" IsClosed="@(ticket.Status=="Closed")" />
         </div>
-    }
+    
 }
 
 @code {
@@ -279,6 +291,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(TimeSpan.FromSeconds(0.5));
         await LoadData();
     }
 
@@ -389,10 +402,10 @@ else
 
     private string CalculateTimeSpent(Ticket ticket)
     {
-        if (ticket.Assign_Date == null) return "N/A";
+        if (ticket.AssignDate == null) return "N/A";
 
         var endDate = ticket.Status == "Closed" ? ticket.CloseDate : DateTime.Now;
-        var timeSpent = endDate - ticket.Assign_Date.Value;
+        var timeSpent = endDate - ticket.AssignDate.Value;
 
         if (timeSpent?.TotalDays >= 1)
             return $"{(int)timeSpent?.TotalDays} days, {timeSpent?.Hours} hours";
@@ -402,15 +415,43 @@ else
         return $"{timeSpent?.Minutes} minutes";
     }
 
+        private string GetStatusIcon(string status)
+        {
+            return status?.ToLower() switch
+            {
+                "open" => "bi-hourglass",
+                "assigned" => "bi-person-check",
+                "escalated" => "bi-exclamation-triangle",
+                "closed" => "bi-check-circle",
+                _ => "bi-question-circle"
+            };
+        }
 
-    public string GetProgressColor(decimal? percentage)
-    {
-        if (percentage >= 70)
-            return "#28a745"; // Green
-        if (percentage >= 50)
-            return "#ffc107"; // Yellow
-        return "#dc3545"; // Red
-    }
+        private string GetPriorityIcon(string priority)
+        {
+            return priority?.ToLower() switch
+            {
+                "low" => "bi-arrow-down",
+                "medium" => "bi-arrow-right",
+                "high" => "bi-arrow-up",
+                "urgent" => "bi-exclamation",
+                _ => "bi-dash"
+            };
+        }
 
+        private string GetProgressColor(int? percentage)
+        {
+            if (!percentage.HasValue) return "#6c757d";
+
+            return percentage switch
+            {
+                >= 80 => "#28a745",  // Green
+                >= 60 => "#17a2b8",  // Teal
+                >= 40 => "#ffc107",  // Yellow
+                >= 20 => "#fd7e14",  // Orange
+                _ => "#dc3545"      // Red
+            };
+        }
+    
 }
 

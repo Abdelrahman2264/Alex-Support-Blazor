@@ -10,35 +10,39 @@ namespace AlexSupport.ViewModels
         public Department()
         {
             Users = new HashSet<AppUser>();
+            CreateDate = DateTime.UtcNow; // Initialize with UTC time
         }
 
         [Key]
         [Column(TypeName = "INT")]
-        [DataType(DataType.Text)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [DisplayName("ID")]
+        [DisplayName("Department ID")]
         public int DID { get; set; }
 
         [Column(TypeName = "NVARCHAR(50)")]
-        [Required(ErrorMessage = "Enter Department NAme")]
+        [Required(ErrorMessage = "Department name is required")]
         [Display(Name = "Department Name")]
-        public  string DepartmentName { get; set; }
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Department name must be between 3 and 50 characters")]
+        [RegularExpression(@"^[a-zA-Z0-9\s\-&]+$",
+            ErrorMessage = "Department name can only contain letters, numbers, spaces, hyphens, and ampersands")]
+        public string DepartmentName { get; set; }
 
+        [Required]
+        [Display(Name = "Active Status")]
+        [DefaultValue(true)]
+        public bool IsActive { get; set; } = true;
 
-        [Column(TypeName = "NVARCHAR(50)")]
-        [Required(ErrorMessage = "Status not defined")]
-        [Display(Name = "Status")]
-        public  bool IsActive { get; set; } //Ctive/Disabled
-
+        [Required]
         [Column(TypeName = "datetime2(0)")]
-        [Required(ErrorMessage = "Date not defined")]
-        [Display(Name = "Create Date")]
+        [Display(Name = "Creation Date")]
+        [DataType(DataType.DateTime)]
         public DateTime CreateDate { get; set; }
 
- 
+
+
+
 
 
         public virtual ICollection<AppUser> Users { get; set; }
-
     }
 }

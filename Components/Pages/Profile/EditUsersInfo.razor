@@ -103,11 +103,8 @@
                             </div>
 
                             <div class="form-group floating">
-                                <InputNumber id="fingerprint" @bind-Value="Model.fingerprint" class="form-control" />
+                                <InputNumber id="fingerprint" @bind-Value="Model.Fingerprint" class="form-control" />
                                 <label for="fingerprint">Fingerprint ID</label>
-                                <small class="form-note">
-                                    <i class="fas fa-lock me-1"></i> Contact admin to change
-                                </small>
                                 @if (Model.FingerprintExists)
                                 {
                                     <div class="validation-message text-danger">Fingerprint ID is already in use</div>
@@ -169,7 +166,7 @@
 
                             <div class="form-group floating">
                                 <InputSelect id="department" @bind-Value="Model.DepartmentId" class="form-control">
-                                    <option value="">Select Department</option>
+                                    <option value="0">Select Department</option>
                                     @foreach (var dept in _departments)
                                     {
                                         <option value="@dept.DID">@dept.DepartmentName</option>
@@ -223,6 +220,8 @@
     {
         try
         {
+            await Task.Delay(TimeSpan.FromSeconds(0.1));
+
             var userId = 0;
             if (Id == 0)
             {
@@ -248,7 +247,7 @@
                         MobilePhone = user.MobilePhone,
                         PhotoUrl = user.ImageContentType,
                         ImageData = user.ImageData,
-                        fingerprint = user.Fingerprint,
+                        Fingerprint = user.Fingerprint,
                         LoginName = user.LoginName,
                         Role = user.Role,
                         EmailExists = false,
@@ -338,7 +337,7 @@
 
             // Validate unique fields
             var emailExists = await _userRepo.IsEmailExists(Model.Email, Model.Id);
-            var fingerprintExists = await _userRepo.IsFingerprintExists(Model.fingerprint.ToString(), Model.Id);
+            var fingerprintExists = await _userRepo.IsFingerprintExists(Model.Fingerprint.ToString(), Model.Id);
             var loginNameExists = await _userRepo.IsLoginNameExists(Model.LoginName, Model.Id);
             var phoneExists = await _userRepo.IsPhoneNumberExists(Model.Phone, Model.Id);
 
@@ -366,7 +365,7 @@
             user.ImageData = Model.ImageData;
             user.Role = Model.Role;
             user.LoginName = Model.LoginName;
-            user.Fingerprint = Model.fingerprint;
+            user.Fingerprint = Model.Fingerprint;
 
             await _userRepo.UpdateUserAsync(user);
 
@@ -417,27 +416,50 @@
         public int Id { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
-        [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "First name must be between 2 and 50 characters")]
+        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "First name can only contain letters")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Last name is required")]
-        [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Last name must be between 2 and 50 characters")]
+        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Last name can only contain letters")]
         public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
+        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
         public string Email { get; set; } = string.Empty;
 
         [Phone(ErrorMessage = "Invalid phone number")]
+        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
         public string Phone { get; set; } = string.Empty;
 
+        [StringLength(100, ErrorMessage = "Job title cannot exceed 100 characters")]
         public string JobTitle { get; set; } = string.Empty;
+
+        [Range(1, int.MaxValue, ErrorMessage = "Invalid department ID")]
         public int? DepartmentId { get; set; }
+
+        [Phone(ErrorMessage = "Invalid mobile phone number")]
+        [StringLength(20, ErrorMessage = "Mobile phone number cannot exceed 20 characters")]
         public string MobilePhone { get; set; } = string.Empty;
+
+        [StringLength(255, ErrorMessage = "Photo URL cannot exceed 255 characters")]
         public string PhotoUrl { get; set; } = string.Empty;
+
+        [MaxLength(5242880, ErrorMessage = "Image size cannot exceed 5MB")] // 5MB in bytes
         public byte[]? ImageData { get; set; }
-        public int fingerprint { get; set; }
+
+        [Required]
+        public int Fingerprint { get; set; }
+
+        [Required(ErrorMessage = "Login name is required")]
+        [StringLength(50, MinimumLength = 4, ErrorMessage = "Login name must be between 4 and 50 characters")]
+        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Login name can only contain letters, numbers and underscores")]
         public string LoginName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Role is required")]
+        [StringLength(50, ErrorMessage = "Role cannot exceed 50 characters")]
         public string Role { get; set; } = string.Empty;
 
         // Validation properties

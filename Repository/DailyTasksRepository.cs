@@ -51,7 +51,7 @@ namespace AlexSupport.Repository
             {
                 return await alexsupportdb.DailyTasks
                     .Where(u => u.IsActive == true)
-                    .Include(c => c.category)
+                    .Include(c => c.Category)
                     .Include(c => c.Agent)
                     .ToListAsync();
             }
@@ -120,7 +120,7 @@ namespace AlexSupport.Repository
                     UpdatedDailyTask.Issue = dailytask.Issue;
                     UpdatedDailyTask.CategoryID = dailytask.CategoryID;
                     UpdatedDailyTask.Due_Minutes = dailytask.Due_Minutes;
-                    UpdatedDailyTask.TypeName = dailytask.TypeName;
+                    UpdatedDailyTask.RecurrenceDays = dailytask.RecurrenceDays;
                     UpdatedDailyTask.AgentId = dailytask.AgentId;
                     UpdatedDailyTask.LastUpdatedDate = dailytask.LastUpdatedDate;
                     alexsupportdb.DailyTasks.Update(UpdatedDailyTask);
@@ -151,14 +151,13 @@ namespace AlexSupport.Repository
                     OpenDate = DateTime.Now,
                     AgentID = dailytask.AgentId,
                     Status = "Assigned",
-                    Assign_Date = DateTime.Now,
-                    UID = dailytask.UID ?? 0,
+                    AssignDate = DateTime.Now,
+                    UID = dailytask.UID,
                     LID = dailytask.LocationId ?? 0,
                 };
                 await alexsupportdb.Ticket.AddAsync(ticket);
                 await alexsupportdb.SaveChangesAsync();
                 await LogService.CreateSystemLogAsync($"Assign A Daily Task With Id: {dailytask.DTID} For {task.Agent.LoginName}", "DAILY TASK");
-                await notificationService.SendToUserAsync(task.AgentId.ToString(), $"Hello Eng:{task.Agent.Fname} {task.Agent.Lname} Mr.{task.User.Fname} {task.User.Lname} assign a new daily task for you");
 
 
                 return true;

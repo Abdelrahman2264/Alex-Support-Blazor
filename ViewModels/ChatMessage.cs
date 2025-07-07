@@ -1,6 +1,7 @@
 ﻿namespace AlexSupport.ViewModels
 {
     using System;
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,33 +10,50 @@
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DisplayName("Message ID")]
         public int CHID { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Ticket reference is required")]
         [ForeignKey("Ticket")]
+        [DisplayName("Ticket ID")]
         public int TicketId { get; set; }
-        public virtual Ticket Ticket { get; set; }
 
         [Required]
-        [ForeignKey("Sender")]  // Changed to match navigation property
-
+        [ForeignKey("Sender")]
+        [DisplayName("Sender ID")]
         public int SenderId { get; set; }
 
-        [Required]
-        [Column(TypeName = "NVARCHAR(MAX)")] // Allows longer messages
+        [Required(ErrorMessage = "Message text is required")]
+        [Column(TypeName = "NVARCHAR(MAX)")]
+        [StringLength(5000, MinimumLength = 1, ErrorMessage = "Message must be between 1 and 5000 characters")]
+        [DisplayName("Message Content")]
         public string MessageText { get; set; }
 
         [Required]
-        public DateTime SentDate { get; set; } = DateTime.Now;
+        [DataType(DataType.DateTime)]
+        [DisplayName("Sent Date")]
+        public DateTime SentDate { get; set; } = DateTime.Now;  // Using UTC for consistency
+
         [Required]
-        public bool ? IsRead { get; set; } = false;
+        [DisplayName("Read Status")]
+        [DefaultValue(false)]
+        public bool? IsRead { get; set; } = false;  // Removed nullable as it has default value
 
         [Column(TypeName = "VARBINARY(MAX)")]
+        [MaxLength(5242880, ErrorMessage = "Image size cannot exceed 5MB")]
+        [DisplayName("Attachment Data")]
         public byte[]? ImageData { get; set; }
 
         [Column(TypeName = "NVARCHAR(100)")]
-        public string? ImageContentType { get; set; } // e.g. "image/jpeg", "image/png"
+        [StringLength(100, ErrorMessage = "Content type cannot exceed 100 characters")]
+        [DisplayName("Attachment Type")]
+        public string? ImageContentType { get; set; }
+
         // Navigation properties
-        public virtual AppUser Sender { get; set; } // Renamed for clarity
+        [DisplayName("Related Ticket")]
+        public virtual Ticket Ticket { get; set; }
+
+        [DisplayName("Message Sender")]
+        public virtual AppUser Sender { get; set; }
     }
 }

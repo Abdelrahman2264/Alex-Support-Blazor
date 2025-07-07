@@ -30,20 +30,11 @@
 .badge-status-Esclated {
     background-color: #a98004;
     --status-border-color: #a98004;
+}.badge-status-closed {
+    background-color: darkred;
+    --status-border-color: white;
 }
 
-.badge-priority-high {
-    background-color: #dc3545;
-}
-
-.badge-priority-medium {
-    background-color: #ffc107;
-    color: #000;
-}
-
-.badge-priority-low {
-    background-color: #198754;
-}
 
 .btn-action-active {
     background-color: #198754;

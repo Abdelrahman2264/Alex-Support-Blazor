@@ -7,6 +7,7 @@
 @inject IJSRuntime JS
 @inject IPasswordHasherRepository _IPassword
 @inject ILogService LogService
+@rendermode InteractiveServer
 
 <style>
     /* Base Styles */
@@ -788,6 +789,7 @@
     private string PhoneNumberExistErrorMessage { get; set; } = "";
     private bool IsInVaild = false;
     private VerificationModel verificationModel { get; set; } = new VerificationModel();
+    private string Code { get; set; }
     private bool showVerificationModal = false;
 
     private void TogglePasswordVisibility() => showPassword = !showPassword;
@@ -825,7 +827,7 @@
         }
 
         var code = _IUser.GenerateVerifyCode();
-        verificationModel.Code = code.ToString();
+        Code = code.ToString();
         await _EmailServices.SendEmailAsync(
             SignUpModel.Email,
             $"Hello {SignUpModel.Fname + " " + SignUpModel.Lname}",
@@ -840,7 +842,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (showVerificationModal)
+            if (showVerificationModal)
         {
             showVerificationModal = false;
             await JS.InvokeVoidAsync("ShowVerificationModalFormModal");
@@ -851,7 +853,7 @@
     public async Task Confirm_Verification(VerificationModel Model)
     {
         await JS.InvokeVoidAsync("HideVerificationModalFormModal");
-        if (Model.Code == verificationModel.Code)
+        if (Model.Code == Code)
         {
             user = new AppUser
                 {
@@ -869,10 +871,9 @@
             if (user != null)
             {
                 await LogService.CreateSystemLogAsync($"{user.LoginName} Sign Up In The System.", "APP USERS");
-                await JS.InvokeVoidAsync("ShowToast", "Sign Up Successful", "You have successfully signed up.", "success");
             }
 
-            Navigation.NavigateTo("/");
+            Navigation.NavigateTo("/signin");
         }
     }
 

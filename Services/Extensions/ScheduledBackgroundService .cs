@@ -1,12 +1,15 @@
 ﻿using AlexSupport.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AlexSupport.Services.Extensions
 {
+    [Authorize]
     public class ScheduledBackgroundService : BackgroundService
     {
         private readonly ILogger<ScheduledBackgroundService> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly TimeSpan _interval = TimeSpan.FromMinutes(5); // Run every 5 minutes
 
         public ScheduledBackgroundService(ILogger<ScheduledBackgroundService> logger, IServiceProvider serviceProvider)
         {
@@ -18,80 +21,77 @@ namespace AlexSupport.Services.Extensions
         {
             _logger.LogInformation("Scheduled Background Service is starting.");
 
+            // Initial delay to avoid running immediately on startup
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var now = DateTime.Now;
-                    var nextRunTime = new DateTime(now.Year, now.Month, now.Day, 9, 30, 0);
-
-                    // If it's already past 9:30 today, schedule for tomorrow
-                    if (now > nextRunTime)
-                    {
-                        nextRunTime = nextRunTime.AddDays(1);
-                    }
-
-                    var delayTime = nextRunTime - now;
-                    _logger.LogInformation($"Next run scheduled for {nextRunTime} ({delayTime.TotalHours:F2} hours from now)");
-
-                    // Wait until the next scheduled time (or until canceled)
-                    await Task.Delay(delayTime, stoppingToken);
-
-                    // If we were canceled during the wait, break out
-                    if (stoppingToken.IsCancellationRequested) break;
-
                     _logger.LogInformation("Running scheduled task at {Time}...", DateTime.Now);
 
                     using (var scope = _serviceProvider.CreateScope())
                     {
-                        var dailyTask = scope.ServiceProvider.GetRequiredService<IDailyTaskRepository>();
-                        await DoWorkAsync(dailyTask);
+                        var dailyTaskRepository = scope.ServiceProvider.GetRequiredService<IDailyTaskRepository>();
+                        await ProcessRecurringTasksAsync(dailyTaskRepository);
                     }
+
+                    _logger.LogInformation($"Next run in {_interval.TotalMinutes} minutes...");
+                    await Task.Delay(_interval, stoppingToken);
                 }
                 catch (Exception ex) when (ex is not TaskCanceledException)
                 {
                     _logger.LogError(ex, "Error in scheduled task");
-                    // If error occurs, wait 5 minutes before retrying
-                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                    // If error occurs, wait 1 minute before retrying
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
             }
 
             _logger.LogInformation("Scheduled Background Service is stopping.");
         }
 
-        private async Task DoWorkAsync(IDailyTaskRepository dailyTask)
+        private async Task ProcessRecurringTasksAsync(IDailyTaskRepository dailyTaskRepository)
         {
             try
             {
-                _logger.LogInformation("Starting database operations...");
+                _logger.LogInformation("Fetching all daily tasks...");
+                var allTasks = await dailyTaskRepository.GetAllDailyTasksAsync();
+                _logger.LogInformation($"Found {allTasks.Count()} tasks to evaluate");
 
-                var items = await dailyTask.GetAllDailyTasksAsync();
-                _logger.LogInformation($"Found {items.Count()} tasks to process");
+                var tasksToProcess = allTasks.Where(task =>
+                    task.RecurrenceDays > 0 && // Ensure recurrence is set
+                    (DateTime.Now - task.LastUpdatedDate).TotalDays >= task.RecurrenceDays
+                ).ToList();
 
-                foreach (var item in items)
+                _logger.LogInformation($"Found {tasksToProcess.Count} tasks meeting recurrence criteria");
+
+                foreach (var task in tasksToProcess)
                 {
-                    // DateTime is non-nullable, so no need for HasValue check
-                    // Calculate days since last update
-                    var daysSinceUpdate = (DateTime.UtcNow - item.LastUpdatedDate).TotalDays;
-
-                    // Assuming TypeName is a numeric value representing days threshold
-                    if (daysSinceUpdate >= item.TypeName)
+                    try
                     {
-                        await dailyTask.AssignDailyTask(item);
+                        _logger.LogInformation($"Processing task ID: {task.DTID}");
 
-                        // Update timestamp after successful assignment
-                        item.LastUpdatedDate = DateTime.UtcNow;
-                        await dailyTask.UpdateDailyTaskAsync(item);
+                        // Assign the task
+                        await dailyTaskRepository.AssignDailyTask(task);
 
-                        _logger.LogInformation($"Assigned and updated task {item.DTID}");
+                        // Update the last updated date
+                        task.LastUpdatedDate = DateTime.Now;
+                        await dailyTaskRepository.UpdateDailyTaskAsync(task);
+
+                        _logger.LogInformation($"Successfully assigned and updated task {task.DTID}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error processing task {task.DTID}");
+                        // Continue with next task even if this one fails
                     }
                 }
 
-                _logger.LogInformation("Database operations completed successfully");
+                _logger.LogInformation($"Completed processing {tasksToProcess.Count} recurring tasks");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during database operations");
+                _logger.LogError(ex, "Error during recurring task processing");
                 throw;
             }
         }

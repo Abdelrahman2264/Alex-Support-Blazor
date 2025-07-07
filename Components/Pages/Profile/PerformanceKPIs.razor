@@ -118,7 +118,7 @@
                             <div class="ticket-item">
                                 <span class="ticket-id">#@ticket.TID</span>
                                 <span class="ticket-time">@GetResolutionDays(ticket)</span>
-                                <span class="ticket-category">@ticket.CategoryID</span>
+                                <span class="ticket-category">@ticket.Category.CategoryName</span>
                             </div>
                         }
                     }
@@ -139,7 +139,7 @@
                             <div class="ticket-item">
                                 <span class="ticket-id">#@ticket.TID</span>
                                 <span class="ticket-time">@GetResolutionDays(ticket)</span>
-                                <span class="ticket-category">@ticket.CategoryID</span>
+                                <span class="ticket-category">@ticket.Category.CategoryName</span>
                             </div>
                         }
                     }
@@ -462,7 +462,7 @@
     }
 
         .btn:hover {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(30, 41, 59, 0.9);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
         }
@@ -983,6 +983,8 @@
         try
         {
             IsLoading = true;
+            await Task.Delay(TimeSpan.FromSeconds(0.1));
+
             Agents = await IUser.GetAllAgentsAsync();
             await LoadData();
             await LoadDailyMetrics();
@@ -1078,28 +1080,28 @@
             // Calculate totals
             TotalDueMinutes = (int)Tickets.Sum(t => t.Due_Minutes);
             TotalResolutionDays = Tickets
-                .Where(t => t.Assign_Date.HasValue && t.CloseDate.HasValue)
-                .Sum(t => (t.CloseDate.Value - t.Assign_Date.Value).TotalDays);
+                .Where(t => t.AssignDate.HasValue && t.CloseDate.HasValue)
+                .Sum(t => (t.CloseDate.Value - t.AssignDate.Value).TotalDays);
 
             // Calculate top tickets
             var resolvedTickets = Tickets
-                .Where(t => t.IsSolved == true && t.Assign_Date.HasValue && t.CloseDate.HasValue)
+                .Where(t => t.IsSolved == true && t.AssignDate.HasValue && t.CloseDate.HasValue)
                 .ToList();
 
             FastestTickets = resolvedTickets
-                .OrderBy(t => (t.CloseDate.Value - t.Assign_Date.Value).TotalDays)
+                .OrderBy(t => (t.CloseDate.Value - t.AssignDate.Value).TotalDays)
                 .Take(5)
                 .ToList();
 
             SlowestTickets = resolvedTickets
-                .OrderByDescending(t => (t.CloseDate.Value - t.Assign_Date.Value).TotalDays)
+                .OrderByDescending(t => (t.CloseDate.Value - t.AssignDate.Value).TotalDays)
                 .Take(5)
                 .ToList();
 
             // Group data for charts
             TicketsPerCategory = Tickets
-                .Where(t => t.category != null)
-                .GroupBy(t => t.category.CategoryName)
+                .Where(t => t.Category != null)
+                .GroupBy(t => t.Category.CategoryName)
                 .Select(g => new
                 {
                     Category = g.Key?.ToString() ?? "Uncategorized",
@@ -1109,8 +1111,8 @@
                 .ToList();
 
             TicketsPerLocation = Tickets
-                .Where(t => t.location != null)
-                .GroupBy(t => t.location.LocationName)
+                .Where(t => t.Location != null)
+                .GroupBy(t => t.Location.LocationName)
                 .Select(g => new
                 {
                     Location = g.Key.ToString() ?? "Unknown",
@@ -1143,17 +1145,17 @@
         if (NumberOfTickets == 0) return;
 
         var resolvedTickets = Tickets
-            .Where(t => t.IsSolved == true && t.Assign_Date.HasValue && t.CloseDate.HasValue && t.Due_Minutes.HasValue)
+            .Where(t => t.IsSolved == true && t.AssignDate.HasValue && t.CloseDate.HasValue && t.Due_Minutes.HasValue)
             .ToList();
 
         OnTimeTicketsCount = resolvedTickets.Count(t =>
-            (t.CloseDate.Value - t.Assign_Date.Value).TotalMinutes <= t.Due_Minutes);
+            (t.CloseDate.Value - t.AssignDate.Value).TotalMinutes <= t.Due_Minutes);
 
         LateTicketsCount = resolvedTickets.Count(t =>
-            (t.CloseDate.Value - t.Assign_Date.Value).TotalMinutes > t.Due_Minutes);
+            (t.CloseDate.Value - t.AssignDate.Value).TotalMinutes > t.Due_Minutes);
 
         TotalTimeDifference = resolvedTickets
-            .Sum(t => (int)(t.CloseDate.Value - t.Assign_Date.Value).TotalMinutes - t.Due_Minutes.Value);
+            .Sum(t => (int)(t.CloseDate.Value - t.AssignDate.Value).TotalMinutes - t.Due_Minutes.Value);
     }
 
     private async Task LoadDailyMetrics(int agentid = 0, int currentmonth = 0)
@@ -1438,10 +1440,10 @@
     // Helper methods
     private string GetResolutionDays(Ticket ticket)
     {
-        if (!ticket.Assign_Date.HasValue || !ticket.CloseDate.HasValue)
+        if (!ticket.AssignDate.HasValue || !ticket.CloseDate.HasValue)
             return "0 min";
 
-        double totalMinutes = (ticket.CloseDate.Value - ticket.Assign_Date.Value).TotalMinutes;
+        double totalMinutes = (ticket.CloseDate.Value - ticket.AssignDate.Value).TotalMinutes;
         return FormatDuration(totalMinutes);
     }
 
@@ -1564,6 +1566,10 @@
             chartInstances[canvasId].destroy();
         }
 
+        // Calculate suggested max - at least 1 if all values are zero
+        const maxDataValue = Math.max(...data);
+        const suggestedMax = maxDataValue === 0 ? 1 : maxDataValue * 1.1;
+
         chartInstances[canvasId] = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -1583,7 +1589,7 @@
                     y: {
                         beginAtZero: true,
                         min: 0,
-                        suggestedMax: Math.max(...data) * 1.1,
+                        suggestedMax: suggestedMax,
                         ticks: {
                             precision: 0,
                             callback: function(value) {
@@ -1597,8 +1603,6 @@
                     },
                     x: {
                         offset: true,
-                        beginAtZero: true,
-                        min: 0,
                         grid: {
                             display: false
                         },
@@ -1627,8 +1631,13 @@
         return true;
     }
 
-    // Pie Chart configuration
+    // Pie Chart configuration with zero value handling
     function createPieChart(canvasId, labels, data, backgroundColor) {
+        // Handle empty data case
+        if (!data || data.length === 0) {
+            data = Array(labels.length).fill(0);
+        }
+
         const ctx = document.getElementById(canvasId)?.getContext('2d');
         if (!ctx) return false;
 
@@ -1659,7 +1668,7 @@
                                 const label = context.label || '';
                                 const value = context.raw || 0;
                                 const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
-                                const percentage = Math.round((value / total) * 100);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
                                 return `${label}: ${value} (${percentage}%)`;
                             }
                         }
@@ -1670,8 +1679,12 @@
         return true;
     }
 
-    // Timeliness Pie Chart
+    // Timeliness Pie Chart with zero handling
     function createTimelinessChart(canvasId, onTimeCount, lateCount) {
+        // Handle undefined/null values
+        onTimeCount = onTimeCount || 0;
+        lateCount = lateCount || 0;
+
         const ctx = document.getElementById(canvasId)?.getContext('2d');
         if (!ctx) return false;
 
@@ -1702,7 +1715,7 @@
                                 const label = context.label || '';
                                 const value = context.raw || 0;
                                 const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
-                                const percentage = Math.round((value / total) * 100);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
                                 return `${label}: ${value} (${percentage}%)`;
                             }
                         }
@@ -1713,7 +1726,7 @@
         return true;
     }
 
-    // Line Chart with zero-based axes
+    // Line Chart with guaranteed zero baseline
     function createLineChart(canvasId, labels, datasets) {
         datasets = datasets.map(dataset => {
             if (!dataset.data || dataset.data.length === 0) {
@@ -1732,6 +1745,11 @@
             chartInstances[canvasId].destroy();
         }
 
+        // Calculate suggested max across all datasets
+        const allValues = datasets.flatMap(d => d.data);
+        const maxValue = Math.max(...allValues);
+        const suggestedMax = maxValue === 0 ? 1 : maxValue * 1.1;
+
         chartInstances[canvasId] = new Chart(ctx, {
             type: 'line',
             data: {
@@ -1749,6 +1767,7 @@
                     y: {
                         beginAtZero: true,
                         min: 0,
+                        suggestedMax: suggestedMax,
                         title: {
                             display: true,
                             text: 'Number of Tickets'

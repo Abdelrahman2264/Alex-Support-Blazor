@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using AlexSupport.ViewModels;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -16,6 +18,11 @@ public interface INotificationService
     Task AddToGroupAsync(string groupName);
     Task SendToGroupAsync(string groupName, string message);
     Task RemoveFromGroupAsync(string groupName);
+    Task RefreshTicketsForAll(string ticketStatus);
+    Task SendTicketUpdateAsync(int ticketId, string action);
+
+    // Add this event for ticket updates
+    event Func<int, string, Task>? OnTicketUpdated;
 }
 
 public class NotificationService : INotificationService, IAsyncDisposable
@@ -29,6 +36,7 @@ public class NotificationService : INotificationService, IAsyncDisposable
     private readonly SemaphoreSlim _connectionLock = new(1, 1);
     private readonly SemaphoreSlim _initLock = new(1, 1);
     public event Func<string, string, Task>? OnChatMessageReceived;
+
 
     public HubConnectionState ConnectionState => _hubConnection?.State ?? HubConnectionState.Disconnected;
 
@@ -80,6 +88,12 @@ public class NotificationService : INotificationService, IAsyncDisposable
                 await Task.Delay(new Random().Next(0, 5) * 1000);
             };
 
+            _hubConnection.On<int, string>("ReceiveTicketUpdate", async (ticketId, action) =>
+            {
+                if (OnTicketUpdated != null)
+                    await OnTicketUpdated.Invoke(ticketId, action);
+            });
+
             _hubConnection.Reconnected += (connectionId) =>
             {
                 _logger.LogInformation("SignalR reconnected with ID: {ConnectionId}", connectionId);
@@ -97,6 +111,23 @@ public class NotificationService : INotificationService, IAsyncDisposable
                 if (OnChatMessageReceived is not null)
                     await OnChatMessageReceived.Invoke(fromUserId, message);
             });
+            _hubConnection.On<int, string>("ReceiveTicketUpdate", async (ticketId, action) =>
+            {
+                _logger.LogDebug("Received ticket update for Ticket {TicketId}, Action: {Action}",
+                    ticketId, action);
+
+                if (OnTicketUpdated != null)
+                {
+                    try
+                    {
+                        await OnTicketUpdated.Invoke(ticketId, action);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error handling ticket update notification");
+                    }
+                }
+            });
 
             await _hubConnection.StartAsync();
             _logger.LogInformation("SignalR connection started and NotificationService initialized");
@@ -113,7 +144,30 @@ public class NotificationService : INotificationService, IAsyncDisposable
     }
 
 
+    public event Func<int, string, Task>? OnTicketUpdated;
 
+    public async Task SendTicketUpdateAsync(int ticketId, string action)
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            try
+            {
+                await _hubConnection.SendAsync("SendTicketUpdate", ticketId, action);
+                _logger.LogInformation("Sent ticket update notification for Ticket {TicketId}, Action: {Action}",
+                    ticketId, action);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send ticket update notification");
+                // Optional: Implement retry logic here
+            }
+        }
+        else
+        {
+            _logger.LogWarning("Couldn't send ticket update - Hub not connected");
+        }
+    }
+    // In your HubConnection setup:
 
     public async Task SendToAllAsync(string message)
     {
@@ -151,6 +205,14 @@ public class NotificationService : INotificationService, IAsyncDisposable
                 await OnChatMessageReceived.Invoke(fromUserId, message);
         });
     }
+    public async Task RefreshTicketsForAll(string ticketStatus)
+    {
+        if (_hubConnection?.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.SendAsync("RefreshTicketsForAll", ticketStatus);
+        }
+    }
+ 
 
     public async ValueTask DisposeAsync()
     {

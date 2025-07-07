@@ -4,6 +4,8 @@ using System.Collections.Concurrent;
 using AlexSupport.Services.Extensions;
 using AlexSupport.Repository.IRepository;
 using Microsoft.IdentityModel.Tokens;
+using NuGet.Protocol.Plugins;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace AlexSupport.Hubs
 {
@@ -92,12 +94,44 @@ namespace AlexSupport.Hubs
 
 
             }
-            if (ticket.AgentID != 0 && ticket.AgentID.ToString() != fromUserId)
+            if (ticket.AgentID != 0 && ticket.Agent != null && ticket.AgentID.ToString() != fromUserId)
             {
                 await Clients.User(ticket?.AgentID?.ToString()).SendAsync("ReceiveChatMessage", fromUserId, message);
             }
         }
+        public async Task RefreshTicketsForAll(string ticketStatus)
+        {
+            // Send refresh command to all connected clients
+            await Clients.All.SendAsync("RefreshTickets", ticketStatus);
+        }
+        public async Task SendTicketUpdate(int ticketId, string action)
+        {
+            var admins = await _IUser.GetAllAdminsAsync();
+            var ticket = await _ITicket.GetTicketByIdAsync(Convert.ToInt32(ticketId));
+            var currentUserId = Convert.ToInt32(Context.UserIdentifier);
+            // Send to each admin except the current user
+            foreach (var admin in admins)
+            {
+                if (admin.UID != currentUserId)
+                {
+                    await Clients.User(admin.UID.ToString()).SendAsync("ReceiveTicketUpdate", ticketId, action);
+                }
+            }
 
+            // Send to ticket creator if not current user
+            if (ticket.UID != 0 && ticket.UID != currentUserId)
+            {
+                await Clients.User(ticket.UID.ToString()).SendAsync("ReceiveTicketUpdate", ticketId, action);
+            }
+
+            // Send to assigned agent if not current user
+            if (ticket.AgentID != 0 && ticket.Agent != null && ticket.AgentID != currentUserId)
+            {
+                await Clients.User(ticket.AgentID.ToString()).SendAsync("ReceiveTicketUpdate", ticketId, action);
+            }
+
+            _logger.LogInformation($"Broadcasting ticket update: Ticket {ticketId}, Action: {action}");
+        }
         public class UserInfo
         {
             public string? ConnectionId { get; set; }

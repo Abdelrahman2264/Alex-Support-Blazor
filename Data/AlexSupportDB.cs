@@ -115,12 +115,12 @@ namespace AlexSupport.Data
                 entity.Property(e => e.OpenDate)
                     .HasColumnType("datetime2(0)")
                     .HasColumnName("OpenDate");
-                entity.HasOne(e => e.location)
+                entity.HasOne(e => e.Location)
                     .WithMany(d => d.Ticket)
                     .HasForeignKey(e => e.LID)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Ticket_Location");
-                entity.HasOne(e => e.category)
+                entity.HasOne(e => e.Category)
                     .WithMany(d => d.Ticket)
                     .HasForeignKey(e => e.CategoryID)
                     .OnDelete(DeleteBehavior.ClientSetNull)
@@ -202,11 +202,11 @@ namespace AlexSupport.Data
                     .HasMaxLength(850)
                     .IsUnicode(false)
                     .HasColumnName("Issue");  
-                entity.Property(e => e.TypeName)
+                entity.Property(e => e.RecurrenceDays)
                     .HasMaxLength(100)
                     .IsUnicode(false)
                     .HasColumnName("Type");
-                entity.HasOne(e => e.category)
+                entity.HasOne(e => e.Category)
                     .WithMany(d => d.DailyTask)
                     .HasForeignKey(e => e.CategoryID)
                     .OnDelete(DeleteBehavior.ClientSetNull)

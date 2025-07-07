@@ -1,71 +1,318 @@
-﻿@page "/Tickets"
-@page "/tickets/{TicketStatus}"
+﻿@page "/tickets"
+@page "/{TicketStatus}"
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject ITicketRepository _ITicket
 @inject IAppUserRepoistory _IAppUser
 @rendermode InteractiveServer
 @inject IJSRuntime JS
+@inject INotificationService NotificationService
 @attribute [Authorize]
 
 <AssignFormModal Title="@(!string.IsNullOrWhiteSpace(TicketStatus) ? "Re-Assign Ticket" : "Assign Ticket")"
                  OnModalConfirmation="ConfirmAssign_Click"
                  Agents="agents" />
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #eef2ff;
+        --success-color: #10b981;
+        --success-light: #ecfdf5;
+        --danger-color: #ef4444;
+        --danger-light: #fef2f2;
+        --warning-color: #f59e0b;
+        --warning-light: #fffbeb;
+        --info-color: #3b82f6;
+        --info-light: #eff6ff;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-700: #374151;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition-base: all 0.2s ease-in-out;
+    }
 
-<div class="container-fluid px-4 py-3">
-    <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
-        <div class="card-header bg-primary-gradient py-3 py-md-4">
-            <div class="row align-items-center g-2 g-md-3">
-                <!-- Title Column -->
-                <div class="col-12 col-md-6 col-lg-4">
-                    <h2 class="text-white mb-0">
-                        <i class="bi bi-ticket-detailed me-2"></i>
+    /* Ticket Card Styles */
+    .ticket-card {
+        border-left: 4px solid;
+        border-left-color: var(--status-border-color);
+        transition: var(--transition-base);
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .ticket-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+    /* Status Badges */
+    .badge-status-open {
+        background-color: var(--info-light);
+        color: white;
+        --status-border-color: var(--info-color);
+    }
+
+    .badge-status-assigned {
+        background-color: var(--success-light);
+        color: var(--success-color);
+        --status-border-color: var(--success-color);
+    }
+
+    .badge-status-escalated {
+        background-color: var(--warning-light);
+        color: var(--warning-color);
+        --status-border-color: var(--warning-color);
+    }
+
+    .badge-status-closed {
+        background-color: var(--danger-light);
+        color: white;
+        --status-border-color: var(--danger-color);
+    }
+
+    /* Priority Badges */
+    .badge-priority-low {
+        background-color: var(--success-light);
+        color: var(--success-color);
+    }
+
+    .badge-priority-medium {
+        background-color: var(--warning-light);
+        color: var(--warning-color);
+    }
+
+    .badge-priority-high {
+        background-color: #f97316;
+        color: white;
+    }
+
+    .badge-priority-urgent {
+        background-color: var(--danger-light);
+        color: var(--danger-color);
+    }
+
+    /* Action Buttons */
+    .btn-action-active {
+        background-color: var(--success-light);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+    }
+
+    .btn-action-inactive {
+        background-color: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+    }
+
+    /* Collapse Animation */
+    .collapse-body {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    /* Header Styles */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, white 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    .page-icon {
+        font-size: 2rem;
+        color: white;
+        margin-right: 1rem;
+    }
+
+    /* Search and Actions */
+    .search-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .search-input {
+        border-radius: 50px;
+        padding: 0.625rem 1.5rem 0.625rem 3rem;
+        border: 1px solid var(--gray-200);
+        font-size: 0.9375rem;
+        transition: var(--transition-base);
+        width: 100%;
+    }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-300);
+    }
+
+    .clear-search {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--gray-400);
+        cursor: pointer;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .page-item {
+        list-style: none;
+    }
+
+    .page-link {
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--gray-200);
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: var(--transition-base);
+    }
+
+        .page-link:hover {
+            background-color: var(--primary-light);
+        }
+
+    .page-item.active .page-link {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .page-item.disabled .page-link {
+        color: var(--gray-300);
+        pointer-events: none;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .page-header {
+            padding: 1.25rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .header-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-container {
+            max-width: 100%;
+        }
+
+        .ticket-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .ticket-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .ticket-details-row {
+            flex-direction: column;
+        }
+
+        .ticket-details-col {
+            width: 100%;
+        }
+
+        .ticket-footer-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+            .ticket-footer-actions .btn {
+                width: 100%;
+            }
+    }
+</style>
+
+<div class="container-fluid px-3 px-md-4 py-3">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-ticket-detailed page-icon"></i>
+                <div>
+                    <h1 class="page-title">
                         @(string.IsNullOrEmpty(TicketStatus) ? "All Tickets" : $"{TicketStatus} Tickets")
-                    </h2>
-                </div>
-
-                <!-- Controls Column -->
-                <div class="col-12 col-md-6 col-lg-8">
-                    <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch">
-                        <!-- Search + Export Group -->
-                        <div class="d-flex flex-grow-1 flex-column flex-sm-row gap-2">
-                            <!-- Search Box -->
-                            <div class="flex-grow-1">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0">
-                                        <i class="bi bi-search text-muted"></i>
-                                    </span>
-                                    <input type="text"
-                                           class="form-control border-start-0 shadow-none"
-                                           placeholder="Search tickets..."
-                                           @bind="searchTerm"
-                                           @oninput="HandleSearchInput" />
-                                    @if (!string.IsNullOrEmpty(searchTerm))
-                                    {
-                                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-                            <!-- Export Button -->
-                            <div class="d-flex flex-shrink-0">
-                                <button class="btn btn-success h-100" @onclick="ExportToExcel">
-                                    <i class="bi bi-file-earmark-excel me-1"></i>
-                                    <span class="d-none d-sm-inline">Export</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        
-
-                
-
-                    </div>
+                    </h1>
+                    <p class="text-black mb-0 d-none d-md-block">Manage and track all support tickets</p>
                 </div>
             </div>
-        </div>
 
+            <div class="d-flex header-actions align-items-center gap-3">
+                <!-- Search Input -->
+                <div class="search-container">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text"
+                           class="form-control search-input"
+                           placeholder="Search tickets..."
+                           @bind="searchTerm"
+                           @oninput="HandleSearchInput" />
+                    @if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        <button class="clear-search"
+                                type="button"
+                                @onclick="ClearSearch">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    }
+                </div>
+
+                <!-- Export Button -->
+                <button class="btn btn-primary d-flex align-items-center gap-2 action-btn"
+                        @onclick="ExportToExcel">
+                    <i class="bi bi-file-earmark-excel"></i>
+                    <span class="d-none d-md-inline">Export</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
         <div class="card-body p-4">
             @if (tickets == null)
             {
@@ -83,115 +330,122 @@
                     </div>
                     <h4 class="text-muted mb-3">
                         @(string.IsNullOrEmpty(searchTerm)
-                            ? "No Tickets Found"
-                            : "No matching tickets found")
-                    </h4>
-                    <p class="text-muted">
+                                            ? "No Tickets Found"
+                                            : "No matching tickets found")
+                                                                      </h4>
+                                                                      <p class="text-muted">
                         @(string.IsNullOrEmpty(searchTerm)
-                            ? "There are currently no tickets in this category"
-                            : "Try a different search term")
-                    </p>
-                </div>
-            }
+                                            ? "There are currently no tickets in this category"
+                                            : "Try a different search term")
+                </p>
+            </div>
+                        }
             else
             {
+                <!-- Tickets List -->
                 <div class="tickets-container">
-                    @foreach (var ticket in FilteredTickets)
+                    @foreach (var ticket in CurrentPageTickets)
                     {
-                        <div class="ticket-card card mb-3 w-100 shadow-sm">
-                            <div class="card-header d-flex justify-content-between align-items-center p-3 bg-light">
+                        <div class="ticket-card card">
+                            <div class="card-header d-flex flex-wrap justify-content-between align-items-center p-3 bg-light">
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="badge @GetStatusClass(ticket.Status)">@ticket.Status</span>
                                     <div>
-                                        <h6 class="mb-0">Ticket #@ticket.TID</h6>
-                                        <small class="text-muted">@ticket?.category?.CategoryName • @ticket.OpenDate.ToString("MMM dd, yyyy")</small>
+                                        <h6 class="mb-0"><i class="bi bi-tag-fill me-1"></i>Ticket #@ticket.TID</h6>
+                                        <small class="text-muted"><i class="bi bi-grid-1x2-fill me-1"></i>@ticket?.Category?.CategoryName • <i class="bi bi-calendar-event me-1"></i>@ticket.OpenDate.ToString("MMM dd, yyyy")</small>
                                     </div>
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-secondary"
+                                <div class="d-flex gap-2 ticket-actions">
+                                    <button class="btn btn-sm btn-outline-primary"
                                             onclick="toggleCollapse(this)">
-                                        ▼ Details
+                                        <i class="bi bi-chevron-down me-1"></i>Details
                                     </button>
                                 </div>
                             </div>
 
                             <div class="card-body p-3 collapse-body" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-2">
-                                            <span class="text-muted">Priority:</span>
-                                            <span class="badge @GetPriorityClass(ticket.Priority) ms-2">@ticket.Priority</span>
+                                <div class="row ticket-details-row">
+                                    <div class="col-md-6 ticket-details-col">
+                                        <div class="mb-3">
+                                            <span class="text-muted"><i class="bi bi-exclamation-triangle-fill me-1"></i>Priority:</span>
+                                            <span class="badge @GetPriorityClass(ticket.Priority) ms-2"><i class="bi bi-flag-fill me-1"></i>@ticket.Priority</span>
                                         </div>
-                                        <div class="mb-2">
-                                            <span class="text-muted">Assigned To:</span>
+                                        <div class="mb-3">
+                                            <span class="text-muted"><i class="bi bi-person-check-fill me-1"></i>Assigned To:</span>
                                             @if (ticket.Agent != null)
                                             {
-                                                <span class="badge btn-action-active ms-2">@ticket.Agent.Fname @ticket.Agent.Lname</span>
+                                                <span class="badge btn-action-active ms-2"><i class="bi bi-person-fill me-1"></i>@ticket.Agent.Fname @ticket.Agent.Lname</span>
                                             }
                                             else
                                             {
-                                                <span class="badge btn-action-inactive ms-2">Not Assigned Yet !</span>
+                                                <span class="badge btn-action-inactive ms-2"><i class="bi bi-person-x-fill me-1"></i>Not Assigned</span>
                                             }
                                         </div>
                                         @if (ticket.Status == "Assigned")
                                         {
-                                            <div class="mb-2">
-                                                <span class="text-muted">Assign Date:</span>
-                                                <span>@ticket.Assign_Date.ToString()</span>
+                                            <div class="mb-3">
+                                                <span class="text-muted"><i class="bi bi-calendar-check-fill me-1"></i>Assign Date:</span>
+                                                <span><i class="bi bi-clock-fill me-1"></i>@ticket.AssignDate.ToString()</span>
                                             </div>
                                         }
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-2">
-                                            <span class="text-muted">Created By:</span>
-                                            <span>@ticket.User.Fname @ticket.User.Lname</span>
+                                    <div class="col-md-6 ticket-details-col">
+                                        <div class="mb-3">
+                                            <span class="text-muted"><i class="bi bi-person-plus-fill me-1"></i>Created By:</span>
+                                            <span><i class="bi bi-person-circle me-1"></i>@ticket.User.Fname @ticket.User.Lname</span>
                                         </div>
-                                        <div class="mb-2">
-                                            <span class="text-muted">Subject:</span>
-                                            <span>@ticket.Subject</span>
+                                        <div class="mb-3">
+                                            <span class="text-muted"><i class="bi bi-chat-square-text-fill me-1"></i>Subject:</span>
+                                            <span><i class="bi bi-card-text me-1"></i>@ticket.Subject</span>
                                         </div>
                                         @if (ticket.Status == "Assigned")
                                         {
-                                            <div class="mb-2">
-                                                <span class="text-muted">Expected Time:</span>
-                                                <span>@ticket.Due_Minutes Minutes</span>
+                                            <div class="mb-3">
+                                                <span class="text-muted"><i class="bi bi-alarm-fill me-1"></i>Expected Time:</span>
+                                                <span><i class="bi bi-stopwatch-fill me-1"></i>@ticket.Due_Minutes Minutes</span>
                                             </div>
                                         }
                                     </div>
                                 </div>
 
-                                <div class="mt-3 p-2 bg-light rounded">
-                                    <h6 class="text-muted">Issue Description:</h6>
-                                    <p class="mb-0">@ticket.Issue</p>
+                                <div class="mt-3 p-3 bg-light rounded">
+                                    <h6 class="text-muted"><i class="bi bi-journal-text me-1"></i>Issue Description:</h6>
+                                    <p class="mb-0"><i class="bi bi-chat-left-quote-fill me-2"></i>@ticket.Issue</p>
                                 </div>
+
                                 @if (TicketStatus == "Closed")
                                 {
-                                    @if (ticket.IsSolved == true)
-                                    {
-                                        <div class="mt-3 p-2 bg-light rounded">
-                                            <h6 class="text-muted">Issue Solution:</h6>
-                                            <p class="mb-0">@ticket.Solution</p>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="mt-3 p-2 bg-light rounded">
-                                            <h6 class="text-muted">Issue Solution:</h6>
-                                            <p class="mb-0">Ticket was unsolved by our team</p>
-                                        </div>
-                                    }
+                                    <div class="mt-3 p-3 bg-light rounded">
+                                        <h6 class="text-muted"><i class="bi bi-check-circle-fill me-1"></i>Resolution:</h6>
+                                        @if (ticket.IsSolved == true && !string.IsNullOrEmpty(ticket.Solution))
+                                        {
+                                            <p class="mb-0"><i class="bi bi-lightbulb-fill me-2"></i>@ticket.Solution</p>
+                                        }
+                                        else if (ticket.IsSolved == true)
+                                        {
+                                            <p class="mb-0 badge badge-priority-urgent"><i class="bi bi-exclamation-triangle-fill me-1"></i>No solution provided</p>
+                                        }
+                                        else
+                                        {
+                                            <p class="mb-0"><i class="bi bi-emoji-frown-fill me-2"></i>Ticket was not resolved</p>
+                                        }
+                                    </div>
                                 }
 
-                                <div class="card-footer p-3 d-flex justify-content-end gap-2">
-                                    <a href="tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">Details</a>
+                                <div class="card-footer p-3 d-flex justify-content-end gap-2 ticket-footer-actions">
+                                    <a href="/tickets/ticketdetails/@ticket.TID" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-info-circle-fill me-1"></i>View Details
+                                    </a>
                                     <AuthorizeView Roles="Admin">
-                                        <button type="button" class="btn btn-sm btn-primary" @onclick="()=>HandleAssign(ticket.TID)">
+                                        <button type="button" class="btn btn-sm btn-primary" @onclick="() => HandleAssign(ticket.TID)">
                                             @if (ticket.Status == "Assigned")
                                             {
+                                                <i class="bi bi-arrow-repeat me-1"></i>
                                                 <span>Re-Assign</span>
                                             }
                                             else
                                             {
+                                                <i class="bi bi-person-plus-fill me-1"></i>
                                                 <span>Assign</span>
                                             }
                                         </button>
@@ -201,117 +455,156 @@
                         </div>
                     }
                 </div>
+
+                <!-- Pagination -->
+                @if (totalPages > 1)
+                {
+                    <div class="pagination-container">
+                        <ul class="pagination">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(1)" aria-label="First">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </button>
+                            </li>
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(currentPage - 1)" aria-label="Previous">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                            </li>
+
+                            @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <button class="page-link" @onclick="() => ChangePage(i)">@i</button>
+                                </li>
+                            }
+
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(currentPage + 1)" aria-label="Next">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </li>
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => ChangePage(totalPages)" aria-label="Last">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                }
             }
         </div>
     </div>
 </div>
 
-<style>
-    .bg-primary-gradient {
-        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+@code {
+    // Pagination variables
+    private int currentPage = 1;
+    private const int pageSize = 10; // Number of tickets per page
+    private int totalPages = 1;
+
+    // Computed property for current page tickets
+    private IEnumerable<Ticket> CurrentPageTickets =>
+        FilteredTickets.Skip((currentPage - 1) * pageSize).Take(pageSize);
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        CalculateTotalPages();
     }
 
-    .ticket-card {
-        transition: all 0.2s ease;
-        border-radius: 0.5rem;
-    }
-
-        .ticket-card:hover {
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
+    private void CalculateTotalPages()
+    {
+        totalPages = (int)Math.Ceiling((double)FilteredTickets.Count() / pageSize);
+        if (currentPage > totalPages && totalPages > 0)
+        {
+            currentPage = totalPages;
         }
-
-    .badge-status-open {
-        background-color: #0dcaf0;
-        color: white;
     }
 
-    .badge-status-Assigned {
-        background-color: #ffc107;
-        color: black;
+    private void ChangePage(int page)
+    {
+        currentPage = page;
+        StateHasChanged();
     }
 
-    .badge-status-Esclated {
-        background-color: #fd7e14;
-        color: white;
-    }
-
-    .badge-priority-high {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    .badge-priority-medium {
-        background-color: #fd7e14;
-        color: white;
-    }
-
-    .badge-priority-low {
-        background-color: #198754;
-        color: white;
-    }
-
-    .btn-action-active {
-        background-color: #198754;
-        color: white;
-    }
-
-    .btn-action-inactive {
-        background-color: #6c757d;
-        color: white;
-    }
-
-    /* Search input enhancements */
-    .input-group-text {
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        box-shadow: none;
-        border-color: #dee2e6;
-    }
-
-        .form-control:focus + .input-group-text {
-            color: #0d6efd;
-        }
-
-    .dropdown-menu {
-        min-width: 10rem;
-    }
-</style>
-
+}
 @code {
     private IEnumerable<Ticket>? tickets = new List<Ticket>();
     private IEnumerable<Ticket>? FilteredTickets = new List<Ticket>();
     private IEnumerable<AppUser>? agents = new List<AppUser>();
     private string searchTerm = string.Empty;
     private Timer? debounceTimer;
+    private bool _disposed;
 
     [Parameter]
     public string TicketStatus { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(TimeSpan.FromSeconds(0.5));
         await LoadTickets();
+
+        // Subscribe to SignalR updates
+        NotificationService.OnTicketUpdated += HandleTicketUpdate;
+        await NotificationService.InitializeAsync(HandleNotification);
+    }
+
+    private async Task HandleNotification(string message)
+    {
+        // Optional: Handle general notifications if needed
+        // await JS.InvokeVoidAsync("console.log", $"Notification received: {message}");
+    }
+    private async Task HandleTicketUpdate(int ticketId, string action)
+    {
+        await InvokeAsync(async () =>
+        {
+            try
+            {
+                StateHasChanged();
+                await Task.Delay(1000);
+                await LoadTickets();
+            }
+            catch (Exception ex)
+            {
+                await JS.InvokeVoidAsync("console.error");
+            }
+        });
+    }
+
+    private bool ShouldShowTicket(Ticket ticket)
+    {
+        return string.IsNullOrEmpty(TicketStatus) ||
+               ticket.Status.Equals(TicketStatus, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task LoadTickets()
     {
-        if (TicketStatus == "Assigned")
+        try
         {
-            tickets = await _ITicket.GetAllOpendTicketsAsync();
-            tickets = tickets.Where(u => u.Status == "Assigned");
+            if (TicketStatus == "Assigned")
+            {
+                tickets = await _ITicket.GetAllAssignedTickets();
+            }
+            else if (TicketStatus == "Escalated")
+            {
+                tickets = await _ITicket.GetAllEscalatedTickets();
+            }
+            else if (TicketStatus == "Closed")
+            {
+                tickets = await _ITicket.GetAllClosedTicketsAsync();
+            }
+            else
+            {
+                tickets = await _ITicket.GetAllOpendTicketsAsync();
+            }
+            FilteredTickets = tickets;
+            agents = await _IAppUser.GetAllAgentsAsync();
         }
-        else if (TicketStatus == "Closed")
+        catch (Exception ex)
         {
-            tickets = await _ITicket.GetAllClosedTicketsAsync();
+            await JS.InvokeVoidAsync("console.error", $"Error loading tickets: {ex.Message}");
         }
-        else
-        {
-            tickets = await _ITicket.GetAllOpendTicketsAsync();
-        }
-        FilteredTickets = tickets;
-        agents = await _IAppUser.GetAllAgentsAsync();
     }
 
     private void HandleSearchInput(ChangeEventArgs e)
@@ -339,7 +632,7 @@
         else
         {
             var term = searchTerm.ToLower();
-            FilteredTickets = tickets.Where(t =>
+            FilteredTickets = tickets?.Where(t =>
                 t.TID.ToString().Contains(term) ||
                 t.Subject.ToLower().Contains(term) ||
                 t.Issue.ToLower().Contains(term) ||
@@ -348,7 +641,7 @@
                 t.User.Lname.ToLower().Contains(term) ||
                 (t.Agent != null && t.Agent.Fname.ToLower().Contains(term)) ||
                 (t.Agent != null && t.Agent.Lname.ToLower().Contains(term)) ||
-                t.category.CategoryName.ToLower().Contains(term))
+                t.Category.CategoryName.ToLower().Contains(term))
                 .ToList();
         }
     }
@@ -363,16 +656,16 @@
     {
         "Open" => "badge-status-open",
         "Assigned" => "badge-status-Assigned",
-        "Esclated" => "badge-status-Esclated",
-        _ => "bg-secondary"
+        "Escalated" => "badge-status-Esclated",
+        _ => "badge-status-closed"
     };
 
     private string GetPriorityClass(string priority) => priority switch
     {
-        "Urgent" => "badge-priority-high",
-        "High" => "badge-priority-medium",
-        "Medium" => "badge-priority-low",
-        _ => "bg-secondary"
+        "Urgent" => "badge-priority-urgent",
+        "High" => "badge-priority-high",
+        "Medium" => "badge-priority-medium",
+        _ => "badge-priority-low"
     };
 
     private int AssignId { get; set; }
@@ -393,6 +686,8 @@
             if (result)
             {
                 JS?.ToastrSuccess("Ticket Assigned Successfully");
+                // Notify all clients about the assignment
+                await NotificationService.SendTicketUpdateAsync(AssignId, "Assigned");
             }
             else
             {
@@ -403,17 +698,6 @@
         AssignId = 0;
     }
 
-    public void Dispose()
-    {
-        debounceTimer?.Dispose();
-    }
-}
-
-
-
-
-
-@code {
     private async Task ExportToExcel()
     {
         using var workbook = new XLWorkbook();
@@ -443,11 +727,8 @@
                 worksheet.Cell(1, 17).Value = "Comment";
                 worksheet.Cell(1, 18).Value = "User Rate";
                 worksheet.Cell(1, 19).Value = "Ticket Rate";
-
             }
-
         }
-
 
         // Add data
         int row = 2;
@@ -456,16 +737,16 @@
             worksheet.Cell(row, 1).Value = ticket.TID;
             worksheet.Cell(row, 2).Value = ticket.Subject;
             worksheet.Cell(row, 3).Value = ticket.Priority;
-            worksheet.Cell(row, 4).Value = ticket.category.CategoryName ?? "No Cateogry";
+            worksheet.Cell(row, 4).Value = ticket.Category.CategoryName ?? "No Cateogry";
             worksheet.Cell(row, 5).Value = ticket.Issue;
             worksheet.Cell(row, 6).Value = ticket.OpenDate;
             worksheet.Cell(row, 7).Value = ticket.Status;
             worksheet.Cell(row, 8).Value = ticket.User.Fname + " " + ticket.User.Lname;
             worksheet.Cell(row, 9).Value = ticket.User.Email;
-            worksheet.Cell(row, 10).Value = ticket.location.LocationName;
+            worksheet.Cell(row, 10).Value = ticket.Location.LocationName;
             if (TicketStatus == "Assigned" || TicketStatus == "Closed")
             {
-                worksheet.Cell(row, 11).Value = ticket.Assign_Date == null ? "No Assign Date" : ticket.CloseDate;
+                worksheet.Cell(row, 11).Value = ticket.AssignDate == null ? "No Assign Date" : ticket.CloseDate;
                 worksheet.Cell(row, 12).Value = ticket.Due_Minutes == null ? "No Expected Time" : ticket.Due_Minutes;
                 worksheet.Cell(row, 13).Value = ticket.AgentID == null ? "No Agent Yet" : ticket.Agent.Fname + " " + ticket.Agent.Lname;
                 if (TicketStatus == "Closed")
@@ -481,9 +762,7 @@
             row++;
         }
 
-        // Create a new workbook and worksheet
-
-        // Set the header row style
+        // Formatting
         var headerRow = worksheet.Range(1, 1, 1, worksheet.LastColumnUsed().ColumnNumber());
         headerRow.SetAutoFilter(true);
         headerRow.Style.Font.Bold = true;
@@ -492,12 +771,9 @@
         headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         headerRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-        // Apply borders to the entire worksheet
-
         worksheet.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thick;
         worksheet.RangeUsed().Style.Border.InsideBorder = XLBorderStyleValues.Thick;
 
-        // Set the font and alignment for all cells
         worksheet.Style.Font.FontName = "Arial";
         worksheet.Style.Font.FontSize = 10;
         headerRow.Style.Font.FontSize = 10;
@@ -505,17 +781,24 @@
         worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
         worksheet.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-        // Auto-adjust column width and row height
         worksheet.Columns().AdjustToContents();
         worksheet.Rows().AdjustToContents();
 
-        // Save the file to a memory stream
+        // Save and download
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
         var fileBytes = stream.ToArray();
         var fileName = $"{TicketStatus} Tickets{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-        // Trigger download in Blazor
         await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(fileBytes));
     }
 
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            debounceTimer?.Dispose();
+            NotificationService.OnTicketUpdated -= HandleTicketUpdate;
+            _disposed = true;
+        }
+    }
 }

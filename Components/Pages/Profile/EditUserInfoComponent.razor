@@ -156,7 +156,7 @@
 
                             <div class="form-group floating">
                                 <InputSelect id="department" @bind-Value="Model.DepartmentId" class="form-control">
-                                    <option value="">Select Department</option>
+                                    <option value="0">Select Department</option>
                                     @foreach (var dept in _departments)
                                     {
                                         <option value="@dept.DID">@dept.DepartmentName</option>
@@ -211,6 +211,8 @@
     {
         try
         {
+            await Task.Delay(TimeSpan.FromSeconds(0.1));
+
             var userId = 0;
             // Load user data
             if (Id == 0)

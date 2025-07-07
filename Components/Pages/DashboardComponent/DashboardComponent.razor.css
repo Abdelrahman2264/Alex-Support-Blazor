@@ -2,7 +2,6 @@
 .dashboard-container {
     font-family: 'Roboto', sans-serif;
     padding: 20px;
-    background-color: #f5f7fa;
     min-height: 100vh;
 }
 
@@ -13,7 +12,7 @@
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 2px solid #e0e0e0;
 }
 
     .dashboard-header h1 {
@@ -160,6 +159,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+
 }
 
     .section-header h2 {
@@ -681,5 +681,243 @@
 
     .metric-item {
         padding: 0.5rem;
+    }
+}
+.locations-card {
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    overflow: hidden;
+}
+
+    .locations-card .card {
+        border: none;
+    }
+
+    .locations-card .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 0.75rem 1rem;
+    }
+
+    .locations-card .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .locations-card .table {
+        margin-bottom: 0;
+    }
+
+        .locations-card .table th {
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+        .locations-card .table td {
+            vertical-align: middle;
+            padding: 0.75rem;
+        }
+
+    .locations-card .progress {
+        background-color: #e9ecef;
+    }
+
+/* Responsive adjustments */
+@@media (max-width: 768px) {
+    .locations-card {
+        margin-bottom: 1rem;
+        border-radius: 0;
+    }
+
+        .locations-card .card-header {
+            padding: 0.5rem;
+        }
+
+        .locations-card .card-title {
+            font-size: 0.9rem;
+        }
+
+        .locations-card .table td,
+        .locations-card .table th {
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+}
+
+@@media (max-width: 576px) {
+    .locations-card .table-responsive {
+        border: 0;
+    }
+
+    .locations-card .table th:nth-child(3),
+    .locations-card .table td:nth-child(3) {
+        display: none;
+    }
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+/* Gradient color option (alternative) */
+.progress-bar-gradient {
+    background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+}
+
+/* Rest of your existing styles... */
+.locations-card {
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    overflow: hidden;
+}
+/* Add these to your existing CSS */
+
+/* Card entrance animations */
+.summary-card {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+    .summary-card.total {
+        animation-delay: 0.1s;
+    }
+
+    .summary-card.open {
+        animation-delay: 0.2s;
+    }
+
+    .summary-card.closed {
+        animation-delay: 0.3s;
+    }
+
+    .summary-card.assigned {
+        animation-delay: 0.4s;
+    }
+
+    .summary-card.escalated {
+        animation-delay: 0.5s;
+    }
+
+/* Hover animations for cards */
+.card, .summary-card, .chart-card, .metrics-card {
+    transition: all 0.3s ease;
+}
+
+    .card:hover, .summary-card:hover, .chart-card:hover, .metrics-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+/* Button animations */
+.action-btn {
+    transition: all 0.3s ease;
+    transform: scale(1);
+}
+
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+
+/* Table row animation */
+.table-hover tbody tr {
+    transition: all 0.2s ease;
+}
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,0.02);
+        transform: translateX(5px);
+    }
+
+/* Progress bar animation */
+.progress-bar {
+    transition: width 1.5s ease-in-out;
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chart cards animation */
+.chart-card {
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+    .chart-card:nth-child(1) {
+        animation-delay: 0.6s;
+    }
+
+    .chart-card:nth-child(2) {
+        animation-delay: 0.7s;
+    }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Metrics card animation */
+.metrics-card {
+    animation: slideInRight 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Locations card animation */
+.locations-card {
+    animation: slideInLeft 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }

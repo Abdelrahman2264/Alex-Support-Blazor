@@ -10,7 +10,6 @@
 @inject IJSRuntime JS
 @inject IPasswordHasherRepository _IPasswordHasherRepository
 @inject ILogService log
-
 <style>
     /* Base Styles */
     :root {
@@ -838,23 +837,23 @@
                     <label for="username" class="floating-label">Username or Email</label>
                     <div class="input-container">
                         <i class="bi bi-person input-icon"></i>
-                        <InputText id="username" @bind-Value="loginModel.username" class="floating-input" />
+                        <InputText id="username" @bind-Value="loginModel.Username" class="floating-input" />
                     </div>
-                    <ValidationMessage For="@(() => loginModel.username)" class="validation-message" />
+                    <ValidationMessage For="@(() => loginModel.Username)" class="validation-message" />
                 </div>
 
                 <div class="floating-input-group">
                     <label for="password" class="floating-label">Password</label>
                     <div class="input-container">
                         <i class="bi bi-lock input-icon"></i>
-                        <InputText id="password" @bind-Value="loginModel.password"
+                        <InputText id="password" @bind-Value="loginModel.Password"
                                    type="@(showPassword ? "text" : "password")"
                                    class="floating-input" />
                         <button type="button" class="toggle-password" @onclick="TogglePasswordVisibility" aria-label="Toggle password visibility">
                             <i class="@(showPassword ? "bi bi-eye-slash" : "bi bi-eye")"></i>
                         </button>
                     </div>
-                    <ValidationMessage For="@(() => loginModel.password)" class="validation-message" />
+                    <ValidationMessage For="@(() => loginModel.Password)" class="validation-message" />
                 </div>
 
                 <div class="auth-form-options">
@@ -887,8 +886,8 @@
 
     private async Task HandleLogin()
     {
-        var user = await _IUser.Login(loginModel.username, loginModel.password);
-        var flag = _IPasswordHasherRepository.VerifyPassword(loginModel.password, user.Password);
+        var user = await _IUser.Login(loginModel.Username, loginModel.Password);
+        var flag = _IPasswordHasherRepository.VerifyPassword(loginModel.Password, user.Password);
 
         if (user is null || !flag || user.UID == 0)
         {

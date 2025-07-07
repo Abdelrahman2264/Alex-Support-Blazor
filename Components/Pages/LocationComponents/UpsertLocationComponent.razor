@@ -1,5 +1,6 @@
 ﻿@page "/Sites/Create"
-@page "/Sites/Update/{id:int}"
+@page "/Sites/Update/{id}"
+@attribute [Route("/Sites/Update/{id:int}")]
 @inject ILocationRepository _ISite
 @inject NavigationManager _navigationManager
 @inject IJSRuntime JS
@@ -73,10 +74,13 @@ else
 }
 
 <style>
-    .bg-primary-gradient {
-        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    :root {
+        --primary-color: blue;
     }
 
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, var(--primary-color) 0%, white 100%);
+    }
     .z-index-1050 {
         z-index: 1050;
     }
@@ -117,6 +121,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         isProcessing = true;
+        await Task.Delay(TimeSpan.FromSeconds(0.1));
         await LoadType();
         isProcessing = false;
         StateHasChanged();

@@ -26,7 +26,7 @@ namespace AlexSupport.Repository
             {
                 if (category != null)
                 {
-                    category.isActive = true;
+                    category.IsActive = true;
                     category.CreatedDate = DateTime.Now;
                     await alexSupportDB.Category.AddAsync(category);
                     await alexSupportDB.SaveChangesAsync();
@@ -52,7 +52,7 @@ namespace AlexSupport.Repository
                 var category = await alexSupportDB.Category.FirstOrDefaultAsync(c => c.CID == Id);
                 if (category != null)
                 {
-                    category.isActive = false;
+                    category.IsActive = false;
                     await alexSupportDB.SaveChangesAsync();
                     await LogService.CreateSystemLogAsync($"In Active Category  With Id: {category.CID} In the System", "CATEGORY");
 
@@ -116,7 +116,7 @@ namespace AlexSupport.Repository
                 if (UpdatedCategory != null)
                 {
                     UpdatedCategory.CategoryName = category.CategoryName;
-                    UpdatedCategory.isActive = true;
+                    UpdatedCategory.IsActive = true;
                     alexSupportDB.Category.Update(UpdatedCategory);
                     await alexSupportDB.SaveChangesAsync();
                     await LogService.CreateSystemLogAsync($"Update Category With Id: {UpdatedCategory.CID} In the System", "CATEGORY");
@@ -143,7 +143,7 @@ namespace AlexSupport.Repository
 
                 if (id != 0)
                 {
-                    var type = await alexSupportDB.Category.FirstOrDefaultAsync(u => u.CategoryName.ToLower() == name.ToLower() && u.isActive == true && u.CID != id);
+                    var type = await alexSupportDB.Category.FirstOrDefaultAsync(u => u.CategoryName.ToLower() == name.ToLower() && u.IsActive == true && u.CID != id);
                     if (type != null)
                     {
                         return true;
@@ -152,7 +152,7 @@ namespace AlexSupport.Repository
                 }
                 else
                 {
-                    var type = await alexSupportDB.Category.FirstOrDefaultAsync(u => u.CategoryName.ToLower() == name.ToLower() && u.isActive == true);
+                    var type = await alexSupportDB.Category.FirstOrDefaultAsync(u => u.CategoryName.ToLower() == name.ToLower() && u.IsActive == true);
                     if (type != null)
                     {
                         return true;

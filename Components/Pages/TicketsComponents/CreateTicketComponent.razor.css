@@ -1,5 +1,5 @@
 ﻿/* ===== Base Variables ===== */
-:root {
+/*:root {
     --primary-color: #4361ee;
     --primary-light: #eef2ff;
     --secondary-color: #3a0ca3;
@@ -11,10 +11,10 @@
     --border-radius: 0.5rem;
     --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
     --transition: all 0.2s ease-in-out;
-}
+}*/
 
 /* ===== Page Layout ===== */
-.page-title {
+/*.page-title {
     text-align: center;
     margin: 1.5rem 0 2.5rem;
     color: var(--dark-color);
@@ -44,10 +44,10 @@
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     border: 1px solid rgba(0, 0, 0, 0.05);
-}
+}*/
 
 /* ===== Form Grid ===== */
-.form-grid {
+/*.form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
@@ -61,10 +61,10 @@
 
 .full-width {
     grid-column: 1 / -1;
-}
+}*/
 
 /* ===== Form Elements ===== */
-.form-label {
+/*.form-label {
     display: block;
     margin-bottom: 0.75rem;
     font-weight: 600;
@@ -87,26 +87,26 @@
         outline: none;
         box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
         background-color: white;
-    }
+    }*/
 
 /* Select dropdown styling */
-select.form-control {
+/*select.form-control {
     appearance: none;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 1rem center;
     background-size: 16px 12px;
     padding-right: 2.5rem;
-}
+}*/
 
 /* Textarea specific styling */
-textarea.form-control {
+/*textarea.form-control {
     min-height: 150px;
     resize: vertical;
-}
+}*/
 
 /* ===== File Upload ===== */
-.file-upload-container {
+/*.file-upload-container {
     position: relative;
     margin-top: 0.5rem;
 }
@@ -174,10 +174,10 @@ textarea.form-control {
         width: 0;
         background-color: var(--primary-color);
         animation: progress 2s ease-in-out infinite;
-    }
+    }*/
 
 /* ===== Image Preview ===== */
-.image-preview {
+/*.image-preview {
     margin-top: 1.5rem;
 }
 
@@ -217,10 +217,10 @@ textarea.form-control {
     .btn-remove-image:hover {
         background-color: #d1146a;
         transform: scale(1.1);
-    }
+    }*/
 
 /* ===== Form Actions ===== */
-.form-actions {
+/*.form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 1.25rem;
@@ -267,10 +267,10 @@ textarea.form-control {
         background-color: #cbd5e1;
         cursor: not-allowed;
         transform: none;
-    }
+    }*/
 
 /* ===== Validation ===== */
-.validation-summary {
+/*.validation-summary {
     color: var(--danger-color);
     margin-bottom: 2rem;
     padding: 1.25rem;
@@ -286,17 +286,17 @@ textarea.form-control {
     margin-top: 0.5rem;
     display: block;
     font-weight: 500;
-}
+}*/
 
 /* ===== Loading State ===== */
-.spinner-border {
+/*.spinner-border {
     width: 1.25rem;
     height: 1.25rem;
     border-width: 0.15em;
-}
+}*/
 
 /* ===== Animations ===== */
-@keyframes progress {
+/*@keyframes progress {
     0% {
         width: 0;
         transform: translateX(0);
@@ -311,10 +311,10 @@ textarea.form-control {
         width: 0;
         transform: translateX(200%);
     }
-}
+}*/
 
 /* ===== Responsive Adjustments ===== */
-@media (max-width: 992px) {
+/*@media (max-width: 992px) {
     .ticket-form-container {
         padding: 2rem;
     }
@@ -355,10 +355,10 @@ textarea.form-control {
     .form-control {
         padding: 0.75rem 1rem;
     }
-}
+}*/
 
 /* ===== Updated CSS ===== */
-:root {
+/*:root {
     --primary-color: #4361ee;
     --primary-light: #eef2ff;
     --secondary-color: #3a0ca3;
@@ -370,10 +370,10 @@ textarea.form-control {
     --border-radius: 0.5rem;
     --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
     --transition: all 0.2s ease-in-out;
-}
+}*/
 
 /* Input with icon container */
-.input-with-icon .input-container {
+/*.input-with-icon .input-container {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -397,19 +397,19 @@ textarea.form-control {
 
 .input-with-icon .input-wrapper {
     flex: 1;
-}
+}*/
 
 /* Form label styling */
-.input-with-icon .form-label {
+/*.input-with-icon .form-label {
     display: block;
     margin-bottom: 0.25rem;
     font-weight: 600;
     color: #4a5568;
     font-size: 0.85rem;
-}
+}*/
 
 /* Input field styling */
-.input-with-icon .form-control {
+/*.input-with-icon .form-control {
     width: 100%;
     padding: 0.5rem 0;
     border: none;
@@ -422,16 +422,16 @@ textarea.form-control {
 .input-with-icon select.form-control {
     padding-right: 1.5rem;
     background-position: right center;
-}
+}*/
 
 /* Placeholder styling */
-.input-with-icon .form-control::placeholder {
+/*.input-with-icon .form-control::placeholder {
     color: #a0aec0;
     opacity: 1;
-}
+}*/
 
 /* File upload specific styling */
-.file-upload-container {
+/*.file-upload-container {
     border-radius: var(--border-radius);
     background-color: #f8fafc;
     transition: var(--transition);
@@ -452,10 +452,10 @@ textarea.form-control {
     font-size: 2rem;
     margin-bottom: 0.5rem;
     color: var(--primary-color);
-}
+}*/
 
 /* Priority-specific colors */
-.input-with-icon .form-control option[value="Low"] {
+/*.input-with-icon .form-control option[value="Low"] {
     color: #38a169;
 }
 
@@ -469,10 +469,10 @@ textarea.form-control {
 
 .input-with-icon .form-control option[value="Urgent"] {
     color: #e53e3e;
-}
+}*/
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+/*@media (max-width: 768px) {
     .input-with-icon .input-container {
         padding: 0.5rem;
     }
@@ -480,4 +480,4 @@ textarea.form-control {
     .input-with-icon .input-icon {
         font-size: 1.1rem;
     }
-}
+}*/

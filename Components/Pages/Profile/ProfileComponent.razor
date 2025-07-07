@@ -139,6 +139,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(TimeSpan.FromSeconds(0.1));
+
         await LoadUserData();
         // Example usage with sound:
       

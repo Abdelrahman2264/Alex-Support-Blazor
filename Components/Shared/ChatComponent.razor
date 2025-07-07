@@ -83,40 +83,45 @@
             }
         </div>
 
-        <div class="chat-input-area">
-            @if (imageData != null)
-            {
-                <div class="image-preview">
-                    <img src="data:@imageContentType;base64,@Convert.ToBase64String(imageData)" />
-                    <button class="remove-image" @onclick="RemoveImage">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            }
-            <div class="input-group">
-                <textarea @bind="NewMessage"
-                          placeholder="Type your message..."
-                          @onkeypress="HandleKeyPress"
-                          disabled="@(ConnectionState != HubConnectionState.Connected)"></textarea>
-                <div class="input-actions">
-                    <label class="file-upload">
-                        <i class="fas fa-image"></i>
-                        <InputFile type="file"
-                                   class="d-none"
-                                   @ref="fileInput"
-                                   OnChange="HandleFileUpload"
-                                   accept="image/*"
-                                   disabled="@(ConnectionState != HubConnectionState.Connected)" />
-                    </label>
-                    <button @onclick="SendMessage"
-                            class="btn-send"
-                            disabled="@(string.IsNullOrWhiteSpace(NewMessage) && imageData == null ||
+        @if (IsClosed == false)
+        {
+
+
+            <div class="chat-input-area">
+                @if (imageData != null)
+                {
+                    <div class="image-preview">
+                        <img src="data:@imageContentType;base64,@Convert.ToBase64String(imageData)" />
+                        <button class="remove-image" @onclick="RemoveImage">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                }
+                <div class="input-group">
+                    <textarea @bind="NewMessage"
+                              placeholder="Type your message..."
+                              @onkeypress="HandleKeyPress"
+                              disabled="@(ConnectionState != HubConnectionState.Connected)"></textarea>
+                    <div class="input-actions">
+                        <label class="file-upload">
+                            <i class="fas fa-image"></i>
+                            <InputFile type="file"
+                                       class="d-none"
+                                       @ref="fileInput"
+                                       OnChange="HandleFileUpload"
+                                       accept="image/*"
+                                       disabled="@(ConnectionState != HubConnectionState.Connected)" />
+                        </label>
+                        <button @onclick="SendMessage"
+                                class="btn-send"
+                                disabled="@(string.IsNullOrWhiteSpace(NewMessage) && imageData == null ||
                                       ConnectionState != HubConnectionState.Connected)">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
@@ -137,7 +142,8 @@
 @code {
     [Parameter] public int TicketId { get; set; }
     public int CurrentUserId { get; set; }
-
+    [Parameter]
+    public bool IsClosed { get; set; } = false;
     private List<ChatMessage> Messages { get; set; } = new();
     private string NewMessage { get; set; } = string.Empty;
     private ElementReference messagesContainer;
@@ -148,6 +154,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.Delay(TimeSpan.FromSeconds(0.01));
+
         CurrentUserId = await Log.ReturnCurrentUserID();
         await LoadMessages();
         await InitializeSignalR();
@@ -172,8 +180,8 @@
             await InvokeAsync(async () =>
             {
                 if (!Messages.Any(m => m.MessageText == messageText &&
-                                     m.SenderId.ToString() == fromUserId &&
-                                     (DateTime.Now - m.SentDate).TotalSeconds < 2))
+                                     m.SenderId.ToString() == fromUserId
+                                    ))
                 {
                     await LoadMessages();
                 }
@@ -304,4 +312,3 @@
     }
 }
 
-        @inject IJSRuntime JS
