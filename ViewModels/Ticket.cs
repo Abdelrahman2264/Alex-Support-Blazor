@@ -112,10 +112,10 @@ namespace AlexSupport.ViewModels
         [Display(Name = "Assigned Date")]
         public DateTime? AssignDate { get; set; }
 
-        [Column(TypeName = "NVARCHAR(50)")]
-        [Display(Name = "User Approval")]
+        [Column(TypeName = "NVARCHAR(500)")]
+        [Display(Name = "User Feedback")]
 
-        public string? UserApproval { get; set; }
+        public string? UserFeedBack { get; set; }
 
         [Column(TypeName = "VARBINARY(MAX)")]
         [MaxLength(5242880, ErrorMessage = "Image cannot exceed 5MB")]

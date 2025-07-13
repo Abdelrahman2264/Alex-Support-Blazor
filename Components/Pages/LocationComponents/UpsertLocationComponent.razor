@@ -1,10 +1,8 @@
 ﻿@page "/Sites/Create"
 @page "/Sites/Update/{id}"
-@attribute [Route("/Sites/Update/{id:int}")]
 @inject ILocationRepository _ISite
 @inject NavigationManager _navigationManager
 @inject IJSRuntime JS
-@using AlexSupport.ViewModels;
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin")]
 <PageTitle>@(Sites.LID == 0 ? "Create Site" : "Update Site")</PageTitle>

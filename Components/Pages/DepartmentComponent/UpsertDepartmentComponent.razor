@@ -4,7 +4,6 @@
 @inject NavigationManager _navigationManager
 @inject IJSRuntime JS
 @rendermode InteractiveServer
-@using AlexSupport.ViewModels
 @attribute [Authorize(Roles = "Admin")]
 <PageTitle>@(Departments.DID == 0 ? "Create Department" : "Update Department")</PageTitle>
 

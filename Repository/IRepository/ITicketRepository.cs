@@ -1,5 +1,6 @@
 ﻿using AlexSupport.Services.Models;
 using AlexSupport.ViewModels;
+using static AlexSupport.Components.Shared.UserRateComponent;
 
 namespace AlexSupport.Repository.IRepository
 {
@@ -12,6 +13,7 @@ namespace AlexSupport.Repository.IRepository
         public Task<bool> EsclateTicketAsync(Ticket ticket, int Id);
         public Task<bool> CloseTicketAsync(Ticket ticket, int Id);
         public Task<bool> AddSolutionToTicketAsync(Ticket ticket, int Id);
+        public Task<bool> AddUserRateToTicketAsync(RatingModel rate, int Id);
         public Task<IEnumerable<Ticket>> GetAllAssignedTickets();
         public Task<IEnumerable<Ticket>> GetAllClosedTicketsAsync();
         public Task<IEnumerable<Ticket>> GetAllAssignedTicketsAsync();

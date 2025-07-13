@@ -1,11 +1,11 @@
 ﻿@page "/SystemUsers"
 @inject IAppUserRepoistory _IAppUser
-@rendermode InteractiveServer
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,Agent")]
-
 <PageTitle>User Management</PageTitle>
+
 <BsModal OnModalConfirmation="Activation"
          IconClass="@(IsActive ? "fas fa-user-slash" : "fas fa-user-check")"
          IconColorClass="@(IsActive ? "text-warning" : "text-success")"
@@ -577,7 +577,6 @@ else
         StateHasChanged();
     }
 
-    // Your existing methods...
 }
 @code {
     private IEnumerable<AppUser> allUsers = new List<AppUser>();

@@ -1,1 +1,777 @@
-﻿
+﻿@page "/userguide"
+@layout AuthLayout
+<PageTitle>User Guide</PageTitle>
+<div class="guide-container">
+    <div class="guide-grid">
+        <!-- Authentication Section -->
+        <section class="guide-section" id="authentication">
+            <div class="section-header">
+                <i class="fas fa-user-shield"></i>
+                <h2>Authentication</h2>
+            </div>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Login Process</h3>
+                    <p>Access the IT Ticketing System using your credentials:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/Login_Screen.png" alt="Login Screen" class="screenshot">
+                    </div>
+                    <ol class="styled-list">
+                        <li><i class="fas fa-user"></i> Enter your company email address</li>
+                        <li><i class="fas fa-lock"></i> Input your password</li>
+                        <li><i class="fas fa-sign-in-alt"></i> Click "Sign In" button</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Sign Up Process</h3>
+                    <p>New users can register for an account:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/SignUp_Screen.png" alt="Sign Up Screen" class="screenshot">
+                    </div>
+                    <ol class="styled-list">
+                        <li><i class="fas fa-envelope"></i> Enter your corporate email</li>
+                        <li><i class="fas fa-id-card"></i> Provide employee ID and other required cardinalities</li>
+                        <li><i class="fas fa-shield-alt"></i> Set up your password</li>
+                        <li><i class="fas fa-check-circle"></i> Complete domain verification</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Password Recovery</h3>
+                    <p>If you've forgotten your password:</p>
+                    <div class="status-indicators">
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>Click "Forgot Password" on login page</span>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>Check email for verification code</span>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>Create a new strong password</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/Reset_Password.png" alt="Password Reset Screen" class="screenshot">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ticket Submission Section -->
+        <section class="guide-section" id="submit-ticket">
+            <div class="section-header">
+                <i class="fas fa-ticket-alt"></i>
+                <h2>Ticket Submission</h2>
+            </div>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Initiate New Ticket</h3>
+                    <p>From the Sidebar Menu, Choose Tickets Then ,click the<span class="highlight">Create Ticket</span> link.</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide\Create_Ticket_Menu.png" alt="New Ticket Button" class="screenshot">
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Complete Submission Form</h3>
+                    <p>Provide comprehensive details for faster resolution:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide\Create_Ticket_Form.png" alt="Ticket Submission Form" class="screenshot">
+                    </div>
+                    <div class="form-tips">
+                        <div class="form-tip">
+                            <i class="fas fa-clock"></i>
+                            <span><strong>Subject:</strong> Set clear subject for your issue</span>
+                        </div>
+                        <div class="form-tip">
+                            <i class="fas fa-layer-group"></i>
+                            <span><strong>Service Category:</strong> Select the most relevant category</span>
+                        </div>
+                        <div class="form-tip">
+                            <i class="fas fa-location-dot"></i>
+                            <span><strong>Location:</strong> Select your current Location for fast arrive by the agent</span>
+                        </div>
+                        <div class="form-tip">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span><strong>Urgency:</strong> Set appropriate priority level</span>
+                        </div>
+                        <div class="form-tip">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            <span><strong>Issue:</strong> Set clear details about your issue</span>
+                        </div>
+                        <div class="form-tip">
+                            <i class="fas fa-paperclip"></i>
+                            <span><strong>Attachments:</strong> Add screenshots or error logs (max 5MB)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Confirmation & Tracking</h3>
+                    <p>After submission, you'll receive:</p>
+                    <div class="status-indicators">
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>Tostar confirmation with success message</span>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>All Deatails for you created ticket</span>
+                        </div>
+                    </div>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/Open_Ticket.png" alt="Ticket Confirmation" class="screenshot">
+                    </div>
+                </div>   
+            </div>
+        </section>
+    </div>
+
+    <div class="guide-grid">
+        <!-- Ticket Management Section -->
+        <section class="guide-section" id="manage-ticket">
+            <div class="section-header">
+                <i class="fas fa-tasks"></i>
+                <h2>Ticket Management</h2>
+            </div>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Tracking Tickets</h3>
+                    <p>Monitor your ticket status in real-time:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/Dashboard_Screen.png" alt="Ticket Dashboard" class="screenshot">
+                    </div>
+                    <div class="status-indicators">
+                        <div class="status-indicator" style="--status-color: #f72585;">
+                            <div class="status-dot"></div>
+                            <span>Open - The Open Ticket you created</span>
+                        </div>
+                        <div class="status-indicator" style="--status-color: #4895ef;">
+                            <div class="status-dot"></div>
+                            <span>Assigned - Being worked on by the IT Team </span>
+                        </div>
+                        <div class="status-indicator" style="--status-color: #4cc9f0;">
+                            <div class="status-dot"></div>
+                            <span>Closed - Ticket was finished and closed</span>
+                        </div>
+                        <div class="status-indicator" style="--status-color: #3a0ca3;">
+                            <div class="status-dot"></div>
+                            <span>Escalated - Ticket was re-submit because has no action </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Escalation Process</h3>
+                    <p>To escalate a delayed ticket:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/Escalate_Screen.png" alt="Escalate Button" class="screenshot">
+                    </div>
+                    <ol class="styled-list">
+                        <li><i class="fas fa-search"></i> Locate your ticket in tickets</li>
+                        <li><i class="fas fa-flag"></i> Click "Details"</li>
+                        <li><i class="fas fa-info"></i> Click "Escalate"</li>
+                        <li><i class="fas fa-comment-alt"></i> Provide confirmation to escalate this ticket</li>
+                        <li><i class="fas fa-bell"></i> Supervisor will be notified automatically</li>
+                    </ol>
+                    <div class="notice-box">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Escalation available after assigned the ticket and the agent never response</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Closing Tickets</h3>
+                    <p>When your issue is resolved or never need the team to take action about this ticket:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/Close_Screen.png" alt="Close Ticket Option" class="screenshot">
+                    </div>
+                    <ol class="styled-list">
+                        <li><i class="fas fa-search"></i> Locate your ticket in tickets</li>
+                        <li><i class="fas fa-flag"></i> Click "Details"</li>
+                        <li><i class="fas fa-info"></i> Click "Close"</li>
+                        <li><i class="fas fa-comment-alt"></i> Provide comment or note to Close this ticket</li>
+                        <li><i class="fa-solid fa-question"></i> Choose if ticket solved or not</li>
+                        <li><i class="fa-solid fa-check"></i> Provide confirmation to Close this ticket</li>
+                        <li><i class="fas fa-bell"></i> Admin will be notified automatically</li>
+                    </ol>
+                    <div class="notice-box">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Tickets can be close by the user who create it or by the agent who work on this ticket or by the admin in the system and you will see you ticket in the ticket history.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feedback Section -->
+        <section class="guide-section" id="feedback">
+            <div class="section-header">
+                <i class="fas fa-star-half-alt"></i>
+                <h2>Agent Feedback</h2>
+            </div>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Rating Your Support Experience</h3>
+                    <p>After ticket closure, you'll receive a rating request:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/User_Rate_Screen.png" alt="Rating Interface" class="screenshot">
+                    </div>
+                    <div class="rating-scale">
+                        <div class="rating-level">
+                            <span class="rating-stars">★☆☆☆☆</span>
+                            <span>Poor - We're sorry to hear that</span>
+                        </div>
+                        <div class="rating-level">
+                            <span class="rating-stars">★★☆☆☆</span>
+                            <span>Fair - We'll try to do better</span>
+                        </div>
+                        <div class="rating-level">
+                            <span class="rating-stars">★★★☆☆</span>
+                            <span>Good - Thanks for your feedback</span>
+                        </div>
+                        <div class="rating-level">
+                            <span class="rating-stars">★★★★☆</span>
+                            <span>Very Good - We're glad you're happy</span>
+                        </div>
+                        <div class="rating-level">
+                            <span class="rating-stars">★★★★★</span>
+                            <span>Excellent - We're thrilled!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Providing Detailed Feedback</h3>
+                    <p>Help us improve by sharing specifics:</p>
+                    <div class="screenshot-container">
+                        <div class="screenshot-overlay">
+                            <i class="fas fa-expand"></i>
+                        </div>
+                        <img src="/Images/Alex_Support_User_Guide/User_Rate_Screen.png" alt="Feedback Form" class="screenshot">
+                    </div>
+                    <div class="form-tips">
+                        <div class="form-tip">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span><strong>Positive Feedback:</strong> Mention what worked well</span>
+                        </div>
+                        <div class="form-tip">
+                            <i class="fas fa-thumbs-down"></i>
+                            <span><strong>Constructive Criticism:</strong> Suggest specific improvements</span>
+                        </div>
+                        <div class="form-tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <span><strong>Suggestions:</strong> Share ideas for better service</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary: #4361ee;
+        --primary-light: #4895ef;
+        --secondary: #3f37c9;
+        --accent: #7209b7;
+        --accent-light: #b5179e;
+        --success: #4cc9f0;
+        --warning: #f72585;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray: #6c757d;
+        --light-gray: #e9ecef;
+        --card-shadow: 0 10px 30px rgba(67, 97, 238, 0.1);
+        --card-shadow-hover: 0 15px 45px rgba(67, 97, 238, 0.2);
+    }
+
+    .guide-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    .guide-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .guide-section {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.8);
+    }
+
+        .guide-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+        }
+
+        .guide-section:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+        .section-header i {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+            background: linear-gradient(45deg, var(--primary), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+    .step {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(45deg, var(--primary), var(--accent-light));
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+        margin-top: 0.3rem;
+    }
+
+    .step-content {
+        flex: 1;
+    }
+
+        .step-content h3 {
+            font-size: 1.3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .step-content p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+    .guide-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(45deg, var(--primary), var(--accent-light));
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        margin: 1rem 0;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.2);
+    }
+
+        .guide-btn .hover-effect {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.6s;
+        }
+
+        .guide-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3);
+        }
+
+            .guide-btn:hover .hover-effect {
+                left: 100%;
+            }
+
+    .styled-list {
+        list-style: none;
+        padding: 0;
+    }
+
+        .styled-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--gray);
+        }
+
+            .styled-list li i {
+                color: var(--primary);
+                font-size: 1.2rem;
+                width: 20px;
+                text-align: center;
+            }
+
+    .highlight {
+        background-color: rgba(67, 97, 238, 0.1);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        color: var(--primary);
+        font-weight: 500;
+    }
+
+    .screenshot-container {
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 1.5rem 0;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+
+    .screenshot {
+        width: 100%;
+        display: block;
+        transition: transform 0.5s;
+    }
+
+    .screenshot-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .screenshot-container:hover .screenshot-overlay {
+        opacity: 1;
+    }
+
+    .screenshot-container:hover .screenshot {
+        transform: scale(1.03);
+    }
+
+    .form-tips {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .form-tip {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(67, 97, 238, 0.05);
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .form-tip:hover {
+            background: rgba(67, 97, 238, 0.1);
+            transform: translateX(5px);
+        }
+
+        .form-tip i {
+            color: var(--primary);
+            font-size: 1.2rem;
+            width: 30px;
+            height: 30px;
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    .status-indicators {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin: 1.5rem 0;
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--status-color, var(--primary));
+        box-shadow: 0 0 10px var(--status-color, var(--primary));
+    }
+
+    .practice-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .practice-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s;
+        border: 1px solid var(--light-gray);
+        text-align: center;
+    }
+
+        .practice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: var(--primary-light);
+        }
+
+        .practice-card i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            background: rgba(67, 97, 238, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .practice-card h4 {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .practice-card p {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+    .notice-box {
+        background: rgba(67, 97, 238, 0.08);
+        border-left: 4px solid var(--primary);
+        padding: 1rem;
+        margin: 1rem 0;
+        display: flex;
+        gap: 1rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+        .notice-box i {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+        }
+
+        .notice-box p {
+            margin: 0;
+            color: var(--dark);
+        }
+
+    .rating-scale {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin: 1.5rem 0;
+    }
+
+    .rating-level {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem;
+        border-radius: 6px;
+        background: rgba(0,0,0,0.02);
+    }
+
+    .rating-stars {
+        color: #ffc107;
+        font-size: 1.2rem;
+        width: 80px;
+        display: inline-block;
+    }
+
+    ol.styled-list {
+        counter-reset: step-counter;
+        list-style: none;
+        padding-left: 0;
+    }
+
+        ol.styled-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 2.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+            ol.styled-list li::before {
+                content: counter(step-counter);
+                position: absolute;
+                left: 0;
+                top: 0;
+                background: var(--primary);
+                color: white;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8rem;
+            }
+
+            ol.styled-list li i {
+                margin-left: 0.5rem;
+            }
+
+    @@media (max-width: 992px) {
+        .guide-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .guide-section {
+            padding: 1.5rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .section-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .step {
+            gap: 1rem;
+        }
+
+        .practice-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .rating-level {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.3rem;
+        }
+
+        ol.styled-list li {
+            padding-left: 2rem;
+        }
+    }
+</style>

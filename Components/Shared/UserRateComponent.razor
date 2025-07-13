@@ -1,0 +1,271 @@
+﻿@rendermode InteractiveServer
+@attribute [Authorize]
+
+<div class="modal fade" id="AddRating" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient-info text-white py-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-star me-3 fs-4"></i>
+                    <h5 class="modal-title mb-0 fs-5">@Title</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white opacity-100" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <EditForm Model="ratingModel" OnSubmit="HandleRatingSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger mb-4 animated fadeIn" />
+
+                    <!-- Rating Stars -->
+                    <div class="text-center mb-4">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            var starIndex = i; // Capture the current value in the loop
+                                               <i class="fas fa-star rating-star @(i <= ratingModel.Rating ? "active" : "")"
+                                                  id="star-@i"
+                                                  @onclick="() => SetRating(starIndex)"></i>
+                        }
+
+                        <small class="rating-feedback animated fadeIn" style="@(ratingModel.Rating == 0 ? "opacity:0" : "opacity:1")">
+                            @RatingText
+                        </small>
+                        <ValidationMessage For="@(() => ratingModel.Rating)" class="text-danger small mt-1 animated fadeIn" />
+                    </div>
+
+                    <!-- Rest of your form remains the same -->
+                    <!-- Comment Field -->
+                    <div class="form-floating mb-4">
+                        <InputTextArea @bind-Value="ratingModel.Comment"
+                                       class="form-control comment-textarea"
+                                       id="commentInput"
+                                       placeholder=" "
+                                       style="min-height: 100px" />
+                        <label for="commentInput" class="text-muted">
+                            <i class="fas fa-comment me-2"></i>Additional Feedback (Optional)
+                        </label>
+                        <div class="form-text ps-4 mt-2">
+                            <i class="fas fa-info-circle me-2"></i>Share more details about your experience
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top-0 pt-3">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-hover-scale"
+                                data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="submit"
+                                class="btn btn-info btn-hover-scale btn-glow"
+                                disabled="@(isSubmitting || ratingModel.Rating == 0)">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-paper-plane me-2"></i>
+                            }
+                            Submit Rating
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isSubmitting = false;
+
+    [Parameter]
+    public string Title { get; set; } = "Rate Your Experience";
+
+    [Parameter]
+    public RatingModel ratingModel { get; set; } = new RatingModel();
+
+    [Parameter]
+    public EventCallback<RatingModel> OnRatingSubmitted { get; set; }
+
+    private string RatingText => ratingModel.Rating switch
+    {
+        1 => "Poor - We're sorry to hear that",
+        2 => "Fair - We'll try to do better",
+        3 => "Good - Thanks for your feedback",
+        4 => "Very Good - We're glad you're happy",
+        5 => "Excellent - We're thrilled!",
+        _ => ""
+    };
+
+    private void SetRating(int rating)
+    {
+        ratingModel.Rating = rating;
+        StateHasChanged();
+    }
+
+    private async Task HandleRatingSubmit()
+    {
+        isSubmitting = true;
+        try
+        {
+            await OnRatingSubmitted.InvokeAsync(ratingModel);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+ 
+
+    public void ResetForm()
+    {
+        ratingModel = new RatingModel();
+        isSubmitting = false;
+        StateHasChanged();
+    }
+}
+<style>
+    /* Import Font Awesome for icons */
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+    /* Base Modal Styling */
+    .modal-content {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: none;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Enhanced Star Rating System */
+    .rating-star {
+        color: #e0e0e0;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        margin: 0 0.15rem;
+        position: relative;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 2rem;
+    }
+
+        .rating-star:hover {
+            transform: scale(1.15);
+        }
+
+        .rating-star.active {
+            color: #FFD700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Selection animation */
+        .rating-star.active {
+            animation: starSelect 0.3s ease;
+        }
+
+    @@keyframes starSelect {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.3);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    /* Rating Feedback Text */
+    .rating-feedback {
+        display: block;
+        background: rgba(23, 162, 184, 0.1);
+        padding: 0.35rem 1rem;
+        border-radius: 1rem;
+        margin-top: 0.5rem;
+        color: #117a8b;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    /* Enhanced Form Elements */
+    .form-floating {
+        position: relative;
+        margin-top: 1.5rem;
+    }
+
+        .form-floating label {
+            padding-left: 2.5rem;
+            color: #6c757d;
+            transition: all 0.2s ease;
+        }
+
+        .form-floating > .form-control {
+            padding-left: 2.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+            background-color: #f8f9fa;
+        }
+
+            .form-floating > .form-control:focus {
+                border-color: #17a2b8;
+                box-shadow: 0 0 0 0.25rem rgba(23, 162, 184, 0.15);
+                background-color: #fff;
+            }
+
+    /* Enhanced Buttons */
+    .btn {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        padding: 0.6rem 1.5rem;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+        box-shadow: 0 4px 6px rgba(23, 162, 184, 0.2);
+    }
+
+        .btn-info:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+            box-shadow: 0 6px 8px rgba(23, 162, 184, 0.3);
+            transform: translateY(-2px);
+        }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 767.98px) {
+        .rating-star {
+            font-size: 1.75rem;
+        }
+
+        .modal-header {
+            padding: 1rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .rating-star {
+            font-size: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+

@@ -9,7 +9,9 @@ namespace AlexSupport.Repository.IRepository
         public Task<Category> UpdateCategoryAsync(Category category);
         public Task<Category> GetCategoryAsync(int Id);
         public Task<IEnumerable<Category>> AllCategoriesAsync();
-        public Task<bool> DeleteCategoryAsync(int Id);
+        public Task<IEnumerable<Category>> AllSystemCategoriesAsync();
+        public Task<bool> ActivateCategoryAsync(int Id);
+        public Task<bool> InActivateCategoryAsync(int Id);
         public  Task<bool> CheckIfCategoryExist(string name, int id = 0);
         
         

@@ -1,5 +1,4 @@
 ﻿@page "/users/Edit/{id:int}"
-@using System.ComponentModel.DataAnnotations
 @inject IAppUserRepoistory _userRepo
 @inject ILogService _logService
 @inject IDepartmentRepository _IDepartment
@@ -8,7 +7,7 @@
 @inject IPasswordHasherRepository _IHash
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin")]
-<PageTitle>Edit Profile</PageTitle>
+<PageTitle>Edit User Info</PageTitle>
 
 <div class="edit-profile-page">
     <div class="edit-profile-container">

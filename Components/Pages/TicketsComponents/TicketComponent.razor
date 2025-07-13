@@ -4,10 +4,13 @@
 @inject NavigationManager NavigationManager
 @inject ITicketRepository _ITicket
 @inject IAppUserRepoistory _IAppUser
-@rendermode InteractiveServer
 @inject IJSRuntime JS
+@inject ILogService Log
 @inject INotificationService NotificationService
+@inject EmailServices _emailService
+@rendermode InteractiveServer
 @attribute [Authorize]
+<PageTitle>Tickets</PageTitle>
 
 <AssignFormModal Title="@(!string.IsNullOrWhiteSpace(TicketStatus) ? "Re-Assign Ticket" : "Assign Ticket")"
                  OnModalConfirmation="ConfirmAssign_Click"
@@ -360,6 +363,12 @@
                                             onclick="toggleCollapse(this)">
                                         <i class="bi bi-chevron-down me-1"></i>Details
                                     </button>
+                                    @if (ticket.Status == "Closed" && ticket.UID == CurrentUserId && ticket.UserRate == null && ticket.Agent != null)
+                                    {
+                                        <button class="btn btn-sm btn-outline-warning" @onclick="() => ShowRateModal(ticket.TID)">
+                                            <i class="fa-solid fa-star me-1"></i>Rate Agent
+                                        </button>
+                                    }
                                 </div>
                             </div>
 
@@ -496,7 +505,10 @@
         </div>
     </div>
 </div>
-
+<UserRateComponent 
+    Title="Share Your Feedback - Rate Our Support Agent (1-5 Stars)" 
+    OnRatingSubmitted="UserRateConfirmation" 
+    ratingModel="ratingModel" />
 @code {
     // Pagination variables
     private int currentPage = 1;
@@ -536,6 +548,9 @@
     private string searchTerm = string.Empty;
     private Timer? debounceTimer;
     private bool _disposed;
+    private int CurrentUserId { get; set; } = 0;
+    private RatingModel ratingModel { get; set; } = new RatingModel();
+    private int ticketid { get; set; } = 0;
 
     [Parameter]
     public string TicketStatus { get; set; } = "";
@@ -544,10 +559,78 @@
     {
         await Task.Delay(TimeSpan.FromSeconds(0.5));
         await LoadTickets();
+        CurrentUserId = await Log.ReturnCurrentUserID();
 
         // Subscribe to SignalR updates
         NotificationService.OnTicketUpdated += HandleTicketUpdate;
         await NotificationService.InitializeAsync(HandleNotification);
+    }
+    private async Task ShowRateModal(int id)
+    {
+        await JS.InvokeVoidAsync("ShowAddRatingFormModal");
+        ticketid = id;
+
+    }
+    private async Task UserRateConfirmation(RatingModel ratingModel)
+    {
+        if (ticketid != 0)
+        {
+            if (ratingModel != null)
+            {
+                var ratedticket = await _ITicket.GetTicketByIdAsync(ticketid);
+                var agent = await _IAppUser.GetUserByIdAsync(ratedticket.AgentID ?? 0);
+                var result = await _ITicket.AddUserRateToTicketAsync(ratingModel, ticketid);
+                if (result)
+                {
+                    JS?.ToastrSuccess("Rating Submitted Successfully");
+                    await _emailService.SendEmailAsync(
+                        agent.Email,
+                        $"Ticket Rating Notification - Ticket #{ratedticket.TID}",
+                        $"Hello Eng: {agent.Fname} {agent.Lname}",
+                        $@"
+    <html>
+        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <h2 style='color: #2c3e50;'>Ticket Rating Notification</h2>
+
+            <p>Dear Eng. {agent.Fname} {agent.Lname},</p>
+
+            <p>We would like to inform you that a user has rated your ticket with the following details:</p>
+
+            <div style='background-color: #f9f9f9; padding: 15px; border-left: 4px solid #3498db; margin: 10px 0;'>
+                <p><strong>Ticket ID:</strong> #{ratedticket.TID}</p>
+                <p><strong>Rating:</strong> {GetRatingStars(ratingModel.Rating)} ({ratingModel.Rating} out of 5)</p>
+                <p><strong>User Feedback:</strong></p>
+                <p style='font-style: italic;'>{ratingModel.Comment}</p>
+            </div>
+
+            <p>Thank you for your service and dedication.</p>
+
+            <p style='color: #7f8c8d; font-size: 0.9em;'>
+                Best regards,<br>
+                Customer Support Team
+            </p>
+        </body>
+    </html>
+    "
+                    );
+                }
+                else
+                {
+                    JS?.ToastrError("Error Encountered while submitting rating");
+                }
+            }
+            else
+            {
+                JS?.ToastrError("Ticket not found");
+            }
+        }
+        await JS.InvokeVoidAsync("HideAddRatingFormModal");
+        ratingModel = new RatingModel();
+        ticketid = 0;
+    }
+    private string GetRatingStars(int rating)
+    {
+        return new string('★', rating) + new string('☆', 5 - rating);
     }
 
     private async Task HandleNotification(string message)

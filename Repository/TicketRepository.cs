@@ -7,6 +7,7 @@ using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.JSInterop;
+using static AlexSupport.Components.Shared.UserRateComponent;
 
 namespace AlexSupport.Repository
 {
@@ -59,10 +60,11 @@ namespace AlexSupport.Repository
                         var message = $"Hello Mr.{admin.Fname} {admin.Lname}\n {user.Fname} {user.Lname} just created a ticket.";
                         await SendNotificationAsync(user.UID, admin.UID, message);
                     }
-                    await Log.CreateLogAsync(ticket.TID, "Create a new ticket in the system");
-                    await Notification.SendTicketUpdateAsync(ticket.TID, "");
 
                     await alexSupportDB.SaveChangesAsync();
+                    await Notification.SendTicketUpdateAsync(ticket.TID, "");
+                    await Log.CreateLogAsync(ticket.TID, "Create a new ticket in the system");
+
 
                     return ticket;
                 }
@@ -560,6 +562,40 @@ namespace AlexSupport.Repository
             catch (Exception ex)
             {
                 logger.LogError("Error in assigning ticket: " + ex.Message, ex);
+                return false;
+            }
+        }
+        public async Task<bool> AddUserRateToTicketAsync(RatingModel rate, int Id)
+        {
+            try
+            {
+                if (rate == null)
+                {
+                    logger.LogError("rate model is null");
+                    return false;
+                }
+                else
+                {
+                    var existingTicket = await GetTicketByIdAsync(Id);
+                    if (existingTicket != null)
+                    {
+                        existingTicket.UserRate = rate.Rating;
+                        existingTicket.UserFeedBack = rate.Comment;
+                        alexSupportDB.Update(existingTicket);
+                        await Log.CreateLogAsync(existingTicket.TID, "Add a User Rate after close a ticket in the system");
+                        await alexSupportDB.SaveChangesAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        logger.LogError("Ticket not found");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error in Add A Rate For A Ticket: " + ex.Message, ex);
                 return false;
             }
         }

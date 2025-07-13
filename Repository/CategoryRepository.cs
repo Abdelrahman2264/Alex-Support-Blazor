@@ -45,7 +45,7 @@ namespace AlexSupport.Repository
             }
         }
 
-        public async Task<bool> DeleteCategoryAsync(int Id)
+        public async Task<bool> InActivateCategoryAsync(int Id)
         {
             try
             {
@@ -63,13 +63,48 @@ namespace AlexSupport.Repository
             }
             catch (Exception ex)
             {
-                logger.LogError("Error in Deleting Category Async: " + ex.Message, ex);
+                logger.LogError("Error in Inactivate Category Async: " + ex.Message, ex);
+                return false;
+            }
+        }
+        public async Task<bool> ActivateCategoryAsync(int Id)
+        {
+            try
+            {
+                var category = await alexSupportDB.Category.FirstOrDefaultAsync(c => c.CID == Id);
+                if (category != null)
+                {
+                    category.IsActive = true;
+                    await alexSupportDB.SaveChangesAsync();
+                    await LogService.CreateSystemLogAsync($"Active Category  With Id: {category.CID} In the System", "CATEGORY");
+
+                    return true;
+                }
+                logger.LogError("Category Not Found");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error in Activate Category Async: " + ex.Message, ex);
                 return false;
             }
         }
 
 
         public async Task<IEnumerable<Category>> AllCategoriesAsync()
+        {
+            try
+            {
+
+                return await alexSupportDB.Category.Where(u => u.IsActive).OrderBy(c => c.CategoryName).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error in Get ALl Categories Async: " + ex.Message, ex);
+                return Enumerable.Empty<Category>();
+            }
+        }
+        public async Task<IEnumerable<Category>> AllSystemCategoriesAsync()
         {
             try
             {

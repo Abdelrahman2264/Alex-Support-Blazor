@@ -50,6 +50,12 @@ function HideVerificationModalFormModal() {
 
 function HideResetPasswordFormModal() {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('ResetPassword')).hide();
+} function ShowAddRatingFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('AddRating')).show();
+}
+
+function HideAddRatingFormModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('AddRating')).hide();
 }
 function setupFileUpload() {
     const fileInput = document.getElementById('fileUpload');
@@ -182,17 +188,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
-
-//// Mobile menu toggle
-//const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-//const mainNav = document.getElementById('main-nav');
-
-//mobileMenuBtn.addEventListener('click', function () {
-//    this.classList.toggle('active');
-//    mainNav.classList.toggle('active');
-//});
-
-// Show login form
 
 
 // Create floating elements for hero section

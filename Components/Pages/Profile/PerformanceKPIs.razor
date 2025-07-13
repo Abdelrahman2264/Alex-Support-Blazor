@@ -1,10 +1,11 @@
 ﻿@page "/performancekpis"
-@using System.Globalization
 @inject ITicketRepository ITicket
 @inject IJSRuntime JSRuntime
-@rendermode InteractiveServer
 @inject IAppUserRepoistory IUser
+@rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,Agent")]
+<PageTitle>Performance KPIs</PageTitle>
+
 <div class="dashboard-container">
     <div class="dashboard-header">
         <h1 class="page-title">KPIs Performance</h1>

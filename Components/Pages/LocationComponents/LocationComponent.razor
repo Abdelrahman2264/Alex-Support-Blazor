@@ -1,18 +1,18 @@
 ﻿@page "/Sites"
 @inject ILocationRepository _ISite
 @inject IJSRuntime JS
-@using AlexSupport.ViewModels
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,Agent")]
 <PageTitle>Sites</PageTitle>
 
-<BsModal OnModalConfirmation="ConfirmDelete_Click"
-         IconClass="fas fa-trash-alt"
-         IconColorClass="text-danger"
-         ButtonBootstrapStyle="btn-danger"
-         Title="Inactive Location">
+
+<BsModal OnModalConfirmation="Activation"
+         IconClass="@(IsActive ? "fa-solid fa-location-dot" : "fa-solid  fa-location-dot")"
+         IconColorClass="@(IsActive ? "text-warning" : "text-success")"
+         ButtonBootstrapStyle="@(IsActive ? "btn-warning" : "btn-success")"
+         Title="@(IsActive ? "Deactivate Location" : "Activate Locatin")">
     <ChildContent>
-        This action cannot be undone until you confirm it. Are you sure you want to inactive this location?
+        This action cannot be undone until you confirm it. Are you sure you want to @(IsActive ? "deactivate" : "activate") this Location Site?
     </ChildContent>
 </BsModal>
 <style>
@@ -507,11 +507,20 @@
                                 <i class="fas fa-edit"></i>
                                 <span class="d-none d-lg-inline">Edit</span>
                             </a>
-                            <button class="btn btn-outline-danger action-btn"
-                                    @onclick="() => HandleDelete(location.LID)">
-                                <i class="fas fa-trash-alt"></i>
-                                <span class="d-none d-lg-inline">Delete</span>
-                            </button>
+                            @if (location.IsActive)
+                            {
+                                <button class="btn btn-outline-danger btn-sm flex-grow-1"
+                                        @onclick="() => InActiveLocationShowModal(location.LID)">
+                                    <i class="bi bi-person-x me-1"></i>Deactivate
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-success btn-sm flex-grow-1"
+                                        @onclick="() => ActiveLocationShowModal(location.LID)">
+                                    <i class="bi bi-person-check me-1"></i>Activate
+                                </button>
+                            }
                         </div>
                     </div>
                 }
@@ -566,7 +575,7 @@
 
     private async Task LoadTypes()
     {
-        Sites = await _ISite.AllLocationsAsync();
+        Sites = await _ISite.AllSystemLocationsAsync();
         FilteredSites = Sites;
     }
 
@@ -605,34 +614,57 @@
         searchTerm = string.Empty;
         FilteredSites = Sites;
     }
-
-    private async Task HandleDelete(int id)
+    private bool IsActive { get; set; } = true;
+    private int InActivatedLocationId = 0;
+    private int ActivatedLocationId = 0;
+    private string title = "";
+    private string buttonstyle = "";
+    private string buttontext = "";
+    private async Task InActiveLocationShowModal(int locationid)
     {
-        AssignId = id;
+        title = "Are You Sure You Want To Deactivate This Location Site?";
+        buttonstyle = "btn-danger";
+        buttontext = "Deactivate";
+        InActivatedLocationId = locationid;
+        ActivatedLocationId = 0;
+        IsActive = true;
         await JS.InvokeVoidAsync("ShowConfirmationModal");
     }
 
-    private async Task ConfirmDelete_Click(bool isConfirmed)
+    private async Task ActiveLocationShowModal(int locationid)
     {
-        isProcessing = true;
-        await JS.InvokeVoidAsync("HideConfirmationModal");
-        if (isConfirmed && AssignId != 0)
-        {
-            var result = await _ISite.DeleteLocationAsync(AssignId);
-            if (result)
-                JS?.ToastrSuccess("Location Site Deleted Successfully");
-            else
-                JS?.ToastrError("Error Encountered While Deleting");
+        title = "Are You Sure You Want To Activate This Location Site";
+        buttonstyle = "btn-success";
+        buttontext = "Activate";
+        ActivatedLocationId = locationid;
+        InActivatedLocationId = 0;
+        IsActive = false;
 
-            await LoadTypes();
-        }
-        AssignId = 0;
-        isProcessing = false;
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
     }
 
-    public void Dispose()
+    private async Task Activation()
     {
-        debounceTimer?.Dispose();
+        await JS.InvokeVoidAsync("HideConfirmationModal");
+
+        if (ActivatedLocationId != 0)
+        {
+            bool flag = await _ISite.ActivateLocationAsync(ActivatedLocationId);
+            if (flag)
+                await JS.ToastrSuccess("Location Site Activated Successfully");
+            else
+                await JS.ToastrError("Failed to activate Location. Please try again!");
+        }
+        else if (InActivatedLocationId != 0)
+        {
+            bool flag = await _ISite.InActivateLocationAsync(InActivatedLocationId);
+            if (flag)
+                await JS.ToastrSuccess("Location Site Deactivated Successfully");
+            else
+                await JS.ToastrError("Failed to deactivate Location Site. Please try again!");
+        }
+
+        await LoadTypes();
     }
 }
 

@@ -3,13 +3,12 @@
 @inject AlexSupportDB db
 @inject NavigationManager Navigation
 @inject IAppUserRepoistory _IUser
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authentication.Cookies
 @inject EmailServices _EmailServices
 @inject IJSRuntime JS
 @inject IPasswordHasherRepository _IPasswordHasherRepository
 @inject ILogService log
+<PageTitle>Sign In</PageTitle>
+
 <style>
     /* Base Styles */
     :root {

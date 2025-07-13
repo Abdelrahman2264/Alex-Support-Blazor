@@ -1,18 +1,18 @@
 ﻿@page "/Categories"
 @inject ICategoryRepository _ICategory
 @inject IJSRuntime JS
-@using AlexSupport.ViewModels;
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,Agent")]
 <PageTitle>Category Types</PageTitle>
 
-<BsModal OnModalConfirmation="ConfirmDelete_Click"
-         IconClass="fas fa-trash-alt"
-         IconColorClass="text-danger"
-         ButtonBootstrapStyle="btn-danger"
-         Title="Inactive Category">
+
+<BsModal OnModalConfirmation="Activation"
+         IconClass="@(IsActive ? "fa-solid fa-tag" : "fa-solid fa-tag")"
+         IconColorClass="@(IsActive ? "text-warning" : "text-success")"
+         ButtonBootstrapStyle="@(IsActive ? "btn-warning" : "btn-success")"
+         Title="@(IsActive ? "Deactivate Category" : "Activate Category")">
     <ChildContent>
-        This action cannot be undone until you confirm it. Are you sure you want to inactive this category?
+        This action cannot be undone until you confirm it. Are you sure you want to @(IsActive ? "deactivate" : "activate") this category?
     </ChildContent>
 </BsModal>
 
@@ -509,11 +509,20 @@
                                 <i class="fas fa-edit"></i>
                                 <span class="d-none d-lg-inline">Edit</span>
                             </a>
-                            <button class="btn btn-outline-danger action-btn"
-                                    @onclick="() => HandleDelete(category.CID)">
-                                <i class="fas fa-trash-alt"></i>
-                                <span class="d-none d-lg-inline">Delete</span>
-                            </button>
+                            @if (category.IsActive)
+                            {
+                                <button class="btn btn-outline-danger btn-sm flex-grow-1"
+                                        @onclick="() => InActiveCategoryShowModal(category.CID)">
+                                    <i class="fa-solid fa-tag"></i> Deactivate
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-success btn-sm flex-grow-1"
+                                        @onclick="() => ActiveCategoryShowModal(category.CID)">
+                                    <i class="fa-solid fa-tag"></i> Activate
+                                </button>
+                            }
                         </div>
                     </div>
                 }
@@ -568,7 +577,7 @@
 
     private async Task LoadTypes()
     {
-        Types = await _ICategory.AllCategoriesAsync();
+        Types = await _ICategory.AllSystemCategoriesAsync();
         FilteredTypes = Types;
     }
 
@@ -609,35 +618,67 @@
         FilteredTypes = Types;
     }
 
-    private async Task HandleDelete(int id)
-    {
-        AssignId = id;
-        await JS.InvokeVoidAsync("ShowConfirmationModal");
-    }
-
-    private async Task ConfirmDelete_Click(bool isConfirmed)
-    {
-        isProcessing = true;
-        await JS.InvokeVoidAsync("HideConfirmationModal");
-        if (isConfirmed && AssignId != 0)
-        {
-            var result = await _ICategory.DeleteCategoryAsync(AssignId);
-            if (result)
-                JS?.ToastrSuccess("Category Type Delete Successfully");
-            else
-                JS?.ToastrError("Error Encountered while deleting");
-
-            await LoadTypes();
-        }
-
-        AssignId = 0;
-        isProcessing = false;
-    }
+ 
+  
 
     public void Dispose()
     {
         debounceTimer?.Dispose();
     }
+    private bool IsActive { get; set; } = true;
+    private int InActivatedCategoryId = 0;
+    private int ActivatedCategoryId = 0;
+    private string title = "";
+    private string buttonstyle = "";
+    private string buttontext = "";
+
+    private async Task InActiveCategoryShowModal(int categoryid)
+    {
+        title = "Are You Sure You Want To Deactivate This Category?";
+        buttonstyle = "btn-danger";
+        buttontext = "Deactivate";
+        InActivatedCategoryId = categoryid;
+        ActivatedCategoryId = 0;
+        IsActive = true;
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
+    }
+
+    private async Task ActiveCategoryShowModal(int categoryid)
+    {
+        title = "Are You Sure You Want To Activate This Category?";
+        buttonstyle = "btn-success";
+        buttontext = "Activate";
+        ActivatedCategoryId = categoryid;
+        InActivatedCategoryId = 0;
+        IsActive = false;
+
+        await JS.InvokeVoidAsync("ShowConfirmationModal");
+    }
+
+    private async Task Activation()
+    {
+        await JS.InvokeVoidAsync("HideConfirmationModal");
+
+        if (ActivatedCategoryId != 0)
+        {
+            bool flag = await _ICategory.ActivateCategoryAsync(ActivatedCategoryId);
+            if (flag)
+                await JS.ToastrSuccess("Category Activated Successfully");
+            else
+                await JS.ToastrError("Failed to activate user. Please try again!");
+        }
+        else if (InActivatedCategoryId != 0)
+        {
+            bool flag = await _ICategory.InActivateCategoryAsync(InActivatedCategoryId);
+            if (flag)
+                await JS.ToastrSuccess("Category Deactivated Successfully");
+            else
+                await JS.ToastrError("Failed to deactivate user. Please try again!");
+        }
+
+        await LoadTypes();
+    }
+
 }
 
 

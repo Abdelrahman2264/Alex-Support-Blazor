@@ -7,7 +7,6 @@
         public Task<string> ReturnCurrentUserRole();
         public Task CreateSystemLogAsync(string Action, string type , int UID = 0);
 
-
     }
 
 }

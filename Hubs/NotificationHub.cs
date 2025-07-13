@@ -119,7 +119,7 @@ namespace AlexSupport.Hubs
             }
 
             // Send to ticket creator if not current user
-            if (ticket.UID != 0 && ticket.UID != currentUserId)
+            if (ticket.UID != 0)
             {
                 await Clients.User(ticket.UID.ToString()).SendAsync("ReceiveTicketUpdate", ticketId, action);
             }

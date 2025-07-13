@@ -1,5 +1,4 @@
 ﻿@page "/createticket"
-@using Microsoft.AspNetCore.Components.Forms
 @inject ITicketRepository _ITicket
 @inject ILocationRepository _ILocation
 @inject ICategoryRepository _ICategory
@@ -7,6 +6,7 @@
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,User")]
+<PageTitle>Create Ticket</PageTitle>
 
 <style>
     :root {

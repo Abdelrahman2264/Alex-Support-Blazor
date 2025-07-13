@@ -44,7 +44,7 @@ namespace AlexSupport.Repository
             }
         }
 
-        public async Task<bool> DeleteDepartmentAsync(int Id)
+        public async Task<bool> InActivateDepartmentAsync(int Id)
         {
             try
             {
@@ -62,7 +62,29 @@ namespace AlexSupport.Repository
             }
             catch (Exception ex)
             {
-                logger.LogError("Error in Deleting Department Async: " + ex.Message, ex);
+                logger.LogError("Error in In Active Department Async: " + ex.Message, ex);
+                return false;
+            }
+        }
+        public async Task<bool> ActivateDepartmentAsync(int Id)
+        {
+            try
+            {
+                var Department = await alexSupportDB.Department.FirstOrDefaultAsync(c => c.DID == Id);
+                if (Department != null)
+                {
+                    Department.IsActive = true;
+                    await alexSupportDB.SaveChangesAsync();
+                    await logService.CreateSystemLogAsync($"Active A Department With Id {Department.DID} In The System", "DEPARTMENT");
+
+                    return true;
+                }
+                logger.LogError("Department Not Found");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error in Activate Department Async: " + ex.Message, ex);
                 return false;
             }
         }
@@ -72,7 +94,19 @@ namespace AlexSupport.Repository
         {
             try
             {
-                return await alexSupportDB.Department.OrderBy(c => c.DepartmentName).Where(u => u.IsActive).ToListAsync();
+                return await alexSupportDB.Department.Where(u => u.IsActive).OrderBy(c => c.DepartmentName).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Error in Get ALl Departments Async: " + ex.Message, ex);
+                return Enumerable.Empty<Department>();
+            }
+        }
+        public async Task<IEnumerable<Department>> AllSystemDepartmentsAsync()
+        {
+            try
+            {
+                return await alexSupportDB.Department.OrderBy(c => c.DepartmentName).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -166,7 +200,7 @@ namespace AlexSupport.Repository
                 return false;
             }
         }
-    
+
 
     }
 }
