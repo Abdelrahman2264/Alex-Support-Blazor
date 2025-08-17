@@ -53,7 +53,7 @@ It provides full lifecycle management of tickets — from creation to resolution
 
 1. **Clone the repository**  
    ```bash
-   git clone https://github.com/your-username/it-ticketing-system.git
+   git clone https://github.com/Abdelrahman2264/it-ticketing-system.git
    cd it-ticketing-system
    ```
 
